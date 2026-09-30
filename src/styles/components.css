@@ -1075,3 +1075,122 @@
 @media (prefers-reduced-motion: reduce) {
   .ew-client .ew-side { transition: none; }
 }
+
+/* ================================================================
+   FIL / SUIVIS (MVP) — src/scripts/fil.js
+   ≥ 1100 px : liste + détail à droite. En dessous : détail plein écran.
+   ================================================================ */
+
+.fil-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
+@media (min-width: 1100px) {
+  .fil-layout { grid-template-columns: minmax(0, 1fr) 380px; gap: 32px; align-items: start; }
+}
+
+.fil-list { border-top: 0.5px solid var(--line); }
+
+.fil-row {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  padding: 14px 10px;
+  border-bottom: 0.5px solid var(--line);
+  cursor: pointer;
+  outline: none;
+}
+.fil-row:hover { background: var(--bg-side); }
+.fil-row:focus-visible { box-shadow: inset 0 0 0 1.5px var(--accent); }
+.fil-row.is-selected { background: var(--bg-side); box-shadow: inset 2px 0 0 var(--accent); }
+
+.fil-level {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  border: 0.5px solid var(--line-strong);
+  color: var(--taupe);
+  background: var(--bg);
+}
+.fil-level-action { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.fil-level-a_lire { color: var(--accent); border-color: var(--accent); background: var(--accent-bg); }
+
+.fil-row-title { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--ink); margin: 0; overflow-wrap: anywhere; }
+.fil-row-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px; font-size: 12px; color: var(--mute); }
+.fil-row-source { color: var(--taupe); }
+.fil-row-reason { margin-top: 6px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; }
+
+.fil-btn {
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--bg);
+  border: 0.5px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.fil-btn:hover { background: var(--bg-hover); }
+.fil-btn-primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.fil-btn-primary:hover { background: var(--accent); opacity: 0.9; }
+.fil-btn:disabled { opacity: 0.5; cursor: default; }
+
+.fil-empty { font-size: 13px; color: var(--mute); padding: 18px 10px; }
+
+/* Détail */
+.fil-detail { display: none; }
+.fil-detail-back { display: none; }
+@media (min-width: 1100px) {
+  .fil-detail {
+    display: block;
+    position: sticky;
+    top: 24px;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    border: 0.5px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--bg);
+  }
+}
+.fil-detail-inner { padding: 22px 22px 26px; }
+.fil-detail-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.fil-detail-date { font-size: 12px; color: var(--mute); }
+.fil-detail-title { font-size: 17px; font-weight: 500; line-height: 1.4; color: var(--ink); margin: 0 0 6px; overflow-wrap: anywhere; }
+.fil-detail-source { font-size: 12.5px; color: var(--taupe); margin-bottom: 18px; }
+.fil-detail-block { margin-bottom: 16px; }
+.fil-detail-block h3 {
+  font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--taupe); margin: 0 0 6px;
+}
+.fil-detail-block p { font-size: 13.5px; line-height: 1.6; color: var(--ink-soft); margin: 0; }
+.fil-detail-link { display: inline-block; font-size: 13.5px; font-weight: 500; color: var(--accent); margin: 4px 0 20px; }
+.fil-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 16px; border-top: 0.5px solid var(--line); }
+.fil-detail-placeholder { padding: 22px; font-size: 13px; color: var(--mute); }
+
+/* Téléphone / tablette : détail plein écran */
+@media (max-width: 1099px) {
+  .fil-detail.is-open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: var(--bg);
+    overflow-y: auto;
+  }
+  .fil-detail.is-open .fil-detail-back {
+    display: inline-block;
+    font-family: inherit; font-size: 13px; color: var(--ink);
+    background: none; border: none; padding: 0; margin-bottom: 18px; cursor: pointer;
+  }
+  .fil-detail-inner { padding: 18px 16px 32px; }
+  body.fil-detail-open { overflow: hidden; }
+}
+@media (max-width: 520px) {
+  .fil-row { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 14px 4px; }
+  .fil-row-act { justify-self: start; }
+}
