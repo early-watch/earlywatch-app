@@ -1,0 +1,66 @@
+---
+import AuthLayout from '../../layouts/AuthLayout.astro';
+// EB-MVP-003 — retour de Stripe Checkout après paiement. L'accès s'ouvre quand le
+// webhook Stripe a été traité : on interroge GET /billing/status jusqu'à confirmation.
+---
+
+<AuthLayout title="Early Watch — Paiement reçu">
+  <p id="title" style="font-size:14px;color:var(--ink);line-height:1.6;margin-bottom:8px">Paiement reçu</p>
+  <p id="msg" style="font-size:13px;color:var(--mute);line-height:1.6;margin-bottom:20px">
+    Merci. Nous activons votre accès, cela ne prend que quelques secondes…
+  </p>
+  <a href="#" id="go" class="ew-login-btn" style="display:none;text-align:center;text-decoration:none">Accéder à ma veille</a>
+  <button type="button" id="retry" class="ew-login-btn" style="display:none">Vérifier à nouveau</button>
+
+  <script>
+    import { API, api, getToken } from '../../scripts/api';
+
+    const BASE = import.meta.env.BASE_URL || '/earlywatch-app/';
+    const title = document.getElementById('title')!;
+    const msg = document.getElementById('msg')!;
+    const go = document.getElementById('go') as HTMLAnchorElement;
+    const retry = document.getElementById('retry') as HTMLButtonElement;
+    go.href = BASE + 'app/tableau-de-bord';
+
+    // L'identifiant de session Stripe ne sert à rien ici : on le retire de l'URL.
+    if (window.location.search) history.replaceState(null, '', window.location.pathname);
+
+    const INTERVAL_MS = 2000;
+    const MAX_TRIES = 15; // ~30 s
+
+    async function refreshUser() {
+      const r = await fetch(`${API}/api/v1/auth/me`, { headers: { Authorization: `Bearer ${getToken()}` } });
+      if (r.ok) sessionStorage.setItem('ew_user', JSON.stringify(await r.json()));
+    }
+
+    async function poll(tries = 0): Promise<void> {
+      try {
+        const s = await api('/api/v1/billing/status');
+        if (s.has_access) {
+          await refreshUser().catch(() => {});
+          title.textContent = 'Votre accès est ouvert';
+          msg.textContent = 'Votre abonnement est actif. Bienvenue sur Early Watch.';
+          retry.style.display = 'none';
+          go.style.display = 'block';
+          return;
+        }
+      } catch { /* réseau : on réessaie */ }
+      if (tries + 1 < MAX_TRIES) {
+        setTimeout(() => poll(tries + 1), INTERVAL_MS);
+      } else {
+        msg.textContent = "Votre paiement est bien reçu, mais l'activation prend plus de temps que prévu. "
+          + "Réessayez dans une minute ; si l'accès n'est toujours pas ouvert, écrivez à maria@early.consulting.";
+        retry.style.display = 'block';
+      }
+    }
+
+    retry.addEventListener('click', () => {
+      retry.style.display = 'none';
+      msg.textContent = 'Vérification en cours…';
+      poll();
+    });
+
+    if (!getToken()) window.location.href = BASE + 'login';
+    else poll();
+  </script>
+</AuthLayout>

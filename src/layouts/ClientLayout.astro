@@ -23,14 +23,53 @@ const { title, activePage = '' } = Astro.props;
   <div class="ew-frame-2col">
     <ClientNav activePage={activePage} />
     <main class="ew-main" id="ew-main">
+      <!-- EB-MVP-003 — bandeau d'impayé (abonnement past_due, délai de grâce en cours). -->
+      <div id="billing-banner" role="alert" style="display:none;margin-bottom:16px;padding:12px 16px;border:0.5px solid var(--color-error);border-radius:var(--radius);font-size:13px;color:var(--ink);line-height:1.6"></div>
       <slot />
     </main>
   </div>
   <div class="ew-toast-container" id="toast-container"></div>
 
   <script>
-    import { requireClientAuth } from '../scripts/api';
+    import { api, getUser, formatDate, requireClientAuth } from '../scripts/api';
     if (!requireClientAuth()) throw new Error('redirect');
+
+    // EB-MVP-003 — impayé : « paiement en échec, accès maintenu jusqu'au [date] ».
+    // Statut relu toutes les 5 minutes au plus (cache de session) : un impayé survenu
+    // après la connexion est donc signalé sans attendre une reconnexion.
+    const BILLING_CACHE_KEY = 'ew_billing_status';
+    const BILLING_CACHE_MS = 5 * 60 * 1000;
+    const BASE = import.meta.env.BASE_URL || '/earlywatch-app/';
+
+    async function billingStatus() {
+      try {
+        const cached = JSON.parse(sessionStorage.getItem(BILLING_CACHE_KEY) || 'null');
+        if (cached && Date.now() - cached.at < BILLING_CACHE_MS) return cached.status;
+      } catch { /* cache illisible : on relit */ }
+      const status = await api('/api/v1/billing/status');
+      sessionStorage.setItem(BILLING_CACHE_KEY, JSON.stringify({ at: Date.now(), status }));
+      return status;
+    }
+
+    const me = getUser();
+    if (me && me.role !== 'superadmin' && !sessionStorage.getItem('ew_token_original')) {
+      billingStatus().then((s) => {
+        if (s?.subscription_status !== 'past_due') return;
+        const banner = document.getElementById('billing-banner')!;
+        const until = s.grace_ends_at ? ` jusqu'au ${formatDate(s.grace_ends_at)}` : '';
+        banner.append(`Paiement en échec : votre accès est maintenu${until}. `);
+        if (me.role === 'admin') {
+          const a = document.createElement('a');
+          a.href = BASE + 'app/parametres';
+          a.style.cssText = 'color:var(--ink);text-decoration:underline';
+          a.textContent = 'Mettre à jour mon moyen de paiement';
+          banner.append(a);
+        } else {
+          banner.append("Prévenez l'administrateur de votre compte.");
+        }
+        banner.style.display = 'block';
+      }).catch(() => { /* statut indisponible : pas de bandeau */ });
+    }
   </script>
 </body>
 </html>

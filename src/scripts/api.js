@@ -24,9 +24,11 @@ export function getUser() {
 // EB-MVP-002 — un compte sans abonnement actif n'accède pas au contenu : l'API répond
 // 402 et l'interface envoie vers « Choisissez votre formule ». Le superadmin n'est
 // jamais concerné. Statut lu dans ew_user (posé à la connexion).
+// EB-MVP-003 — 'past_due' (impayé) n'est pas bloqué ici : le serveur garde l'accès
+// pendant le délai de grâce (7 jours, article 5 des CG) puis répond 402.
 export function hasInactiveSubscription(user = getUser()) {
   return !!user && user.role !== 'superadmin'
-    && !!user.subscription_status && user.subscription_status !== 'active';
+    && !!user.subscription_status && !['active', 'past_due'].includes(user.subscription_status);
 }
 export function redirectToPlans() {
   window.location.href = BASE + 'choisir-formule';
@@ -42,6 +44,18 @@ export function requireAuth() {
     return false;
   }
   return true;
+}
+
+// ---- Abonnement (EB-MVP-003, Stripe) ----
+export function formatEuros(cents) {
+  return (cents / 100).toLocaleString('fr-FR', {
+    style: 'currency', currency: 'EUR', minimumFractionDigits: cents % 100 ? 2 : 0,
+  });
+}
+// Ouvre le portail client Stripe (carte, factures, résiliation). Administrateur du tenant.
+export async function openBillingPortal() {
+  const { url } = await api('/api/v1/billing/portal-session', { method: 'POST' });
+  window.location.href = url;
 }
 
 // ---- Client view auth ----

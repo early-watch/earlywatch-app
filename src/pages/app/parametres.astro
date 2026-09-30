@@ -13,6 +13,19 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
       <div id="org-name" style="font-size:15px;font-weight:500;color:var(--ink);margin-bottom:4px">—</div>
       <div id="org-type" style="font-size:12px;color:var(--taupe)">—</div>
     </div>
+    <!-- EB-MVP-003 — abonnement : formule, statut, échéance ; gestion dans le portail Stripe. -->
+    <div id="billing" style="display:none;background:var(--bg-side);border:0.5px solid var(--line);border-radius:var(--radius);padding:24px;margin-bottom:16px">
+      <div style="font-size:12px;color:var(--taupe);margin-bottom:10px">Abonnement</div>
+      <div id="billing-plan" style="font-size:15px;font-weight:500;color:var(--ink);margin-bottom:4px">—</div>
+      <div id="billing-status" style="font-size:12px;color:var(--taupe);margin-bottom:4px">—</div>
+      <div id="billing-next" style="font-size:12px;color:var(--taupe)"></div>
+      <button type="button" class="ew-btn ew-btn-primary" id="billing-manage" style="display:none;margin-top:16px">Gérer mon abonnement</button>
+      <div id="billing-manage-note" style="display:none;font-size:11px;color:var(--taupe);margin-top:8px">
+        Carte bancaire, factures et résiliation, sur le portail sécurisé de Stripe.
+      </div>
+      <div id="billing-error" style="display:none;font-size:12px;color:var(--color-error);margin-top:8px"></div>
+    </div>
+
     <div style="font-size:13px;color:var(--taupe);line-height:1.6">
       La configuration détaillée du profil organisation (responsable LCB-FT, outils, périmètre) est accessible via la page Paramètres complète.<br>
       <a href="#" style="color:#5C6347;text-decoration:underline" id="link-settings">Accéder aux paramètres →</a>
@@ -22,7 +35,7 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
 </ClientLayout>
 
 <script>
-  import { getUser } from '../../scripts/api';
+  import { api, getUser, formatDate, openBillingPortal } from '../../scripts/api';
   const BASE = import.meta.env.BASE_URL || '/earlywatch-app/';
 
   const user = getUser();
@@ -35,4 +48,44 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
 
   const linkEl = document.getElementById('link-settings');
   if (linkEl) linkEl.setAttribute('href', BASE + 'settings');
+
+  // ---- Abonnement (EB-MVP-003) ----
+  const PLAN_LABELS: Record<string, string> = {
+    pnf: 'Professions non financières', solo: 'Solo', equipe: 'Équipe',
+  };
+  const STATUS_LABELS: Record<string, string> = {
+    active: 'Actif', past_due: 'Paiement en échec', canceled: 'Résilié', none: 'Aucun abonnement',
+  };
+
+  if (user && user.role !== 'superadmin') {
+    api('/api/v1/billing/status').then((s) => {
+      document.getElementById('billing')!.style.display = 'block';
+      document.getElementById('billing-plan')!.textContent =
+        s.plan ? `Formule ${PLAN_LABELS[s.plan] || s.plan}` : 'Formule sur mesure';
+      let status = STATUS_LABELS[s.subscription_status] || s.subscription_status;
+      if (s.subscription_status === 'past_due' && s.grace_ends_at) {
+        status += ` — accès maintenu jusqu'au ${formatDate(s.grace_ends_at)}`;
+      }
+      document.getElementById('billing-status')!.textContent = status;
+      if (s.current_period_end && s.subscription_status !== 'canceled') {
+        document.getElementById('billing-next')!.textContent = `Prochaine échéance : ${formatDate(s.current_period_end)}`;
+      }
+      if (s.can_manage && user.role === 'admin') {
+        const btn = document.getElementById('billing-manage') as HTMLButtonElement;
+        btn.style.display = 'inline-block';
+        document.getElementById('billing-manage-note')!.style.display = 'block';
+        btn.addEventListener('click', async () => {
+          btn.disabled = true;
+          try {
+            await openBillingPortal();
+          } catch (err) {
+            const e = document.getElementById('billing-error')!;
+            e.textContent = (err as Error).message || 'Le portail est indisponible pour le moment.';
+            e.style.display = 'block';
+            btn.disabled = false;
+          }
+        });
+      }
+    }).catch(() => { /* section masquée si le statut est indisponible */ });
+  }
 </script>
