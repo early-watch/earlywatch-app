@@ -254,7 +254,7 @@
   padding: 0;
   white-space: nowrap;
 }
-.ew-sort-btn:hover { color: #1A1918; }
+.ew-sort-btn:hover { color: var(--ink); }
 .ew-sort-menu {
   position: absolute;
   right: 0;
@@ -359,7 +359,7 @@
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.18em;
-  color: var(--ink);
+  color: var(--on-accent);
   font-weight: 500;
   background: var(--moutarde);
   padding: 3px 8px;
@@ -373,7 +373,7 @@
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.18em;
-  color: var(--ink);
+  color: var(--on-accent);
   font-weight: 500;
   background: var(--moutarde);
   padding: 3px 8px;
@@ -469,7 +469,7 @@
 /* Variante kaki (#5C6347) — boutons client (/app/veille) */
 .ew-btn-kaki {
   background: #5C6347;
-  color: #F4F0E6;
+  color: var(--bg);
   border-color: transparent;
   font-weight: 500;
 }
@@ -594,7 +594,7 @@
   background: var(--moutarde);
   border-radius: 1px;
 }
-.ew-close:hover { background: #FAF6EC; }
+.ew-close:hover { background: var(--bg-side); }
 
 .ew-close-note {
   font-size: 11px;
@@ -902,7 +902,7 @@
 
 /* Variantes badge */
 .ew-badge-muted   { background: var(--bg-hover); color: var(--taupe); }
-.ew-badge-new     { background: var(--moutarde); color: var(--ink); }
+.ew-badge-new     { background: var(--moutarde); color: var(--on-accent); }
 .ew-badge-ok      { background: var(--bg-hover); color: var(--ink-soft); }
 .ew-badge-error   { background: rgba(220, 38, 38, 0.08); color: var(--color-error); }
 
@@ -997,3 +997,81 @@
 .ew-gap-16 { gap: 16px; }
 .ew-gap-24 { gap: 24px; }
 .ew-flex-1 { flex: 1; min-width: 0; }
+
+/* ================================================================
+   GABARIT CLIENT (MVP) — ClientLayout
+   ≥ 900 px : colonne de menu + contenu. < 900 px : barre du haut
+   avec bouton « Menu », menu en tiroir, aucun défilement horizontal.
+   ================================================================ */
+
+.ew-client { background: var(--bg); overflow-x: hidden; }
+.ew-client-frame { grid-template-columns: 220px minmax(0, 1fr); }
+.ew-client .ew-nav.active::before { background: var(--accent); }
+.ew-client .ew-main { max-width: 100%; }
+.ew-client .ew-main img, .ew-client .ew-main table { max-width: 100%; }
+
+.ew-topbar { display: none; }
+.ew-scrim { display: none; }
+
+.ew-menu-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: transparent;
+  border: 0.5px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: 7px 12px;
+  cursor: pointer;
+}
+.ew-menu-btn:hover { background: var(--bg-hover); }
+
+@media (max-width: 899px) {
+  .ew-client-frame { display: block; }
+
+  .ew-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    height: 52px;
+    padding: 0 16px;
+    background: var(--bg);
+    border-bottom: 0.5px solid var(--line);
+  }
+  .ew-topbar-logo { padding: 0; }
+
+  .ew-client .ew-side {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(280px, 82vw);
+    height: auto;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.18s ease;
+    box-shadow: none;
+  }
+  .ew-client.ew-menu-open .ew-side { transform: translateX(0); }
+  .ew-client.ew-menu-open { overflow: hidden; }
+
+  .ew-scrim:not([hidden]) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(17, 17, 17, 0.32);
+  }
+
+  .ew-client .ew-main { padding: 20px 16px 28px; }
+  .ew-client .ew-header { flex-wrap: wrap; gap: 6px 12px; }
+  .ew-client .ew-h-title { font-size: 19px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ew-client .ew-side { transition: none; }
+}

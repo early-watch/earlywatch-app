@@ -1,9 +1,8 @@
 ---
-// /app/ → redirect vers /app/tableau-de-bord
+// /app/ → page d'accueil de l'espace client (réglage central : src/data/client-pages.ts)
+import { HOME_PAGE } from '../../data/client-pages';
 const base = import.meta.env.BASE_URL;
+const home = `${base}${HOME_PAGE.path}`;
 ---
-<meta http-equiv="refresh" content={`0;url=${base}app/tableau-de-bord`} />
-<script>
-  const BASE = import.meta.env.BASE_URL || '/earlywatch-app/';
-  window.location.replace(BASE + 'app/tableau-de-bord');
-</script>
+<meta http-equiv="refresh" content={`0;url=${home}`} />
+<script is:inline define:vars={{ home }}>window.location.replace(home);</script>

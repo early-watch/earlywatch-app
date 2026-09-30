@@ -1,4 +1,6 @@
 ---
+import { MENU_PAGES, HOME_PAGE } from '../data/client-pages';
+
 interface Props {
   activePage?: string;
 }
@@ -6,50 +8,28 @@ const { activePage = '' } = Astro.props;
 const base = import.meta.env.BASE_URL;
 ---
 
-<aside class="ew-side">
+<aside class="ew-side" id="ew-side">
 
   <!-- Bannière impersonation — visible uniquement quand Maria simule le tenant -->
-  <div id="impersonate-banner" style="display:none;background:#5C6347;padding:8px 16px;margin-bottom:8px">
+  <div id="impersonate-banner" style="display:none;background:var(--accent);padding:8px 16px;margin-bottom:8px">
     <button
       id="btn-back-admin"
-      style="width:100%;background:none;border:none;color:#EDEAE3;font-size:12px;font-weight:500;font-family:var(--font-mono);letter-spacing:0.08em;cursor:pointer;text-align:left;padding:0"
+      style="width:100%;background:none;border:none;color:var(--on-accent);font-size:12px;font-weight:500;font-family:var(--font-mono);letter-spacing:0.08em;cursor:pointer;text-align:left;padding:0"
     >
       ← Retour admin Early Brief
     </button>
   </div>
 
-  <a href={`${base}app/tableau-de-bord`} class="ew-logo">Early <span>Watch</span></a>
+  <a href={`${base}${HOME_PAGE.path}`} class="ew-logo">Early <span>Watch</span></a>
 
-  <div class="ew-section">Ma Veille</div>
-  <a href={`${base}app/tableau-de-bord`} class:list={['ew-nav', { active: activePage === 'tableau-de-bord' }]}>
-    Tableau de bord
-    <span id="client-badge-unread" class="ew-count" style="display:none"></span>
-  </a>
-  <a href={`${base}app/veille`} class:list={['ew-nav', { active: activePage === 'veille' }]}>
-    Fil réglementaire
-  </a>
-  <a href={`${base}app/tracker`} class:list={['ew-nav', { active: activePage === 'tracker' }]}>
-    Registre réglementaire
-  </a>
-
-  <div class="ew-section">Conformité</div>
-  <a href={`${base}app/feuille-de-route`} class:list={['ew-nav', { active: activePage === 'feuille-de-route' }]}>
-    Feuille de route
-  </a>
-  <a href={`${base}app/procedures`} class:list={['ew-nav', { active: activePage === 'procedures' }]}>
-    Mes procédures
-  </a>
-  <a href={`${base}app/fiches-reflexes`} class:list={['ew-nav', { active: activePage === 'fiches-reflexes' }]}>
-    Fiches réflexes
-  </a>
-  <a href={`${base}app/pays-risque`} class:list={['ew-nav', { active: activePage === 'pays-risque' }]}>
-    Pays à risque
-  </a>
-
-  <div class="ew-section">Paramètres</div>
-  <a href={`${base}app/parametres`} class:list={['ew-nav', { active: activePage === 'parametres' }]}>
-    Profil organisation
-  </a>
+  <nav aria-label="Menu principal">
+    {MENU_PAGES.map((p) => (
+      <a href={`${base}${p.path}`} class:list={['ew-nav', { active: activePage === p.key }]}
+         aria-current={activePage === p.key ? 'page' : undefined}>
+        {p.label}
+      </a>
+    ))}
+  </nav>
 
   <!-- Footer utilisateur -->
   <div class="ew-user">
@@ -63,11 +43,12 @@ const base = import.meta.env.BASE_URL;
       </div>
     </div>
   </div>
+  <a href="#" id="client-nav-logout" class="ew-settings-link" style="padding:0 22px 4px">Se déconnecter</a>
 
 </aside>
 
 <script>
-  import { getUser, isImpersonating, stopImpersonation } from '../scripts/api';
+  import { getUser, isImpersonating, stopImpersonation, logout } from '../scripts/api';
 
   const BASE = import.meta.env.BASE_URL || '/earlywatch-app/';
 
@@ -105,6 +86,8 @@ const base = import.meta.env.BASE_URL;
       window.location.href = BASE + 'dashboard';
     });
   }
+
+  document.getElementById('client-nav-logout')?.addEventListener('click', (e) => { e.preventDefault(); logout(); });
 
   initClientNav();
   initBackAdmin();
