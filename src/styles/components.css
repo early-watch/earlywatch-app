@@ -1009,7 +1009,11 @@
 /* Fond de la colonne de menu sur toute la hauteur, même quand la page dépasse l'écran
    (la colonne est collante, hauteur 100vh). */
 @media (min-width: 900px) {
-  .ew-client-frame { background: linear-gradient(to right, var(--bg-side) 220px, var(--bg) 220px); }
+  .ew-client-frame {
+    background: linear-gradient(to right,
+      var(--bg-side) 0 219.5px, var(--line-strong) 219.5px 220px, var(--bg) 220px);
+  }
+  .ew-client .ew-side { border-right: none; }   /* le filet est porté par le fond du cadre */
 }
 .ew-client .ew-nav.active::before { background: var(--accent); }
 .ew-client .ew-main { max-width: 100%; }
