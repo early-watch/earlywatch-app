@@ -1,4 +1,4 @@
-// npm run test:calendrier
+// node --test scripts/calendrier-dates.test.mjs
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';

@@ -9,8 +9,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro",
-    "test:calendrier": "node --test scripts/calendrier-dates.test.mjs"
+    "astro": "astro"
   },
   "dependencies": {
     "astro": "^6.1.5"
