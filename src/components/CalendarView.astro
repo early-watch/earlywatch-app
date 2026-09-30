@@ -255,7 +255,8 @@ const typeLabel: Record<string, string> = {
     try {
       const r = await fetch(`${API}/api/v1/auth/signup-profiles`);
       if (!r.ok) return;
-      profiles = await r.json();
+      const list = await r.json();
+      profiles = Array.isArray(list) ? list : [];
       const groups: Record<string, string> = { financier: 'Secteur financier', non_financier: 'Professions non financières' };
       for (const [family, label] of Object.entries(groups)) {
         const list = profiles.filter((p) => p.family === family);
