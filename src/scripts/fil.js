@@ -60,7 +60,8 @@ export function levelBadge(a) {
 }
 
 /**
- * Ligne de liste. `action` = { label, value } : la seule action visible.
+ * Ligne de liste. `action` = { label, value } : la seule action visible, en bouton
+ * discret (contour gris) ; la couleur pleine est réservée au détail et au badge Action.
  * `dateText` remplace la date affichée (ex. « traité le … »).
  */
 export function renderRow(a, { action = null, dateText = null, selected = false } = {}) {
@@ -76,7 +77,7 @@ export function renderRow(a, { action = null, dateText = null, selected = false 
         </div>
         ${reason ? `<div class="fil-row-reason">${esc(reason)}</div>` : ''}
       </div>
-      ${action ? `<div class="fil-row-act"><button type="button" class="fil-btn fil-btn-primary" data-action="${esc(action.value)}" data-id="${esc(a.id)}">${esc(action.label)}</button></div>` : ''}
+      ${action ? `<div class="fil-row-act"><button type="button" class="fil-btn" data-action="${esc(action.value)}" data-id="${esc(a.id)}">${esc(action.label)}</button></div>` : ''}
     </article>`;
 }
 
