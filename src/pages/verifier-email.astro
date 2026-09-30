@@ -1,0 +1,65 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro';
+// EB-MVP-002 — « Vérifiez votre boîte » + renvoi du lien de confirmation.
+---
+
+<AuthLayout title="Early Watch — Vérifiez votre boîte">
+  <p style="font-size:14px;color:var(--ink);line-height:1.6;margin-bottom:8px">
+    Vérifiez votre boîte de réception.
+  </p>
+  <p style="font-size:13px;color:var(--mute);line-height:1.6;margin-bottom:24px" id="intro">
+    Si l'adresse peut être utilisée, un e-mail de confirmation vient d'être envoyé.
+    Ouvrez le lien qu'il contient (valable 24 heures) pour activer votre compte.
+  </p>
+
+  <p style="font-size:12px;color:var(--mute);margin-bottom:10px">Rien reçu ? Vérifiez vos indésirables, ou demandez un nouveau lien :</p>
+  <form id="resend-form">
+    <div class="ew-field">
+      <label class="ew-label" for="email">Adresse e-mail</label>
+      <input class="ew-input" type="email" id="email" autocomplete="email" required>
+    </div>
+    <button type="submit" class="ew-login-btn" id="btn">Renvoyer le lien</button>
+  </form>
+  <div id="msg" style="font-size:13px;margin-top:16px;line-height:1.6;display:none"></div>
+
+  <div style="margin-top:20px;text-align:center;font-size:12px">
+    <a href={`${import.meta.env.BASE_URL}login`} style="color:var(--taupe);text-decoration:none">&larr; Retour à la connexion</a>
+  </div>
+
+  <script>
+    import { API } from '../scripts/api';
+
+    const emailInput = document.getElementById('email') as HTMLInputElement;
+    const fromQuery = new URLSearchParams(window.location.search).get('email');
+    if (fromQuery) emailInput.value = fromQuery;
+
+    document.getElementById('resend-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btn') as HTMLButtonElement;
+      const msg = document.getElementById('msg')!;
+      btn.disabled = true;
+      btn.textContent = 'Envoi…';
+      msg.style.display = 'none';
+      try {
+        const r = await fetch(`${API}/api/v1/auth/resend-verification`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: emailInput.value.trim() }),
+        });
+        if (r.status === 429) {
+          msg.textContent = 'Trop de demandes. Réessayez dans une heure.';
+          msg.style.color = 'var(--color-error)';
+        } else {
+          msg.textContent = "Si un compte en attente de confirmation correspond à cette adresse, un nouveau lien vient d'être envoyé.";
+          msg.style.color = 'var(--taupe)';
+        }
+      } catch {
+        msg.textContent = 'Erreur de connexion au serveur.';
+        msg.style.color = 'var(--color-error)';
+      }
+      msg.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Renvoyer le lien';
+    });
+  </script>
+</AuthLayout>

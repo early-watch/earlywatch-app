@@ -21,9 +21,24 @@ export function getUser() {
   const u = sessionStorage.getItem('ew_user');
   return u ? JSON.parse(u) : null;
 }
+// EB-MVP-002 — un compte sans abonnement actif n'accède pas au contenu : l'API répond
+// 402 et l'interface envoie vers « Choisissez votre formule ». Le superadmin n'est
+// jamais concerné. Statut lu dans ew_user (posé à la connexion).
+export function hasInactiveSubscription(user = getUser()) {
+  return !!user && user.role !== 'superadmin'
+    && !!user.subscription_status && user.subscription_status !== 'active';
+}
+export function redirectToPlans() {
+  window.location.href = BASE + 'choisir-formule';
+}
+
 export function requireAuth() {
   if (!getToken()) {
     window.location.href = BASE + 'login';
+    return false;
+  }
+  if (hasInactiveSubscription()) {
+    redirectToPlans();
     return false;
   }
   return true;
@@ -38,6 +53,10 @@ export function requireClientAuth() {
   const user = getUser();
   if (!user || !['admin', 'reader', 'editor', 'superadmin'].includes(user.role)) {
     window.location.href = BASE + 'login';
+    return false;
+  }
+  if (hasInactiveSubscription(user)) {
+    redirectToPlans();
     return false;
   }
   return true;
@@ -85,6 +104,11 @@ export async function api(path, opts = {}) {
   if (res.status === 401) {
     logout();
     throw new Error('Session expirée');
+  }
+  if (res.status === 402) {
+    // EB-MVP-002 — abonnement inactif : contenu refusé côté serveur.
+    redirectToPlans();
+    throw new Error('Abonnement inactif');
   }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));

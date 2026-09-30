@@ -1,0 +1,52 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro';
+// EB-MVP-002 — cible du lien reçu par e-mail : /confirmer-email/?token=…
+---
+
+<AuthLayout title="Early Watch — Confirmation de votre adresse">
+  <div id="pending" style="font-size:13px;color:var(--mute);line-height:1.6">Confirmation en cours…</div>
+
+  <div id="ok" style="display:none">
+    <p style="font-size:14px;color:var(--ink);line-height:1.6;margin-bottom:20px">
+      Votre adresse e-mail est confirmée. Vous pouvez maintenant vous connecter.
+    </p>
+    <a class="ew-login-btn" href={`${import.meta.env.BASE_URL}login`} style="display:block;text-align:center;text-decoration:none">Se connecter</a>
+  </div>
+
+  <div id="ko" style="display:none">
+    <p style="font-size:14px;color:var(--ink);line-height:1.6;margin-bottom:8px">Ce lien n'est plus valable.</p>
+    <p style="font-size:13px;color:var(--mute);line-height:1.6;margin-bottom:20px">
+      Il a peut-être expiré (24 heures), déjà servi, ou été mal copié.
+      Si votre adresse est déjà confirmée, connectez-vous directement.
+    </p>
+    <a class="ew-login-btn" href={`${import.meta.env.BASE_URL}verifier-email`} style="display:block;text-align:center;text-decoration:none">Recevoir un nouveau lien</a>
+    <div style="margin-top:16px;text-align:center;font-size:12px">
+      <a href={`${import.meta.env.BASE_URL}login`} style="color:var(--taupe);text-decoration:none">Se connecter</a>
+    </div>
+  </div>
+
+  <script>
+    import { API } from '../scripts/api';
+
+    const show = (id: string) => {
+      for (const x of ['pending', 'ok', 'ko']) document.getElementById(x)!.style.display = x === id ? 'block' : 'none';
+    };
+
+    (async () => {
+      const token = new URLSearchParams(window.location.search).get('token');
+      if (!token) return show('ko');
+      try {
+        const r = await fetch(`${API}/api/v1/auth/verify-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+        show(r.ok ? 'ok' : 'ko');
+      } catch {
+        document.getElementById('pending')!.textContent = 'Erreur de connexion au serveur. Réessayez dans un instant.';
+      }
+      // Le jeton ne reste pas dans l'historique du navigateur.
+      history.replaceState(null, '', window.location.pathname);
+    })();
+  </script>
+</AuthLayout>
