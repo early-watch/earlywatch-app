@@ -1,0 +1,498 @@
+<title>Early Watch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Mise en page : colonne unique aérée, filets pointillés, un seul accent vert citron. Thème clair assumé (charte Early Watch). */
+:root{
+  color-scheme:light;
+  --bg:#F3F3F0;--bg2:#EAEAE5;--panel:#FCFCFA;
+  --ink:#101010;--ink2:#54524C;--ink3:#7A786F;
+  --line:#DDDBD3;--line2:#CBC9BF;
+  --lime:#CFFF3E;--lime-d:#8FCC00;--lime-ink:#4F7300;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --pad:clamp(16px,3.4vw,56px);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:300;font-size:17px;line-height:1.6;overflow-x:hidden}
+::selection{background:var(--lime);color:var(--ink)}
+a:focus-visible,summary:focus-visible,.btn:focus-visible{outline:2px solid var(--lime-d);outline-offset:3px;border-radius:6px}
+
+.wrap{max-width:1240px;margin:0 auto;padding-inline:var(--pad);position:relative}
+.lab{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
+.lab::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--lime-d)}
+h1,h2{font-weight:300;letter-spacing:-.025em;line-height:1.06;text-wrap:balance}
+h2{font-size:clamp(26px,3.6vw,46px);margin-top:14px}
+.head{max-width:700px}
+.head p{margin-top:16px;color:var(--ink2);max-width:58ch}
+section{padding-block:clamp(56px,8vw,110px);border-top:1px solid var(--line)}
+
+/* boutons */
+.btn{display:inline-flex;align-items:center;gap:10px;padding:13px 26px;background:var(--ink);color:var(--bg);
+  text-decoration:none;font-family:var(--sans);font-weight:500;font-size:15px;border-radius:999px;
+  border:1.4px solid var(--ink);transition:background .25s,color .25s,border-color .25s}
+.btn:hover{background:var(--lime);color:var(--ink);border-color:var(--lime-d)}
+.btn.ghost{background:transparent;color:var(--ink);border:1.4px dotted var(--ink2)}
+.btn.ghost:hover{border-color:var(--lime-d);background:rgba(207,255,62,.14)}
+.btn.sm{padding:9px 18px;font-size:14px}
+
+/* nav */
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:300;background:rgba(243,243,240,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav .in{display:flex;align-items:center;justify-content:space-between;gap:20px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.brand i{width:8px;height:8px;border-radius:50%;background:var(--lime-d)}
+.brand b{font-weight:500;font-size:17px;letter-spacing:-.02em}
+nav .links{display:flex;gap:24px;align-items:center}
+nav .links a:not(.btn){font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;color:var(--ink2);text-decoration:none}
+nav .links a:not(.btn):hover{color:var(--ink)}
+@media (max-width:900px){nav .links a:not(.btn){display:none}}
+
+/* hero : le titre d'abord, les particules ensuite */
+.hero{padding-block:clamp(48px,7vw,96px) clamp(24px,3vw,40px);border-top:none}
+.hero h1{font-size:clamp(36px,6.4vw,84px);max-width:15ch;margin-top:18px}
+.hero h1 em{font-style:normal;background:linear-gradient(transparent 62%,var(--lime) 62%);padding-inline:.04em}
+.hero .sub{margin-top:24px;max-width:58ch;color:var(--ink2);font-size:clamp(16.5px,1.5vw,19px)}
+.hero .act{margin-top:30px;display:flex;gap:12px;flex-wrap:wrap}
+.hero .note{margin-top:14px;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;color:var(--ink3)}
+.stage{margin-top:clamp(36px,5vw,64px);border:1.4px dotted var(--line2);border-radius:24px;background:rgba(252,252,250,.55);padding:clamp(10px,1.4vw,18px)}
+.stagewrap{position:relative;height:clamp(180px,26vw,340px)}
+#pcanvas{width:100%;height:100%;display:block}
+.stagecap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 6px 2px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+#pcap{color:var(--ink)}
+#replay{background:none;border:none;font:inherit;color:var(--ink3);cursor:pointer;letter-spacing:inherit;text-transform:inherit}
+#replay:hover{color:var(--ink)}
+
+/* entonnoir : scène épinglée courte */
+.flow{padding-bottom:0}
+.funnelscene{height:230vh;position:relative;margin-top:clamp(20px,3vw,36px)}
+.funnelpin{position:sticky;top:64px;height:calc(100svh - 64px);display:flex;align-items:center}
+.funnelpin>.wrap{width:100%}
+.fsteps{display:grid;grid-template-columns:repeat(4,1fr)}
+.fstep{padding:0 clamp(10px,1.6vw,20px);border-left:1.2px dotted var(--line2);opacity:.35;transition:opacity .45s ease}
+.fstep:first-child{border-left:none;padding-left:0}
+.fstep.on{opacity:1}
+.fstep em{display:block;font-style:normal;font-family:var(--mono);font-weight:500;font-size:clamp(26px,3.2vw,42px);color:var(--ink3);line-height:1;transition:color .45s ease;font-variant-numeric:tabular-nums}
+.fstep.cur em{color:var(--lime-d)}
+.fstep b{display:block;margin-top:8px;font-weight:500;font-size:14.5px}
+.fstep span{display:block;margin-top:3px;font-size:12px;color:var(--ink3);line-height:1.35}
+.frail{margin-top:18px;height:1.6px;background:repeating-linear-gradient(90deg,var(--line2) 0 3px,transparent 3px 7px);position:relative}
+.frail i{position:absolute;left:0;top:0;height:100%;width:0;background:var(--lime-d);transition:width .5s cubic-bezier(.2,.7,.2,1)}
+.ftable{margin-top:clamp(16px,2.2vw,26px)}
+.frow{display:grid;grid-template-columns:clamp(96px,12vw,150px) minmax(0,1fr) auto;gap:clamp(10px,1.6vw,20px);align-items:baseline;
+  padding:8px 0;border-bottom:1.2px dotted var(--line);max-height:44px;overflow:hidden;
+  transition:max-height .5s cubic-bezier(.2,.7,.2,1),opacity .35s ease,padding .5s ease,border-color .3s ease,background .4s ease}
+.frow.out{max-height:0;opacity:0;padding-block:0;border-color:transparent}
+.fsrc{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fttl{font-size:14.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flink{font-family:var(--mono);font-size:11.5px;color:var(--lime-ink);opacity:0;transition:opacity .4s ease .2s;white-space:nowrap}
+.frow.win{background:rgba(207,255,62,.16);border-bottom-color:var(--lime-d);padding-inline:12px;border-radius:8px}
+.frow.win .fsrc,.frow.win .fttl{color:var(--ink)}
+.frow.win .fttl{font-weight:500}
+.frow.win .flink{opacity:1}
+.fnote{margin-top:14px;font-family:var(--mono);font-size:11px;color:var(--ink3)}
+@media (max-width:760px){
+  .funnelscene{height:auto}.funnelpin{position:static;height:auto;padding-block:16px clamp(40px,7vw,70px)}
+  .fsteps{grid-template-columns:1fr 1fr;row-gap:18px}.fstep:nth-child(3){border-left:none;padding-left:0}
+  .frow{grid-template-columns:1fr;gap:2px;max-height:80px}
+  .fttl{white-space:normal}
+  .flink{display:none}.frow.win .flink{display:block}
+}
+
+/* diff */
+.dbox{margin-top:32px;border:1.4px dotted var(--line2);border-radius:22px;background:rgba(252,252,250,.6);padding:clamp(22px,3vw,44px)}
+.dtext{font-size:clamp(19px,2.4vw,32px);line-height:1.45;font-weight:300}
+.dtext del{text-decoration:line-through;text-decoration-thickness:1.6px;color:var(--ink3)}
+.dtext ins{text-decoration:none;background:var(--lime);color:var(--ink);padding:0 .12em;border-radius:2px}
+.dfoot{margin-top:26px;padding-top:18px;border-top:1px solid var(--line);display:flex;gap:20px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+.dfoot b{color:var(--ink)}
+
+/* pour qui */
+.pgrid{margin-top:clamp(28px,3.4vw,46px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(12px,1.6vw,20px)}
+.pc{border:1.4px dotted var(--line2);border-radius:20px;background:rgba(252,252,250,.55);padding:clamp(20px,2.2vw,28px);display:flex;flex-direction:column}
+.pc .pt{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--lime-ink)}
+.pc h3{margin-top:10px;font-weight:400;font-size:clamp(18px,1.9vw,22px);letter-spacing:-.02em;line-height:1.15}
+.pc p{margin-top:10px;font-size:14px;color:var(--ink2);line-height:1.5}
+.pc.pnf{background:var(--ink);border:1.4px solid var(--ink);color:var(--bg)}
+.pc.pnf .pt{color:var(--lime)}
+.pc.pnf p{color:#C9C8C1}
+.pc.pnf .date{margin-top:auto;padding-top:16px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--lime)}
+@media (max-width:980px){.pgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.pgrid{grid-template-columns:1fr}}
+
+/* tarifs */
+.tgrid{margin-top:clamp(28px,3.4vw,46px);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,1.6vw,20px)}
+.tc{border:1.4px dotted var(--line2);border-radius:22px;padding:clamp(22px,2.6vw,34px);display:flex;flex-direction:column;background:rgba(252,252,250,.55)}
+.tc.mid{border:1.4px solid var(--ink);background:var(--panel)}
+.tc .tn{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+.tc h3{margin-top:8px;font-weight:400;font-size:clamp(19px,1.9vw,23px);letter-spacing:-.02em;line-height:1.2}
+.tc .px{margin-top:22px;display:flex;align-items:baseline;gap:8px}
+.tc .px b{font-family:var(--mono);font-weight:500;font-size:clamp(38px,4.4vw,56px);letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.tc .px span{font-family:var(--mono);font-size:12px;color:var(--ink3)}
+.tc ul{list-style:none;margin-top:22px;display:grid;gap:9px;font-size:14.5px;color:var(--ink2)}
+.tc li{display:flex;gap:10px}
+.tc li::before{content:"";flex:none;width:6px;height:6px;margin-top:.62em;border-radius:50%;background:var(--lime-d)}
+.tc .btn{margin-top:auto;align-self:flex-start}
+.tc ul{margin-bottom:26px}
+.tfoot{margin-top:18px;font-size:13.5px;color:var(--ink3);max-width:70ch}
+@media (max-width:900px){.tgrid{grid-template-columns:1fr}}
+
+/* engagements */
+.tablebox{overflow-x:auto;margin-top:clamp(24px,3vw,40px)}
+.etab{width:100%;border-collapse:collapse}
+.etab th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);font-weight:500;padding:0 18px 12px 0;border-bottom:1.2px dotted var(--line2)}
+.etab td{padding:20px 18px 20px 0;border-bottom:1.2px dotted var(--line);vertical-align:top;font-size:15px;color:var(--ink2)}
+.etab td.k{font-weight:500;color:var(--ink);width:24%;font-size:clamp(16px,1.6vw,19px);letter-spacing:-.02em}
+.etab td.n{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);width:22%}
+@media (max-width:760px){.etab thead{display:none}.etab tr{display:block;border-bottom:1.2px dotted var(--line2);padding:16px 0}
+  .etab td{display:block;width:100%;border:none;padding:3px 0}.etab td.n{margin-top:6px}}
+
+/* faq */
+.acc{margin-top:clamp(24px,3vw,40px)}
+.acc details{border-top:1.2px dotted var(--line2)}
+.acc details:last-child{border-bottom:1.2px dotted var(--line2)}
+.acc summary{list-style:none;cursor:pointer;padding:20px 0;display:flex;gap:18px;align-items:baseline;font-size:clamp(16px,1.8vw,21px);letter-spacing:-.015em;line-height:1.35}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary .pl{margin-left:auto;flex:none;color:var(--lime-ink);font-family:var(--mono);font-size:19px;line-height:1;transition:transform .3s}
+.acc details[open] summary .pl{transform:rotate(45deg)}
+.acc .ans{padding:0 0 24px;max-width:70ch;color:var(--ink2);font-size:15.5px}
+
+/* cta */
+.ctabox{border:1.4px solid var(--ink);border-radius:26px;background:var(--panel);padding:clamp(34px,5vw,72px) clamp(20px,3.4vw,60px)}
+.ctabox h2{font-size:clamp(28px,4.4vw,58px);margin-top:0;max-width:18ch}
+.ctabox p{margin-top:18px;max-width:54ch;color:var(--ink2)}
+.ctabox .act{margin-top:28px;display:flex;gap:12px;flex-wrap:wrap}
+.mail{margin-top:16px;font-family:var(--mono);font-size:13px;color:var(--ink2);user-select:all}
+
+footer{border-top:1px solid var(--line);padding-block:26px 44px}
+footer .in{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;align-items:center}
+footer .legal{display:flex;flex-wrap:wrap;gap:8px 22px}
+footer a{font-family:var(--mono);font-size:12.5px;color:var(--ink2);text-decoration:none}
+footer a:hover{color:var(--ink);text-decoration:underline}
+footer .c{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}html{scroll-behavior:auto}}
+</style>
+
+<nav>
+  <div class="wrap in">
+    <a class="brand" href="#top"><i></i><b>Early Watch</b></a>
+    <div class="links">
+      <a href="#principe">Le principe</a>
+      <a href="#pour-qui">Pour qui</a>
+      <a href="#tarifs">Tarifs</a>
+      <a href="#questions">Questions</a>
+      <a class="btn sm" href="https://early-watch.github.io/earlywatch-app/signup">Créer un compte</a>
+    </div>
+  </div>
+</nav>
+
+<main id="top">
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <span class="lab">Veille réglementaire LCB-FT</span>
+    <h1>La veille LCB-FT <em>triée pour votre activité</em>.</h1>
+    <p class="sub">Early Watch suit les publications des autorités françaises et européennes, ne vous montre que ce qui concerne votre statut, et renvoie toujours au texte officiel. Pour les établissements financiers comme pour les professions non financières.</p>
+    <div class="act">
+      <a class="btn" href="https://early-watch.github.io/earlywatch-app/signup">Créer un compte</a>
+      <a class="btn ghost" href="#contact">Demander une démonstration</a>
+    </div>
+    <p class="note">À partir de 99 € HT par mois · sans engagement de durée</p>
+
+    <div class="stage" aria-hidden="true">
+      <div class="stagewrap"><canvas id="pcanvas"></canvas></div>
+      <div class="stagecap"><span id="pcap">le bruit réglementaire</span><button id="replay" type="button">↻ rejouer</button></div>
+    </div>
+  </div>
+</header>
+
+<!-- PRINCIPE -->
+<section class="flow" id="principe">
+  <div class="wrap">
+    <div class="head">
+      <span class="lab">Le principe</span>
+      <h2>De cent trente-deux publications à une action</h2>
+      <p>Exemple illustratif, sur le périmètre d'un prestataire de services de paiement. Faites défiler : le tri se fait sous vos yeux.</p>
+    </div>
+  </div>
+  <div class="funnelscene" id="funnelscene">
+    <div class="funnelpin">
+      <div class="wrap">
+        <div class="fsteps" id="fsteps">
+          <div class="fstep on"><em>132</em><b>Détecter</b><span>Les publications des autorités</span></div>
+          <div class="fstep"><em>21</em><b>Filtrer</b><span>Selon votre statut et votre activité</span></div>
+          <div class="fstep"><em>3</em><b>Prioriser</b><span>Par impact et par urgence</span></div>
+          <div class="fstep"><em>1</em><b>Agir</b><span>Ce qui appelle une décision</span></div>
+        </div>
+        <div class="frail"><i id="frailfill"></i></div>
+        <div class="ftable" id="ftable">
+          <div class="frow" data-k="4" data-win="1"><span class="fsrc">ACPR</span><span class="fttl">Position : vigilance renforcée et risque élevé</span><span class="flink">→ Classification des risques · §4</span></div>
+          <div class="frow" data-k="3"><span class="fsrc">Tracfin</span><span class="fttl">Lignes directrices : déclaration de soupçon</span></div>
+          <div class="frow" data-k="3"><span class="fsrc">Conseil de l'UE</span><span class="fttl">Décision : sanctions internationales</span></div>
+          <div class="frow" data-k="2"><span class="fsrc">EBA</span><span class="fttl">Orientations : approche par les risques</span></div>
+          <div class="frow" data-k="2"><span class="fsrc">JORF</span><span class="fttl">Mesure de gel des avoirs</span></div>
+          <div class="frow" data-k="2"><span class="fsrc">AMLA</span><span class="fttl">Consultation : normes techniques</span></div>
+          <div class="frow" data-k="1"><span class="fsrc">ESMA</span><span class="fttl">Rapport annuel de supervision</span></div>
+          <div class="frow" data-k="1"><span class="fsrc">Banque de France</span><span class="fttl">Étude sectorielle : moyens de paiement</span></div>
+          <div class="frow" data-k="1"><span class="fsrc">GAFI</span><span class="fttl">Rapport d'évaluation mutuelle</span></div>
+          <div class="frow" data-k="1"><span class="fsrc">OFAC</span><span class="fttl">Désignations hebdomadaires</span></div>
+          <div class="frow" data-k="1"><span class="fsrc">ACPR</span><span class="fttl">Communiqué : agréments délivrés</span></div>
+        </div>
+        <p class="fnote">Chiffres et intitulés donnés à titre d'exemple.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DIFF -->
+<section id="diff">
+  <div class="wrap">
+    <div class="head">
+      <span class="lab">Le cœur du dispositif</span>
+      <h2>Un mot change dans un texte. Votre procédure aussi.</h2>
+      <p>Quand un texte est modifié, vous voyez exactement ce qui a changé, et la section de votre procédure qu'il faut relire.</p>
+    </div>
+    <div class="dbox">
+      <p class="dtext">L'établissement met en œuvre des mesures de vigilance <del>simplifiées</del> <ins>renforcées</ins> lorsque la relation d'affaires présente un risque <del>faible</del> <ins>élevé</ins>.</p>
+      <div class="dfoot">
+        <span>Comparaison mot à mot</span>
+        <span>Procédure liée : <b>classification des risques · §4</b></span>
+        <span>Statut : <b>à réviser</b></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- POUR QUI -->
+<section id="pour-qui">
+  <div class="wrap">
+    <div class="head">
+      <span class="lab">Pour qui</span>
+      <h2>Un fil différent selon votre statut</h2>
+      <p>Un prestataire sur actifs numériques, une banque et un cabinet d'avocats ne reçoivent pas la même sélection.</p>
+    </div>
+    <div class="pgrid">
+      <div class="pc"><span class="pt">PSP · EME</span><h3>Paiement et monnaie électronique</h3><p>Agréments, agents, distribution : vos obligations propres, sans le bruit bancaire.</p></div>
+      <div class="pc"><span class="pt">CASP</span><h3>Actifs numériques</h3><p>MiCA, règle de transfert des fonds, gel des avoirs : un cadre qui évolue plus vite que les autres.</p></div>
+      <div class="pc"><span class="pt">Crédit</span><h3>Banques et établissements de crédit</h3><p>Périmètre large : le tri par gravité et par thème rend le volume gérable.</p></div>
+      <div class="pc pnf"><span class="pt">Professions non financières</span><h3>Avocats, notaires, experts-comptables, immobilier, luxe, jeux…</h3><p>Les publications de votre ordre ou de votre chambre, les textes français et européens qui vous visent, et le calendrier de l'AMLR.</p><span class="date">AMLR applicable le 10/07/2027</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- TARIFS -->
+<section id="tarifs">
+  <div class="wrap">
+    <div class="head">
+      <span class="lab">Tarifs</span>
+      <h2>Trois formules, sans engagement de durée</h2>
+    </div>
+    <div class="tgrid">
+      <div class="tc">
+        <span class="tn">Professions non financières</span>
+        <h3>Pour un cabinet ou une agence</h3>
+        <div class="px"><b>99 €</b><span>HT / mois</span></div>
+        <ul>
+          <li>Publications de votre ordre ou de votre chambre</li>
+          <li>Textes français et européens qui vous visent, dont l'AMLR</li>
+          <li>Récapitulatif hebdomadaire par e-mail</li>
+        </ul>
+        <a class="btn ghost" href="https://early-watch.github.io/earlywatch-app/signup">Créer un compte</a>
+      </div>
+      <div class="tc mid">
+        <span class="tn">Responsable LCB-FT</span>
+        <h3>Pour un responsable conformité</h3>
+        <div class="px"><b>199 €</b><span>HT / mois</span></div>
+        <ul>
+          <li>Veille filtrée sur votre statut réglementaire</li>
+          <li>Tri par gravité et par thème</li>
+          <li>Récapitulatif hebdomadaire par e-mail</li>
+        </ul>
+        <a class="btn" href="https://early-watch.github.io/earlywatch-app/signup">Créer un compte</a>
+      </div>
+      <div class="tc">
+        <span class="tn">Équipe</span>
+        <h3>Pour une équipe conformité</h3>
+        <div class="px"><b>590 €</b><span>HT / mois</span></div>
+        <ul>
+          <li>Tout ce que comprend Responsable LCB-FT</li>
+          <li>Plusieurs utilisateurs sur le même espace</li>
+          <li>Démonstration sur votre périmètre</li>
+        </ul>
+        <a class="btn ghost" href="#contact">Demander une démonstration</a>
+      </div>
+    </div>
+    <p class="tfoot">Paiement par carte, facture disponible dans votre espace. Vous pouvez résilier à tout moment depuis votre compte.</p>
+  </div>
+</section>
+
+<!-- ENGAGEMENTS -->
+<section>
+  <div class="wrap">
+    <div class="head">
+      <span class="lab">Engagements</span>
+      <h2>Non négociables</h2>
+    </div>
+    <div class="tablebox">
+      <table class="etab">
+        <thead><tr><th>Engagement</th><th>Portée</th><th>Vérifiable par</th></tr></thead>
+        <tbody>
+          <tr><td class="k">Validation humaine</td><td>Aucun contenu généré n'entre dans votre dispositif sans qu'un responsable l'ait validé.</td><td class="n">Journal des validations</td></tr>
+          <tr><td class="k">Source primaire</td><td>Chaque information renvoie au texte officiel qui la fonde.</td><td class="n">Lien vers le texte</td></tr>
+          <tr><td class="k">Hébergement en France</td><td>Données hébergées en France, espace isolé pour chaque client.</td><td class="n">Politique de confidentialité</td></tr>
+          <tr><td class="k">Réversibilité</td><td>Votre historique de veille est exportable dans des formats ouverts.</td><td class="n">Export à la demande</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="questions">
+  <div class="wrap">
+    <div class="head">
+      <span class="lab">Questions fréquentes</span>
+      <h2>Ce qu'on nous demande</h2>
+    </div>
+    <div class="acc">
+      <details><summary>Où sont hébergées mes données ?<span class="pl">+</span></summary>
+        <div class="ans">En France, chez Scaleway. Chaque client dispose d'un espace isolé : aucune donnée n'est partagée entre clients. Les autres prestataires qui interviennent, par exemple pour le paiement ou l'envoi des e-mails, sont listés dans la <a href="/confidentialite">politique de confidentialité</a>.</div></details>
+      <details><summary>Je suis avocat, notaire ou agent immobilier. Suis-je concerné par l'AMLR ?<span class="pl">+</span></summary>
+        <div class="ans">Oui. Le règlement européen AMLR s'applique à partir du 10 juillet 2027 à toutes les entités assujetties, y compris les professions non financières. Early Watch vous signale les textes européens et français qui vous visent, sans le bruit propre aux banques ou aux actifs numériques.</div></details>
+      <details><summary>L'outil rédige-t-il mes procédures à ma place ?<span class="pl">+</span></summary>
+        <div class="ans">Non. Il signale les textes qui ont changé et les sections concernées. La décision et la responsabilité restent celles du responsable conformité.</div></details>
+      <details><summary>Comment démontrer mon dispositif de veille en contrôle ?<span class="pl">+</span></summary>
+        <div class="ans">Chaque publication reçue et chaque décision de traitement est datée, avec le lien vers le texte officiel. Vous pouvez exporter cet historique.</div></details>
+      <details><summary>Puis-je changer de formule ou résilier ?<span class="pl">+</span></summary>
+        <div class="ans">Oui, depuis votre espace, à tout moment. Les conditions sont détaillées dans les <a href="/cgv">conditions générales de vente</a>.</div></details>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="contact">
+  <div class="wrap">
+    <div class="ctabox">
+      <h2>Votre veille, filtrée dès aujourd'hui</h2>
+      <p>Créez votre compte en quelques minutes. Vous préférez voir l'outil d'abord ? Demandez une démonstration de trente minutes sur votre périmètre.</p>
+      <div class="act">
+        <a class="btn" href="https://early-watch.github.io/earlywatch-app/signup">Créer un compte</a>
+        <a class="btn ghost" href="mailto:maria@early.consulting?subject=Démonstration%20Early%20Watch">Demander une démonstration</a>
+      </div>
+      <p class="mail">maria@early.consulting</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap in">
+    <div class="legal">
+      <a href="/mentions-legales">Mentions légales</a>
+      <a href="/cgv">Conditions générales de vente</a>
+      <a href="/confidentialite">Politique de confidentialité</a>
+    </div>
+    <div class="c">© 2026 Early Consulting · Early Watch</div>
+  </div>
+</footer>
+
+<script>
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* particules : bruit -> sigles -> message, joué une fois au chargement */
+(function(){
+  const cv=document.getElementById('pcanvas'), cap=document.getElementById('pcap'), replay=document.getElementById('replay');
+  const x=cv.getContext('2d');
+  let W=0,H=0;const DPR=Math.min(devicePixelRatio||1,2);
+  const seq=[
+    {label:'le bruit réglementaire',noise:true},
+    {label:'GAFI',text:'GAFI'},
+    {label:'MiCA',text:'MiCA'},
+    {label:'AMLA',text:'AMLA'},
+    {label:'AMLR',text:'AMLR'},
+    {label:'le signal',text:'LE SIGNAL EST CLAIR',small:true}
+  ];
+  let particles=[],cur=0,timer=null,raf=null;
+  function fit(){const r=cv.getBoundingClientRect();W=r.width;H=r.height;cv.width=W*DPR;cv.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0)}
+  function sample(st){
+    const pts=[];
+    if(st.noise){const n=Math.round(W*H/2600);for(let i=0;i<n;i++)pts.push({x:Math.random()*W,y:Math.random()*H});return pts}
+    const off=document.createElement('canvas');off.width=Math.max(1,W|0);off.height=Math.max(1,H|0);
+    const o=off.getContext('2d');
+    let fs=st.small?Math.min(H*.3,W/11):Math.min(H*.62,W/3.4);
+    o.font=`600 ${fs}px 'IBM Plex Sans', sans-serif`;o.textAlign='center';o.textBaseline='middle';o.fillStyle='#000';
+    o.fillText(st.text,W/2,H/2);
+    const d=o.getImageData(0,0,off.width,off.height).data, step=Math.max(2,Math.round(Math.min(W,H)/150));
+    for(let py=0;py<off.height;py+=step)for(let px=0;px<off.width;px+=step){if(d[(py*off.width+px)*4+3]>140)pts.push({x:px,y:py})}
+    return pts;
+  }
+  function target(i){
+    cur=i;cap.textContent=seq[i].label;
+    const pts=sample(seq[i]);
+    for(let k=pts.length-1;k>0;k--){const j=(Math.random()*(k+1))|0;[pts[k],pts[j]]=[pts[j],pts[k]]}
+    pts.sort((a,b)=>a.x-b.x);
+    const ps=particles.slice().sort((a,b)=>a.x-b.x);
+    ps.forEach((p,k)=>{if(k<pts.length){p.tx=pts[k].x;p.ty=pts[k].y;p.stray=false}else{p.tx=Math.random()*W;p.ty=Math.random()*H;p.stray=true}});
+    for(let k=ps.length;k<pts.length;k++)particles.push({x:Math.random()*W,y:Math.random()*H,tx:pts[k].x,ty:pts[k].y,r:1.2+Math.random()*1.3,stray:false});
+  }
+  function draw(){
+    x.clearRect(0,0,W,H);const t=performance.now()*.001;
+    particles.forEach((p,i)=>{
+      p.x+=(p.tx-p.x)*.075;p.y+=(p.ty-p.y)*.075;
+      const s=Math.max(0,Math.min(1,1-Math.hypot(p.tx-p.x,p.ty-p.y)/40));
+      const w=Math.sin(t*1.1+i*.37)*.4*(1-s);
+      x.globalAlpha=p.stray?.1:(.34+.56*s);
+      x.fillStyle=`rgb(${Math.round(143-127*s)},${Math.round(204-188*s)},${Math.round(0+16*s)})`;
+      x.beginPath();x.arc(p.x+w,p.y+w*.6,p.r,0,7);x.fill();
+    });
+    x.globalAlpha=1;
+  }
+  function loop(){draw();raf=requestAnimationFrame(loop)}
+  function play(){
+    clearTimeout(timer);particles=[];target(0);
+    let i=0;const next=()=>{i++;if(i<seq.length){target(i);timer=setTimeout(next,seq[i].small?0:1500)}};
+    timer=setTimeout(next,1200);
+  }
+  function start(){
+    fit();
+    if(RM){particles=[];target(seq.length-1);particles.forEach(p=>{p.x=p.tx;p.y=p.ty});draw();replay.hidden=true;return}
+    play();
+    new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){if(raf===null)loop()}else{cancelAnimationFrame(raf);raf=null}})).observe(cv);
+  }
+  replay.addEventListener('click',play);
+  addEventListener('resize',()=>{fit();target(cur)});
+  (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(start);
+})();
+
+/* entonnoir : piloté par le défilement sur grand écran, minuteur sur mobile */
+(function(){
+  const scene=document.getElementById('funnelscene');
+  const rows=[...document.querySelectorAll('#ftable .frow')];
+  const steps=[...document.querySelectorAll('#fsteps .fstep')];
+  const fill=document.getElementById('frailfill');
+  let cur=-1;
+  function stage(st){
+    if(st===cur)return;cur=st;
+    rows.forEach(r=>{r.classList.toggle('out',+r.dataset.k<=st);r.classList.toggle('win',st===3&&r.dataset.win==='1')});
+    steps.forEach((el,i)=>{el.classList.toggle('on',i<=st);el.classList.toggle('cur',i===st)});
+    fill.style.width=((st+1)/steps.length*100)+'%';
+  }
+  if(RM){stage(3);return}
+  stage(0);
+  const pinned=()=>!matchMedia('(max-width:760px)').matches;
+  function onScroll(){
+    if(!pinned())return;
+    const r=scene.getBoundingClientRect(),span=r.height-innerHeight;
+    if(span<=0)return;
+    const p=Math.max(0,Math.min(1,-r.top/span));
+    stage(Math.min(3,Math.floor(p*4*.98)));
+  }
+  addEventListener('scroll',onScroll,{passive:true});addEventListener('resize',onScroll);onScroll();
+  let played=false;
+  new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting&&!pinned()&&!played){played=true;let i=0;(function n(){i++;if(i<4){stage(i);setTimeout(n,1600)}})()}
+  }),{threshold:.3}).observe(scene);
+})();
+</script>
