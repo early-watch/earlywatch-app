@@ -56,7 +56,7 @@ import AuthLayout from '../layouts/AuthLayout.astro';
         .then(u => {
           if (u && (u.subscription_status === 'active' || u.role === 'superadmin')) {
             sessionStorage.setItem('ew_user', JSON.stringify(u));
-            window.location.href = BASE + (u.role === 'superadmin' ? 'superadmin' : 'app/tableau-de-bord');
+            window.location.href = BASE + (u.role === 'superadmin' ? 'superadmin' : 'app/fil');
           }
         })
         .catch(() => {});
