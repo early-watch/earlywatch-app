@@ -1006,6 +1006,11 @@
 
 .ew-client { background: var(--bg); overflow-x: hidden; }
 .ew-client-frame { grid-template-columns: 220px minmax(0, 1fr); }
+/* Fond de la colonne de menu sur toute la hauteur, même quand la page dépasse l'écran
+   (la colonne est collante, hauteur 100vh). */
+@media (min-width: 900px) {
+  .ew-client-frame { background: linear-gradient(to right, var(--bg-side) 220px, var(--bg) 220px); }
+}
 .ew-client .ew-nav.active::before { background: var(--accent); }
 .ew-client .ew-main { max-width: 100%; }
 .ew-client .ew-main img, .ew-client .ew-main table { max-width: 100%; }
