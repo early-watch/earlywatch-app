@@ -47,9 +47,18 @@ import AuthLayout from '../layouts/AuthLayout.astro';
       <input type="checkbox" id="terms" required style="margin-top:2px">
       <span>J'accepte les <a href={`${import.meta.env.BASE_URL}cgv`} target="_blank" rel="noopener" style="color:var(--taupe)">conditions générales</a>.</span>
     </label>
+    <label style="display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--ink);line-height:1.5;margin:-8px 0 16px">
+      <input type="checkbox" id="pro" required style="margin-top:2px">
+      <span>Je déclare agir à titre professionnel.</span>
+    </label>
     <div class="ew-login-error" id="err"></div>
-    <button type="submit" class="ew-login-btn" id="btn">Créer mon compte</button>
+    <button type="submit" class="ew-login-btn" id="btn" disabled>Créer mon compte</button>
   </form>
+
+  <style>
+    #btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    #btn:disabled:hover { background: transparent; }
+  </style>
 
   <div style="margin-top:20px;text-align:center;font-size:12px;color:var(--mute)">
     Déjà un compte ?
@@ -72,6 +81,13 @@ import AuthLayout from '../layouts/AuthLayout.astro';
     const ressortLabel = document.getElementById('ressort-label')!;
     const ressortInput = document.getElementById('ressort') as HTMLInputElement;
     const err = document.getElementById('err')!;
+    const btn = document.getElementById('btn') as HTMLButtonElement;
+    const pro = document.getElementById('pro') as HTMLInputElement;
+
+    // Service réservé aux professionnels (CGV, art. 1) : sans la déclaration, le bouton reste inactif.
+    const syncButton = () => { btn.disabled = !pro.checked; };
+    pro.addEventListener('change', syncButton);
+    syncButton();
 
     function showError(text: string) {
       err.textContent = text;
@@ -129,11 +145,13 @@ import AuthLayout from '../layouts/AuthLayout.astro';
       }
       if (password.length < 12) return showError('Le mot de passe doit contenir au moins 12 caractères.');
       if (!terms) return showError('Vous devez accepter les conditions générales pour créer un compte.');
+      if (!pro.checked) return showError('Le service est réservé aux professionnels.');
 
-      const btn = document.getElementById('btn') as HTMLButtonElement;
       btn.disabled = true;
       btn.textContent = 'Création…';
       try {
+        // La déclaration « professionnel » n'est pas transmise : l'API d'inscription
+        // n'a pas encore de champ pour la recevoir (seul accept_terms existe).
         const body: Record<string, unknown> = {
           email, password,
           first_name: val('first_name'), last_name: val('last_name'),
@@ -153,8 +171,8 @@ import AuthLayout from '../layouts/AuthLayout.astro';
         window.location.href = BASE + 'verifier-email?email=' + encodeURIComponent(email);
       } catch (ex: any) {
         showError(ex.message || 'Erreur de connexion au serveur.');
-        btn.disabled = false;
         btn.textContent = 'Créer mon compte';
+        syncButton();
       }
     });
 
