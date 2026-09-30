@@ -1,0 +1,93 @@
+---
+// Pages juridiques (CGV, confidentialité, mentions légales), rédigées en Markdown
+// dans src/pages/*.md. Source : docs/legal/ du dépôt earlybrief-platform.
+// Le contenu est rendu dans <article data-legal> : scripts/check-legal-pages.mjs
+// y refuse tout crochet « [ » (texte à compléter) et fait échouer le build.
+import LandingLayout from './LandingLayout.astro';
+
+const { frontmatter } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+
+<LandingLayout title={`${frontmatter.title} — Early Watch`}>
+  <nav class="legal-nav">
+    <a href={`${base}landing`} class="logo">Early<em>Watch</em></a>
+    <a href={`${base}login`} class="nav-link">Accès client</a>
+  </nav>
+
+  <main class="legal-main">
+    <article class="legal" data-legal>
+      <slot />
+    </article>
+  </main>
+
+  <footer class="legal-footer">
+    <div class="left">Early<em>Watch</em> — par Early Brief</div>
+    <div class="right">
+      <a href={`${base}mentions-legales`}>Mentions légales</a>
+      <a href={`${base}confidentialite`}>Confidentialité</a>
+      <a href={`${base}cgv`}>CGV</a>
+    </div>
+  </footer>
+</LandingLayout>
+
+<style is:global>
+  :root {
+    --bg: #F5F0E8;
+    --ink: #1C1C19;
+    --dim: #6B6860;
+    --kaki: #6B7A5E;
+    --terra: #C4603A;
+    --line: rgba(28,28,25,0.12);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg); color: var(--ink);
+    font-size: 16px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+
+  .legal-nav {
+    position: sticky; top: 0; z-index: 100;
+    padding: 0 60px; height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(245,240,232,0.94);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .legal-nav a { text-decoration: none; }
+  .legal-nav .logo { font-size: 14px; font-weight: 500; letter-spacing: 0.02em; }
+  .legal-nav .logo em { color: var(--terra); font-style: normal; }
+  .legal-nav .nav-link { font-size: 13px; color: var(--dim); }
+  .legal-nav .nav-link:hover { color: var(--kaki); }
+
+  .legal-main { padding: 56px 60px 72px; }
+  .legal { max-width: 760px; margin: 0 auto; }
+  .legal h1 { font-size: 32px; font-weight: 400; letter-spacing: -0.5px; line-height: 1.2; margin-bottom: 12px; }
+  .legal h2, .legal h3 { font-weight: 500; }
+  .legal h2 { font-size: 20px; margin: 40px 0 12px; }
+  .legal h3 { font-size: 16px; margin: 32px 0 8px; }
+  .legal p, .legal li { font-size: 15px; color: var(--ink); }
+  .legal p { margin-bottom: 14px; }
+  .legal ul { margin: 0 0 14px 20px; }
+  .legal li { margin-bottom: 6px; }
+  .legal a { color: var(--kaki); text-decoration: underline; text-underline-offset: 2px; }
+  .legal table { width: 100%; border-collapse: collapse; margin: 8px 0 24px; font-size: 14px; }
+  .legal th, .legal td { text-align: left; vertical-align: top; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); }
+  .legal th { font-weight: 500; color: var(--dim); font-size: 12px; letter-spacing: 0.02em; }
+  .legal .version { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--dim); margin-bottom: 32px; }
+
+  .legal-footer { padding: 28px 60px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; border-top: 1px solid var(--line); }
+  .legal-footer .left { font-size: 13px; }
+  .legal-footer .left em { color: var(--terra); font-style: normal; }
+  .legal-footer .right { display: flex; gap: 28px; }
+  .legal-footer .right a { font-size: 12px; color: var(--dim); text-decoration: none; }
+  .legal-footer .right a:hover { color: var(--kaki); }
+
+  @media (max-width: 900px) {
+    .legal-nav, .legal-main, .legal-footer { padding-left: 16px; padding-right: 16px; }
+    .legal table { display: block; overflow-x: auto; }
+  }
+</style>
