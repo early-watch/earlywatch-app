@@ -16,15 +16,23 @@
    ================================================================ */
 
 export type Registre = 'a_venir' | 'en_vigueur';
-export type TypeEtablissement = 'tous' | 'CASP' | 'PSP' | 'EME';
+/**
+ * Périmètre de l'entrée (filtre par profil) :
+ *   'tous'      — toutes les entités assujetties, professions non financières comprises ;
+ *   'financier' — secteur financier seulement (ex. sélection pour la supervision directe AMLA) ;
+ *   'etat'      — l'État / le superviseur : effet indirect, affiché pour tous les profils ;
+ *   string[]    — profils précis (identifiants de app/core/profiles.py).
+ * Validé par Maria (EB-CAL-001) avant publication.
+ */
+export type Perimetre = 'tous' | 'financier' | 'etat' | string[];
 
 export interface EntreeCalendrier {
   /** Libellé de date exact de la source (aucune date ajoutée). */
   date: string;
   /** Obligation / jalon, repris tel quel. */
   obligation: string;
-  /** Type d'établissement concerné (taxonomie de filtrage). "tous" = tous types. */
-  type_etablissement: TypeEtablissement;
+  /** Périmètre (voir Perimetre). */
+  perimetre: Perimetre;
   /** Acte(s) de référence. */
   acte: string;
   /** Registre d'affichage : à venir (deadline board) ou déjà en vigueur (contexte). */
@@ -55,7 +63,7 @@ export const calendrier: EntreeCalendrier[] = [
   {
     date: '9 juillet 2024',
     obligation: 'Entrée en vigueur du paquet AMLR + AMLD6',
-    type_etablissement: 'tous',
+    perimetre: 'tous',
     acte: 'Règlement (UE) 2024/1624 · Directive (UE) 2024/1640',
     registre: 'en_vigueur',
     statut: 'En vigueur',
@@ -65,7 +73,7 @@ export const calendrier: EntreeCalendrier[] = [
   {
     date: '1er juillet 2025',
     obligation: 'AMLA opérationnelle (siège Francfort)',
-    type_etablissement: 'tous',
+    perimetre: 'tous',
     acte: 'Règlement (UE) 2024/1620',
     registre: 'en_vigueur',
     statut: 'Applicable',
@@ -76,7 +84,7 @@ export const calendrier: EntreeCalendrier[] = [
     date: '15 août 2026',
     obligation:
       "Superviseurs nationaux transmettent à AMLA les données d'identification des entités provisoirement éligibles à la supervision directe",
-    type_etablissement: 'tous',
+    perimetre: 'financier',
     acte: 'Règlement (UE) 2024/1620',
     registre: 'a_venir',
     statut: 'Imminent',
@@ -87,7 +95,7 @@ export const calendrier: EntreeCalendrier[] = [
   {
     date: 'fin septembre 2026',
     obligation: 'AMLA finalise la liste provisoire des entités éligibles',
-    type_etablissement: 'tous',
+    perimetre: 'financier',
     acte: 'Règlement (UE) 2024/1620',
     registre: 'a_venir',
     statut: 'À venir',
@@ -98,7 +106,7 @@ export const calendrier: EntreeCalendrier[] = [
   {
     date: 'janvier–mars 2027',
     obligation: 'Collecte de données pour la sélection définitive',
-    type_etablissement: 'tous',
+    perimetre: 'financier',
     acte: 'Règlement (UE) 2024/1620',
     registre: 'a_venir',
     statut: 'À venir',
@@ -109,7 +117,7 @@ export const calendrier: EntreeCalendrier[] = [
     date: '10 juillet 2027',
     obligation:
       "Application de l'AMLR (obligations de fond : CDD, bénéficiaires effectifs, monitoring, reporting) + date limite de transposition de l'AMLD6",
-    type_etablissement: 'tous',
+    perimetre: 'tous',
     acte: 'Règlement (UE) 2024/1624 · Directive (UE) 2024/1640',
     registre: 'a_venir',
     statut: 'À venir',
@@ -120,7 +128,7 @@ export const calendrier: EntreeCalendrier[] = [
     date: '10 octobre 2027',
     obligation:
       'Notification par les États membres à la Commission des exemptions en place au 10/07/2027',
-    type_etablissement: 'tous',
+    perimetre: 'etat',
     acte: 'Règlement (UE) 2024/1624',
     registre: 'a_venir',
     statut: 'À venir',
@@ -130,7 +138,7 @@ export const calendrier: EntreeCalendrier[] = [
   {
     date: 'fin 2027',
     obligation: 'Communication de la sélection définitive (~40 entités)',
-    type_etablissement: 'tous',
+    perimetre: 'financier',
     acte: 'Règlement (UE) 2024/1620',
     registre: 'a_venir',
     statut: 'À venir',
@@ -141,7 +149,7 @@ export const calendrier: EntreeCalendrier[] = [
     date: '2028',
     obligation:
       'AMLA démarre la supervision directe des entités sélectionnées (≈ 6 mois après publication de la liste ; pas forcément le 1er janvier)',
-    type_etablissement: 'tous',
+    perimetre: 'financier',
     acte: 'Règlement (UE) 2024/1620',
     registre: 'a_venir',
     statut: 'À venir',
@@ -153,7 +161,7 @@ export const calendrier: EntreeCalendrier[] = [
     date: '10 juillet 2029',
     obligation:
       'Application différée de certaines dispositions (clubs/agents de football ; certains accès registres AMLD6)',
-    type_etablissement: 'tous',
+    perimetre: ['agent_sportif'],
     acte: 'Règlement (UE) 2024/1624 · Directive (UE) 2024/1640',
     registre: 'a_venir',
     statut: 'À venir',
@@ -166,7 +174,7 @@ export const calendrier: EntreeCalendrier[] = [
     date: '30 décembre 2024',
     obligation:
       'MiCA pleinement applicable aux prestataires de services sur crypto-actifs (régime CASP/PSCA)',
-    type_etablissement: 'CASP',
+    perimetre: ['casp'],
     acte: 'Règlement (UE) 2023/1114',
     registre: 'en_vigueur',
     statut: 'En vigueur',
@@ -177,7 +185,7 @@ export const calendrier: EntreeCalendrier[] = [
     date: '1er juillet 2026',
     obligation:
       "Fin de la période transitoire (grandfathering, art. 143(3)) — plafond UE, sans extension. En France : fin du régime PSAN. Seuls les PSCA agréés MiCA (ou notifiants art. 60) peuvent opérer",
-    type_etablissement: 'CASP',
+    perimetre: ['casp'],
     acte: 'Règlement (UE) 2023/1114 · ordonnance 2024-936',
     registre: 'en_vigueur',
     statut: 'Échu (~5 semaines)',
@@ -188,7 +196,7 @@ export const calendrier: EntreeCalendrier[] = [
     date: 'Depuis le 1er juillet 2026',
     obligation:
       'Exercice de services crypto = agrément PSCA obligatoire ; sortie ordonnée pour les non-agréés (plans de wind-down ESMA)',
-    type_etablissement: 'CASP',
+    perimetre: ['casp'],
     acte: 'Règlement (UE) 2023/1114',
     registre: 'en_vigueur',
     statut: 'Applicable',

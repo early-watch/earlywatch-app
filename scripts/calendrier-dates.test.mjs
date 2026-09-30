@@ -51,26 +51,44 @@ test('jours restants', () => {
   assert.equal(daysUntil({ date: '15 août 2026' }, at('2026-09-30')), null);
 });
 
-test('filtre par profil, professions non financières comprises', () => {
-  const tous = { type_etablissement: 'tous', note: '' };
-  const casp = { type_etablissement: 'CASP', note: '' };
-  const sel = { type_etablissement: 'tous', note: 'Concerne uniquement les entités susceptibles de sélection' };
+test('filtre par profil selon le périmètre, professions non financières comprises', () => {
+  const tous = { perimetre: 'tous' };
+  const fin = { perimetre: 'financier' };
+  const etat = { perimetre: 'etat' };
+  const casp = { perimetre: JSON.stringify(['casp']) };            // tel que dans data-perimetre
+  const sport = { perimetre: ['agent_sportif'] };
   const avocat = { code: 'avocat', family: 'non_financier' };
+  const agent = { code: 'agent_sportif', family: 'non_financier' };
   const ep = { code: 'etablissement_paiement', family: 'financier' };
   const caspP = { code: 'casp', family: 'financier' };
   assert.equal(concerns(tous, avocat), true);
+  assert.equal(concerns(etat, avocat), true);
+  assert.equal(concerns(fin, avocat), false);
+  assert.equal(concerns(fin, ep), true);
   assert.equal(concerns(casp, avocat), false);
-  assert.equal(concerns(sel, avocat), false);
-  assert.equal(concerns(sel, ep), true);
   assert.equal(concerns(casp, caspP), true);
   assert.equal(concerns(casp, ep), false);
+  assert.equal(concerns(sport, agent), true);
+  assert.equal(concerns(sport, avocat), false);
   assert.equal(concerns(casp, null), true);
   assert.equal(concerns(casp, { code: 'consultant', family: 'financier' }), true);
   // Famille entière
   assert.equal(concerns(casp, { code: null, family: 'financier' }), true);
   assert.equal(concerns(casp, { code: null, family: 'non_financier' }), false);
-  assert.equal(concerns(sel, { code: null, family: 'non_financier' }), false);
+  assert.equal(concerns(sport, { code: null, family: 'non_financier' }), true);
+  assert.equal(concerns(fin, { code: null, family: 'non_financier' }), false);
   assert.equal(concerns(tous, { code: null, family: 'non_financier' }), true);
+});
+
+test('chaque entrée des données a un périmètre valide', () => {
+  const src = readFileSync(new URL('../src/data/calendrier.ts', import.meta.url), 'utf8');
+  const dates = [...src.matchAll(/^\s*date: '([^']*)'/gm)].length;
+  const pers = [...src.matchAll(/^\s*perimetre: (.+),$/gm)].map((m) => m[1]);
+  assert.equal(pers.length, dates, 'une ligne perimetre par entrée');
+  for (const p of pers) {
+    assert.ok(/^'(tous|financier|etat)'$/.test(p) || /^\['[a-z_]+'(, '[a-z_]+')*\]$/.test(p), `périmètre invalide : ${p}`);
+  }
+  assert.ok(!src.includes('type_etablissement:'), 'plus de type_etablissement');
 });
 
 test('valeurs historiques du profil', () => {
