@@ -1,6 +1,13 @@
 ---
 // Calendrier réglementaire — contenu partagé par /calendrier (back-office) et
 // /app/calendrier (espace client).
+//
+// Statut calculé À LA DATE DU JOUR dans le navigateur (src/scripts/calendrier-dates.js) :
+// une échéance passée passe en « Échue » (section dédiée), jamais « À venir ».
+// Le statut de la source (colonne `statut`, figé au 07/08/2026) n'est plus affiché.
+// Filtre par profil : liste de l'API (GET /auth/signup-profiles, référentiel
+// app/core/profiles.py), professions non financières comprises ; profil du client
+// présélectionné.
 import { calendrier, type EntreeCalendrier } from '../data/calendrier';
 
 const aVenir: EntreeCalendrier[] = calendrier.filter((e) => e.registre === 'a_venir');
@@ -13,7 +20,7 @@ const estSelection = (e: EntreeCalendrier): boolean =>
   e.note.toLowerCase().includes('susceptibles de sélection');
 
 const typeLabel: Record<string, string> = {
-  tous: 'Tous',
+  tous: 'Tous profils',
   CASP: 'CASP',
   PSP: 'PSP',
   EME: 'EME',
@@ -27,28 +34,34 @@ const typeLabel: Record<string, string> = {
       Échéances LCB-FT vérifiées — AMLR / AMLA · MiCA-CASP · transpositions FR
     </div>
 
-    <div class="cal-filters" id="cal-filters" role="group" aria-label="Filtrer par type d'établissement">
-      <button class="cal-fbtn active" data-type="tous">Tous</button>
-      <button class="cal-fbtn" data-type="CASP">CASP</button>
-      <button class="cal-fbtn" data-type="PSP">PSP</button>
-      <button class="cal-fbtn" data-type="EME">EME</button>
+    <div class="cal-filters">
+      <label class="cal-filter-label" for="cal-profile">Profil</label>
+      <select id="cal-profile" class="cal-select">
+        <option value="">Tous les profils</option>
+        <option value="family:financier">Secteur financier (tous)</option>
+        <option value="family:non_financier">Professions non financières (toutes)</option>
+      </select>
+      <span class="cal-today ew-mono" id="cal-today"></span>
     </div>
 
     <!-- ===================== À VENIR (deadline board) ===================== -->
     <section class="cal-section" data-section="a_venir">
-      <div class="cal-section-label">À venir</div>
-      <div class="cal-list">
+      <h2 class="cal-section-label">À venir</h2>
+      <div class="cal-list" id="cal-list-a-venir">
         {aVenir.map((e) => (
           <article
             class:list={['cal-card', { ancre: estAncre(e), selection: estSelection(e) }]}
             data-type={e.type_etablissement}
+            data-date={e.date}
+            data-registre={e.registre}
+            data-note={e.note}
           >
             <div class="cal-card-top">
               <div class="cal-date ew-mono">{e.date}</div>
               <div class="cal-tags">
-                {estAncre(e) && <span class="cal-pill cal-pill-ancre">Concerne TOUS</span>}
+                {estAncre(e) && <span class="cal-pill cal-pill-ancre">Concerne tous</span>}
                 {estSelection(e) && <span class="cal-pill cal-pill-selection">Sélection uniquement</span>}
-                <span class="cal-statut">{e.statut}</span>
+                <span class="cal-statut" data-statut></span>
                 <span class="cal-type ew-mono">{typeLabel[e.type_etablissement]}</span>
               </div>
             </div>
@@ -59,20 +72,32 @@ const typeLabel: Record<string, string> = {
           </article>
         ))}
       </div>
-      <div class="cal-empty" data-empty="a_venir" hidden>Aucune échéance à venir pour ce type d'établissement.</div>
+      <div class="cal-empty" data-empty="a_venir" hidden>Aucune échéance à venir pour ce profil.</div>
+    </section>
+
+    <!-- ===================== ÉCHUES (déplacées ici selon la date du jour) ===================== -->
+    <section class="cal-section" data-section="echues" hidden>
+      <h2 class="cal-section-label">Échéances passées</h2>
+      <div class="cal-list" id="cal-list-echues"></div>
     </section>
 
     <!-- ===================== EN VIGUEUR (contexte) ===================== -->
     <section class="cal-section" data-section="en_vigueur">
-      <div class="cal-section-label">En vigueur</div>
+      <h2 class="cal-section-label">En vigueur</h2>
       <div class="cal-section-hint">Ce qui s'applique déjà — contexte, pas des échéances.</div>
       <div class="cal-list">
         {enVigueur.map((e) => (
-          <article class="cal-card cal-card-context" data-type={e.type_etablissement}>
+          <article
+            class="cal-card cal-card-context"
+            data-type={e.type_etablissement}
+            data-date={e.date}
+            data-registre={e.registre}
+            data-note={e.note}
+          >
             <div class="cal-card-top">
               <div class="cal-date ew-mono">{e.date}</div>
               <div class="cal-tags">
-                <span class="cal-statut">{e.statut}</span>
+                <span class="cal-statut" data-statut></span>
                 <span class="cal-type ew-mono">{typeLabel[e.type_etablissement]}</span>
               </div>
             </div>
@@ -83,33 +108,34 @@ const typeLabel: Record<string, string> = {
           </article>
         ))}
       </div>
-      <div class="cal-empty" data-empty="en_vigueur" hidden>Aucune entrée en vigueur pour ce type d'établissement.</div>
+      <div class="cal-empty" data-empty="en_vigueur" hidden>Aucune entrée en vigueur pour ce profil.</div>
     </section>
   </div>
-
 
 <style>
   .cal-wrap { max-width: 1000px; margin: 0 auto; }
 
-  .cal-page-sub   { font-size: 13px; color: var(--mute); margin-bottom: 28px; }
+  .cal-page-sub { font-size: 13px; color: var(--mute); margin-bottom: 24px; }
 
-  /* ---- Filtres (calqué sur .fbtn de la roadmap) ---- */
-  .cal-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px; }
-  .cal-fbtn {
-    padding: 5px 14px; border: 0.5px solid var(--line-strong);
-    background: transparent; font-size: 12px; color: var(--taupe);
-    cursor: pointer; font-family: inherit; transition: all 0.12s;
-    border-radius: 0;
+  /* ---- Filtre par profil ---- */
+  .cal-filters { display: flex; gap: 10px 12px; flex-wrap: wrap; align-items: center; margin-bottom: 32px; }
+  .cal-filter-label {
+    font-family: var(--font-mono); font-size: 10.5px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--taupe);
   }
-  .cal-fbtn:hover  { background: var(--bg-side); color: var(--ink); }
-  .cal-fbtn.active { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  .cal-select {
+    font-family: inherit; font-size: 13px; color: var(--ink); background: var(--bg);
+    border: 0.5px solid var(--line-strong); border-radius: var(--radius);
+    padding: 7px 10px; min-width: 0; max-width: 100%; flex: 0 1 340px;
+  }
+  .cal-today { font-size: 11px; color: var(--mute); margin-left: auto; }
 
   /* ---- Sections ---- */
   .cal-section { margin-bottom: 40px; }
   .cal-section-label {
     font-family: var(--font-mono); font-size: 10.5px; font-weight: 500;
     letter-spacing: 0.16em; color: var(--taupe); text-transform: uppercase;
-    margin-bottom: 6px;
+    margin: 0 0 6px;
   }
   .cal-section-hint { font-size: 12px; color: var(--mute); margin-bottom: 16px; }
   .cal-list { display: flex; flex-direction: column; gap: 12px; }
@@ -122,7 +148,9 @@ const typeLabel: Record<string, string> = {
   }
   .cal-card:hover { border-color: var(--line-strong); }
   .cal-card-context { background: var(--bg-side); }
-  .cal-card.ancre { border-left: 2px solid var(--moutarde); }
+  .cal-card.ancre { border-left: 2px solid var(--accent); }
+  .cal-card.is-echue { background: var(--bg-side); }
+  .cal-card.is-echue .cal-oblig { color: var(--ink-soft); }
 
   .cal-card-top {
     display: flex; justify-content: space-between; align-items: flex-start;
@@ -135,16 +163,21 @@ const typeLabel: Record<string, string> = {
     font-size: 10px; padding: 3px 7px; border: 0.5px solid var(--line);
     border-radius: 0; white-space: nowrap;
   }
-  .cal-statut { color: var(--mute); background: var(--bg-side); }
+  .cal-statut:empty { display: none; }
+  .cal-statut { color: var(--taupe); background: var(--bg-side); }
+  .cal-statut.st-imminente, .cal-statut.st-aujourdhui, .cal-statut.st-en_cours {
+    color: var(--on-accent); background: var(--accent); border-color: var(--accent);
+  }
+  .cal-statut.st-echue { color: var(--mute); background: transparent; }
   .cal-type   { color: var(--taupe); background: transparent; }
   .cal-pill-ancre {
-    color: var(--on-accent); background: var(--moutarde); border-color: var(--moutarde);
+    color: var(--on-accent); background: var(--accent); border-color: var(--accent);
     font-weight: 500; letter-spacing: 0.02em;
   }
   .cal-pill-selection { color: var(--taupe); background: var(--bg-hover); }
 
   .cal-oblig { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--ink); margin-bottom: 8px; }
-  .cal-acte  { font-size: 10.5px; color: var(--mute); margin-bottom: 8px; }
+  .cal-acte  { font-size: 10.5px; color: var(--mute); margin-bottom: 8px; overflow-wrap: anywhere; }
   .cal-note  { font-size: 12.5px; color: var(--taupe); line-height: 1.6; margin-bottom: 10px; }
   .cal-card.selection .cal-note { color: var(--ink-soft); }
 
@@ -156,35 +189,99 @@ const typeLabel: Record<string, string> = {
   @media (max-width: 640px) {
     .cal-card-top { flex-direction: column; gap: 8px; }
     .cal-tags { justify-content: flex-start; }
+    .cal-today { margin-left: 0; width: 100%; }
   }
 </style>
 
 <script>
-  // Filtrage client par type d'établissement. Une entrée "tous" reste visible
-  // sous n'importe quel filtre (elle concerne tous les types).
-  const btns = Array.from(document.querySelectorAll<HTMLButtonElement>('.cal-fbtn'));
-  const cards = Array.from(document.querySelectorAll<HTMLElement>('.cal-card'));
+  import { API, getToken } from '../scripts/api';
+  import { statusOf, STATUS_LABELS, daysUntil, concerns, normalizeProfileCode } from '../scripts/calendrier-dates.js';
 
-  function apply(type: string): void {
+  type Profile = { code: string | null; family: string | null };
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('.cal-card'));
+  const select = document.getElementById('cal-profile') as HTMLSelectElement;
+  let profiles: { code: string; label: string; family: string }[] = [];
+
+  // ── Statut du jour ────────────────────────────────────────────────────────
+  const now = new Date();
+  const todayEl = document.getElementById('cal-today');
+  if (todayEl) todayEl.textContent = 'Statuts au ' + now.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const echuesList = document.getElementById('cal-list-echues')!;
+  cards.forEach((card) => {
+    const entry = { date: card.dataset.date, registre: card.dataset.registre };
+    const st = statusOf(entry, now);
+    const el = card.querySelector<HTMLElement>('[data-statut]');
+    if (!st || !el) return;
+    const n = daysUntil(entry, now);
+    el.textContent = STATUS_LABELS[st as keyof typeof STATUS_LABELS]
+      + (st === 'imminente' && n ? ` · J-${n}` : '');
+    el.className = `cal-statut st-${st}`;
+    if (st === 'echue') {
+      card.classList.add('is-echue');
+      echuesList.appendChild(card);   // quitte « À venir »
+    }
+  });
+
+  // ── Filtre par profil ─────────────────────────────────────────────────────
+  function current(): Profile | null {
+    const v = select.value;
+    if (!v) return null;
+    if (v.startsWith('family:')) return { code: null, family: v.slice(7) };
+    const p = profiles.find((x) => x.code === v);
+    return p ? { code: p.code, family: p.family } : null;
+  }
+
+  function apply(): void {
+    const profile = current();
     cards.forEach((card) => {
-      const t = card.dataset.type || 'tous';
-      const show = type === 'tous' || t === 'tous' || t === type;
+      const show = concerns({ type_etablissement: card.dataset.type || 'tous', note: card.dataset.note || '' }, profile);
       card.style.display = show ? '' : 'none';
     });
-    // État vide par section
     document.querySelectorAll<HTMLElement>('.cal-section').forEach((section) => {
-      const visible = Array.from(section.querySelectorAll<HTMLElement>('.cal-card'))
-        .some((c) => c.style.display !== 'none');
+      const all = Array.from(section.querySelectorAll<HTMLElement>('.cal-card'));
+      const visible = all.some((c) => c.style.display !== 'none');
       const empty = section.querySelector<HTMLElement>('.cal-empty');
-      if (empty) empty.hidden = visible;
+      if (section.dataset.section === 'echues') section.hidden = !visible;
+      else if (empty) empty.hidden = visible;
     });
   }
 
-  btns.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      btns.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      apply(btn.dataset.type || 'tous');
-    });
-  });
+  function esc(s: string): string {
+    return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+  }
+
+  async function loadProfiles(): Promise<void> {
+    try {
+      const r = await fetch(`${API}/api/v1/auth/signup-profiles`);
+      if (!r.ok) return;
+      profiles = await r.json();
+      const groups: Record<string, string> = { financier: 'Secteur financier', non_financier: 'Professions non financières' };
+      for (const [family, label] of Object.entries(groups)) {
+        const list = profiles.filter((p) => p.family === family);
+        if (!list.length) continue;
+        const og = document.createElement('optgroup');
+        og.label = label;
+        og.innerHTML = list.map((p) => `<option value="${esc(p.code)}">${esc(p.label)}</option>`).join('');
+        select.appendChild(og);
+      }
+    } catch { /* liste indisponible : filtre par famille seulement */ }
+  }
+
+  // Profil du client présélectionné (settings.entity_type), si connu.
+  async function preselect(): Promise<void> {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const r = await fetch(`${API}/api/v1/settings`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!r.ok) return;
+      const data = await r.json();
+      const code = normalizeProfileCode(data?.settings?.entity_type);
+      if (code && profiles.some((p) => p.code === code)) select.value = code;
+    } catch { /* pas de présélection */ }
+  }
+
+  select.addEventListener('change', apply);
+  apply();
+  loadProfiles().then(preselect).then(apply);
 </script>
