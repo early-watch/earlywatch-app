@@ -32,8 +32,8 @@ Le Client crée son compte en ligne et confirme son adresse e-mail. Il garantit 
 | Formule | Destinataires | Utilisateurs | Prix mensuel hors taxes |
 | --- | --- | --- | --- |
 | Professions non financières | Professions assujetties hors secteur financier | 1 | 99 € |
-| Responsable conformité | Responsable seul ou consultant | 1 | 199 € |
-| Équipe conformité | Équipe d'un même établissement | Jusqu'à 10 | 590 € |
+| Responsable LCB-FT | Responsable seul ou consultant | 1 | 199 € |
+| Équipe | Équipe d'un même établissement | Jusqu'à 10 | 590 € |
 
 Les prix s'entendent hors taxes ; la TVA en vigueur s'y ajoute. L'Éditeur peut modifier ses prix. Toute hausse est notifiée au moins 30 jours avant son application. Le Client peut alors résilier avant qu'elle s'applique.
 
@@ -46,7 +46,7 @@ En cas de retard de paiement, sont dues de plein droit :
 - des pénalités de retard au taux d'intérêt appliqué par la Banque centrale européenne à son opération de refinancement la plus récente, majoré de 10 points (Code de commerce, art. L. 441-10) ;
 - une indemnité forfaitaire pour frais de recouvrement de 40 € (Code de commerce, art. D. 441-5).
 
-Après un échec de paiement et une relance restée sans effet pendant [7] jours, l'accès au service est suspendu. Il est rétabli dès le paiement reçu.
+Après un échec de paiement et une relance restée sans effet pendant 7 jours, l'accès au service est suspendu. Il est rétabli dès le paiement reçu.
 
 ## Article 6 — Durée et résiliation
 
