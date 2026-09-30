@@ -150,12 +150,13 @@ import AuthLayout from '../layouts/AuthLayout.astro';
       btn.disabled = true;
       btn.textContent = 'Création…';
       try {
-        // La déclaration « professionnel » n'est pas transmise : l'API d'inscription
-        // n'a pas encore de champ pour la recevoir (seul accept_terms existe).
         const body: Record<string, unknown> = {
           email, password,
           first_name: val('first_name'), last_name: val('last_name'),
           organisation: val('organisation'), profile: select.value, accept_terms: true,
+          // Déclaration « Je déclare agir à titre professionnel » (CGV, art. 1) : date conservée
+          // côté serveur (tenants.professional_use_declared_at).
+          professional_use: pro.checked,
         };
         if (ressortField.style.display !== 'none' && val('ressort')) body.ressort = val('ressort');
         const r = await fetch(`${API}/api/v1/auth/signup`, {
