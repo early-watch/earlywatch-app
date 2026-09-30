@@ -5,9 +5,9 @@
 // Statut calculé À LA DATE DU JOUR dans le navigateur (src/scripts/calendrier-dates.js) :
 // une échéance passée passe en « Échue » (section dédiée), jamais « À venir ».
 // Le statut de la source (colonne `statut`, figé au 07/08/2026) n'est plus affiché.
-// Filtre par profil : liste de l'API (GET /auth/signup-profiles, référentiel
-// app/core/profiles.py), professions non financières comprises ; profil du client
-// présélectionné.
+// Filtre par profil selon le champ `perimetre` des données ; liste des profils de
+// l'API (GET /auth/signup-profiles, référentiel app/core/profiles.py), professions
+// non financières comprises ; profil du client présélectionné.
 import { calendrier, type EntreeCalendrier } from '../data/calendrier';
 
 const aVenir: EntreeCalendrier[] = calendrier.filter((e) => e.registre === 'a_venir');
@@ -15,16 +15,15 @@ const enVigueur: EntreeCalendrier[] = calendrier.filter((e) => e.registre === 'e
 
 // L'ancre structurante : application de l'AMLR — concerne TOUS.
 const estAncre = (e: EntreeCalendrier): boolean => e.date === '10 juillet 2027';
-// Jalons du processus de sélection (supervision directe) : périmètre restreint.
-const estSelection = (e: EntreeCalendrier): boolean =>
-  e.note.toLowerCase().includes('susceptibles de sélection');
 
-const typeLabel: Record<string, string> = {
-  tous: 'Tous profils',
-  CASP: 'CASP',
-  PSP: 'PSP',
-  EME: 'EME',
+// Étiquette de périmètre (champ `perimetre` des données).
+const PROFIL_COURT: Record<string, string> = { casp: 'CASP', agent_sportif: 'Agents sportifs' };
+const perimetreLabel = (e: EntreeCalendrier): string => {
+  if (Array.isArray(e.perimetre)) return e.perimetre.map((c) => PROFIL_COURT[c] || c).join(', ');
+  return { tous: 'Tous profils', financier: 'Secteur financier', etat: 'État / superviseur' }[e.perimetre] || e.perimetre;
 };
+const perimetreAttr = (e: EntreeCalendrier): string =>
+  Array.isArray(e.perimetre) ? JSON.stringify(e.perimetre) : e.perimetre;
 ---
   <div class="cal-wrap">
     <div class="ew-header" style="margin-bottom:4px">
@@ -50,19 +49,17 @@ const typeLabel: Record<string, string> = {
       <div class="cal-list" id="cal-list-a-venir">
         {aVenir.map((e) => (
           <article
-            class:list={['cal-card', { ancre: estAncre(e), selection: estSelection(e) }]}
-            data-type={e.type_etablissement}
+            class:list={['cal-card', { ancre: estAncre(e) }]}
+            data-perimetre={perimetreAttr(e)}
             data-date={e.date}
             data-registre={e.registre}
-            data-note={e.note}
           >
             <div class="cal-card-top">
               <div class="cal-date ew-mono">{e.date}</div>
               <div class="cal-tags">
                 {estAncre(e) && <span class="cal-pill cal-pill-ancre">Concerne tous</span>}
-                {estSelection(e) && <span class="cal-pill cal-pill-selection">Sélection uniquement</span>}
                 <span class="cal-statut" data-statut></span>
-                <span class="cal-type ew-mono">{typeLabel[e.type_etablissement]}</span>
+                <span class="cal-type ew-mono">{perimetreLabel(e)}</span>
               </div>
             </div>
             <div class="cal-oblig">{e.obligation}</div>
@@ -89,16 +86,15 @@ const typeLabel: Record<string, string> = {
         {enVigueur.map((e) => (
           <article
             class="cal-card cal-card-context"
-            data-type={e.type_etablissement}
+            data-perimetre={perimetreAttr(e)}
             data-date={e.date}
             data-registre={e.registre}
-            data-note={e.note}
           >
             <div class="cal-card-top">
               <div class="cal-date ew-mono">{e.date}</div>
               <div class="cal-tags">
                 <span class="cal-statut" data-statut></span>
-                <span class="cal-type ew-mono">{typeLabel[e.type_etablissement]}</span>
+                <span class="cal-type ew-mono">{perimetreLabel(e)}</span>
               </div>
             </div>
             <div class="cal-oblig">{e.obligation}</div>
@@ -174,12 +170,10 @@ const typeLabel: Record<string, string> = {
     color: var(--on-accent); background: var(--accent); border-color: var(--accent);
     font-weight: 500; letter-spacing: 0.02em;
   }
-  .cal-pill-selection { color: var(--taupe); background: var(--bg-hover); }
 
   .cal-oblig { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--ink); margin-bottom: 8px; }
   .cal-acte  { font-size: 10.5px; color: var(--mute); margin-bottom: 8px; overflow-wrap: anywhere; }
   .cal-note  { font-size: 12.5px; color: var(--taupe); line-height: 1.6; margin-bottom: 10px; }
-  .cal-card.selection .cal-note { color: var(--ink-soft); }
 
   .cal-src { font-size: 11px; color: var(--taupe); text-decoration: underline; text-underline-offset: 2px; }
   .cal-src:hover { color: var(--ink); }
@@ -232,10 +226,12 @@ const typeLabel: Record<string, string> = {
     return p ? { code: p.code, family: p.family } : null;
   }
 
+  const familyOf = (code: string) => profiles.find((p) => p.code === code)?.family || null;
+
   function apply(): void {
     const profile = current();
     cards.forEach((card) => {
-      const show = concerns({ type_etablissement: card.dataset.type || 'tous', note: card.dataset.note || '' }, profile);
+      const show = concerns({ perimetre: card.dataset.perimetre }, profile, familyOf);
       card.style.display = show ? '' : 'none';
     });
     document.querySelectorAll<HTMLElement>('.cal-section').forEach((section) => {

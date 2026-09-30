@@ -88,30 +88,39 @@ export function daysUntil(entry, now = new Date()) {
 
 // ── Filtre par profil ──────────────────────────────────────────────────────
 // Profils : identifiants de app/core/profiles.py (liste fournie par l'API).
-const TYPE_PROFILES = {
-  CASP: ['casp'],
-  PSP: ['etablissement_paiement'],
-  EME: ['etablissement_monnaie_electronique'],
-};
+// Familles des profils cités dans les données, si la liste de l'API manque.
+const FAMILY_FALLBACK = { casp: 'financier', agent_sportif: 'non_financier' };
+
+/** perimetre (JSON de l'attribut data-perimetre ou valeur brute) → valeur. */
+export function parsePerimetre(raw) {
+  if (Array.isArray(raw)) return raw;
+  const v = String(raw ?? '').trim();
+  if (v.startsWith('[')) { try { return JSON.parse(v); } catch { return 'tous'; } }
+  return v || 'tous';
+}
 
 /**
- * L'entrée concerne-t-elle ce profil ?
- *   - aucun profil choisi → oui ; famille seule → selon la famille ;
- *   - consultant conformité → oui (il accompagne tous les assujettis) ;
- *   - jalon de sélection AMLA (supervision directe) → secteur financier seulement ;
- *   - type « tous » → tous les profils, professions non financières comprises ;
- *   - type CASP / PSP / EME → le profil correspondant.
+ * L'entrée concerne-t-elle ce profil ? (champ `perimetre` des données)
+ *   - aucun profil choisi → oui ; consultant conformité → oui (il accompagne tous
+ *     les assujettis) ;
+ *   - 'tous' → tous les profils, professions non financières comprises ;
+ *   - 'etat' → effet indirect, affiché pour tous ;
+ *   - 'financier' → secteur financier ;
+ *   - liste de profils → ces profils ; famille entière choisie → si un profil
+ *     de la liste appartient à la famille.
+ * `familyOf(code)` : famille d'un profil (liste de l'API), avec repli local.
  */
-export function concerns(entry, profile) {
+export function concerns(entry, profile, familyOf = () => null) {
   if (!profile || (!profile.code && !profile.family)) return true;
   if (profile.code === 'consultant') return true;
-  const selection = String(entry.note || '').toLowerCase().includes('susceptibles de sélection');
-  if (selection) return profile.family === 'financier';
-  if (entry.type_etablissement === 'tous') return true;
-  // Famille entière choisie (sans profil précis) : les entrées typées CASP / PSP / EME
-  // concernent le secteur financier.
-  if (!profile.code) return profile.family === 'financier';
-  return (TYPE_PROFILES[entry.type_etablissement] || []).includes(profile.code);
+  const per = parsePerimetre(entry.perimetre);
+  if (per === 'tous' || per === 'etat') return true;
+  if (per === 'financier') return profile.family === 'financier';
+  if (Array.isArray(per)) {
+    if (profile.code) return per.includes(profile.code);
+    return per.some((c) => (familyOf(c) || FAMILY_FALLBACK[c]) === profile.family);
+  }
+  return true;
 }
 
 // Valeurs historiques de settings.entity_type (cf. LEGACY_ALIASES, app/core/profiles.py).
