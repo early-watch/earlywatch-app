@@ -20,9 +20,9 @@ export type Registre = 'a_venir' | 'en_vigueur';
  * Périmètre de l'entrée (filtre par profil) :
  *   'tous'      — toutes les entités assujetties, professions non financières comprises ;
  *   'financier' — secteur financier seulement (ex. sélection pour la supervision directe AMLA) ;
- *   'etat'      — l'État / le superviseur : effet indirect, affiché pour tous les profils ;
+ *   'etat'      — l'État / le superviseur : effet indirect, affiché seulement sans profil choisi ;
  *   string[]    — profils précis (identifiants de app/core/profiles.py).
- * Validé par Maria (EB-CAL-001) avant publication.
+ * Validé par Maria le 01/10/2026 (EB-CAL-001).
  */
 export type Perimetre = 'tous' | 'financier' | 'etat' | string[];
 
@@ -160,7 +160,7 @@ export const calendrier: EntreeCalendrier[] = [
   {
     date: '10 juillet 2029',
     obligation:
-      'Application différée de certaines dispositions (clubs/agents de football ; certains accès registres AMLD6)',
+      'Application différée de certaines dispositions (clubs/agents de football)',
     perimetre: ['agent_sportif'],
     acte: 'Règlement (UE) 2024/1624 · Directive (UE) 2024/1640',
     registre: 'a_venir',

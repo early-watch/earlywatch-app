@@ -101,10 +101,11 @@ export function parsePerimetre(raw) {
 
 /**
  * L'entrée concerne-t-elle ce profil ? (champ `perimetre` des données)
- *   - aucun profil choisi → oui ; consultant conformité → oui (il accompagne tous
- *     les assujettis) ;
+ *   - aucun profil choisi (« Tous les profils ») → oui ;
+ *   - 'etat' → effet indirect : seulement sans profil choisi (masqué dès qu'un
+ *     profil ou une famille est choisi, consultant compris) ;
+ *   - consultant conformité → toutes les autres entrées (il accompagne tous les assujettis) ;
  *   - 'tous' → tous les profils, professions non financières comprises ;
- *   - 'etat' → effet indirect, affiché pour tous ;
  *   - 'financier' → secteur financier ;
  *   - liste de profils → ces profils ; famille entière choisie → si un profil
  *     de la liste appartient à la famille.
@@ -112,9 +113,10 @@ export function parsePerimetre(raw) {
  */
 export function concerns(entry, profile, familyOf = () => null) {
   if (!profile || (!profile.code && !profile.family)) return true;
-  if (profile.code === 'consultant') return true;
   const per = parsePerimetre(entry.perimetre);
-  if (per === 'tous' || per === 'etat') return true;
+  if (per === 'etat') return false;
+  if (profile.code === 'consultant') return true;
+  if (per === 'tous') return true;
   if (per === 'financier') return profile.family === 'financier';
   if (Array.isArray(per)) {
     if (profile.code) return per.includes(profile.code);
