@@ -1204,6 +1204,17 @@
   .fil-row-act { justify-self: start; }
 }
 
+/* Qui a traité quoi (state_by_name / state_at) : mention discrète sous le titre. */
+.fil-row-state, .fil-detail-state { font-size: 12px; color: var(--mute); margin-top: 3px; }
+.fil-detail-state { margin-top: 4px; }
+
+/* Message avec « Annuler » (undoToast, src/scripts/fil.js). */
+.toast.fil-undo { display: flex; align-items: baseline; gap: 2px; }
+.fil-undo-btn {
+  font: inherit; color: inherit; background: none; border: none; padding: 0; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 2px; font-weight: 500;
+}
+
 /* Impersonation (superadmin) : fine barre sur une ligne, en haut de page. */
 .ew-imp {
   display: flex; align-items: center; gap: 8px;

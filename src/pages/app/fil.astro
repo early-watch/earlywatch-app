@@ -36,7 +36,7 @@ const base = import.meta.env.BASE_URL;
 
 <script>
   import { API, api, getToken, toast } from '../../scripts/api';
-  import { levelOf, byLevelThenDate, renderRow, renderDetail, esc } from '../../scripts/fil.js';
+  import { levelOf, byLevelThenDate, renderRow, renderDetail, esc, undoToast } from '../../scripts/fil.js';
   import { nextDeadline, relativeLabel, isExactDate, normalizeProfileCode } from '../../scripts/calendrier-dates.js';
   import { calendrier } from '../../data/calendrier';
 
@@ -53,14 +53,16 @@ const base = import.meta.env.BASE_URL;
 
   const DETAIL_ACTIONS = [
     { label: 'Suivre', value: 'to_process', primary: true },
-    { label: 'Marquer comme lu', value: 'read' },
+    { label: 'Traité', value: 'read' },
     { label: 'Ignorer', value: 'ignored' },
   ];
   const DONE: Record<string, string> = {
-    to_process: 'Publication ajoutée à vos suivis',
-    read: 'Publication marquée comme lue',
-    ignored: 'Publication ignorée',
+    to_process: 'Publication ajoutée aux suivis',
+    read: 'Marqué comme traité',
+    ignored: 'Ignoré',
   };
+  // « Traité » et « Ignorer » : message avec « Annuler » (retour à l'état précédent).
+  const UNDOABLE = new Set(['read', 'ignored']);
 
   function renderTitle(): void {
     const n = items.filter((a) => levelOf(a) === 'action').length;
@@ -101,14 +103,16 @@ const base = import.meta.env.BASE_URL;
 
   async function act(id: string, action: string, btn?: HTMLButtonElement): Promise<void> {
     if (btn) btn.disabled = true;
+    const before = items.find((x) => x.id === id)?.client_status || 'inbox';
     try {
       await api(`/api/v1/app/articles/${id}/state`, { method: 'PATCH', body: { action } });
-      toast(DONE[action] || 'Mis à jour');
+      if (UNDOABLE.has(action)) undoToast(DONE[action], () => undo(id, before));
+      else toast(DONE[action] || 'Mis à jour');
       window.dispatchEvent(new Event('ew:counts-changed'));
       closeDetail();
       const wasActionMode = !calm;
       const idx = items.findIndex((x) => x.id === id);
-      items = items.filter((x) => x.id !== id);   // quitte le Fil (suivie, lue ou ignorée)
+      items = items.filter((x) => x.id !== id);   // quitte le Fil (suivie, traitée ou ignorée)
       if (wasActionMode && !items.some((a) => levelOf(a) === 'action')) {
         await load();                             // plus rien à traiter : vue « rien à traiter »
         return;
@@ -119,6 +123,17 @@ const base = import.meta.env.BASE_URL;
       showDetail(WIDE.matches && next ? next.id : null);
     } catch (e: any) {
       if (btn) btn.disabled = false;
+      toast(e.message, 'error');
+    }
+  }
+
+  // « Annuler » : remet l'état précédent (journalisé côté serveur comme un changement).
+  async function undo(id: string, before: string): Promise<void> {
+    try {
+      await api(`/api/v1/app/articles/${id}/state`, { method: 'PATCH', body: { action: before } });
+      window.dispatchEvent(new Event('ew:counts-changed'));
+      await load();
+    } catch (e: any) {
       toast(e.message, 'error');
     }
   }
