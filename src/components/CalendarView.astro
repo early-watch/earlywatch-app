@@ -118,10 +118,7 @@ const perimetreAttr = (e: EntreeCalendrier): string =>
 
   /* ---- Filtre par profil ---- */
   .cal-filters { display: flex; gap: 10px 12px; flex-wrap: wrap; align-items: center; margin-bottom: 32px; }
-  .cal-filter-label {
-    font-family: var(--font-mono); font-size: 10.5px; font-weight: 500;
-    letter-spacing: 0.14em; text-transform: uppercase; color: var(--taupe);
-  }
+  .cal-filter-label { font-family: var(--font); font-size: var(--label-size); font-weight: var(--label-weight); color: var(--label-color); letter-spacing: normal; text-transform: none; }
   .cal-select {
     font-family: inherit; font-size: 13px; color: var(--ink); background: var(--bg);
     border: 0.5px solid var(--line-strong); border-radius: var(--radius);
@@ -131,11 +128,7 @@ const perimetreAttr = (e: EntreeCalendrier): string =>
 
   /* ---- Sections ---- */
   .cal-section { margin-bottom: 40px; }
-  .cal-section-label {
-    font-family: var(--font-mono); font-size: 10.5px; font-weight: 500;
-    letter-spacing: 0.16em; color: var(--taupe); text-transform: uppercase;
-    margin: 0 0 6px;
-  }
+  .cal-section-label { font-family: var(--font); font-size: var(--label-size); font-weight: var(--label-weight); color: var(--label-color); letter-spacing: normal; text-transform: none; margin: 0 0 6px; }
   .cal-section-hint { font-size: 12px; color: var(--mute); margin-bottom: 16px; }
   .cal-list { display: flex; flex-direction: column; gap: 12px; }
 
@@ -160,7 +153,7 @@ const perimetreAttr = (e: EntreeCalendrier): string =>
   .cal-type { color: var(--taupe); background: transparent; }
   .cal-pill-ancre {
     color: var(--on-accent); background: var(--accent); border-color: var(--accent);
-    font-weight: 500; letter-spacing: 0.02em;
+    font-weight: 500; letter-spacing: normal;
   }
 
   .cal-oblig { font-size: 14px; font-weight: 500; line-height: 1.45; color: var(--ink); margin-bottom: 6px; }

@@ -97,7 +97,7 @@ export function renderClientCard(a, formatDate, { compact = false } = {}) {
     ? `<div style="display:flex;align-items:center;gap:6px;margin-top:16px;flex-wrap:wrap">
          <span style="font-size:11px;color:#888">Impacte →</span>
          ${a.impacted_procedures.map(p =>
-           `<span style="font-size:11px;font-weight:500;color:#5C6347">${p}</span>`
+           `<span style="font-size:11px;font-weight:500;color:var(--ew-kaki)">${p}</span>`
          ).join(' · ')}
        </div>` : '';
 

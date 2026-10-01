@@ -53,7 +53,7 @@ const base = import.meta.env.BASE_URL;
     cursor: pointer; font-family: inherit; transition: all 0.15s;
   }
   .filter-btn:hover { background: var(--bg-side); color: var(--ink); }
-  .filter-btn.active { background: rgba(92,99,71,0.12); border-color: #5C6347; color: #5C6347; }
+  .filter-btn.active { background: var(--ew-kaki-bg-strong); border-color: var(--ew-kaki); color: var(--ew-kaki); }
 
   .btn-export-audit {
     background: var(--ink); color: var(--bg); font-weight: 500;
@@ -96,7 +96,7 @@ const base = import.meta.env.BASE_URL;
     font-family: var(--font-mono); font-size: 10px; font-weight: 500;
     letter-spacing: .06em; text-transform: uppercase;
     padding: 3px 8px; border-radius: 3px; white-space: nowrap;
-    background: rgba(92,99,71,0.12); color: #5C6347; border: 0.5px solid #5C6347;
+    background: var(--ew-kaki-bg-strong); color: var(--ew-kaki); border: 0.5px solid var(--ew-kaki);
   }
   .status-badge-obsolete {
     background: rgba(150,150,150,0.08); color: var(--taupe); border-color: #C5C2BB;
@@ -112,7 +112,7 @@ const base = import.meta.env.BASE_URL;
   .articles-count-badge:hover { color: var(--ink); }
 
   .alert-ribbon {
-    font-size: 11px; font-weight: 500; color: var(--moutarde); background: rgba(92,99,71,0.08);
+    font-size: 11px; font-weight: 500; color: var(--moutarde); background: var(--ew-kaki-bg);
     padding: 6px 10px; border-radius: var(--radius); border: 1px solid var(--moutarde);
     display: flex; align-items: center; gap: 6px;
   }
@@ -135,8 +135,8 @@ const base = import.meta.env.BASE_URL;
 
   .card-actions { display: flex; gap: 10px; }
   .btn-download {
-    flex: 1; padding: 8px 16px; background: #5C6347; color: var(--bg);
-    border: 1px solid #5C6347; border-radius: var(--radius); font-size: 13px; font-weight: 500;
+    flex: 1; padding: 8px 16px; background: var(--ew-kaki); color: var(--bg);
+    border: 1px solid var(--ew-kaki); border-radius: var(--radius); font-size: 13px; font-weight: 500;
     cursor: pointer; text-decoration: none; text-align: center; font-family: inherit;
     display: flex; align-items: center; justify-content: center; gap: 6px;
     transition: background 0.15s;
@@ -147,7 +147,7 @@ const base = import.meta.env.BASE_URL;
 
   /* Articles link (replaces Articles button) */
   .articles-link {
-    font-size: 12px; color: #5C6347; text-decoration: underline;
+    font-size: 12px; color: var(--ew-kaki); text-decoration: underline;
     text-underline-offset: 2px; cursor: pointer; white-space: nowrap;
     background: none; border: none; font-family: inherit; padding: 0;
   }

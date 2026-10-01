@@ -1,42 +1,70 @@
 /* ================================================================
-   Early Watch — Design Tokens (palette MVP unique)
-   Blanc · encre #111111 · gris neutres · accent kaki #5C6347 · IBM Plex Sans + Mono
+   Early Watch — Design Tokens
+   Charte « noir et blanc » (option B, validée le 01/10/2026) : blanc, noir #0F1115,
+   gris froids, police Geist. Toutes les couleurs de l'espace client passent par ces
+   variables : un changement de charte se fait ici, et seulement ici.
    ================================================================ */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap');
 
-/* ---- Palette MVP (unique) : blanc, encre #111111, gris neutres, accent kaki #5C6347 ---- */
 :root {
   /* Surfaces */
-  --bg:       #FFFFFF;   /* fond principal */
-  --bg-side:  #F7F7F7;   /* colonne de navigation, panneaux */
-  --bg-hover: #EFEFEF;   /* survol, avatar, fond actif */
+  --bg:          #FFFFFF;   /* fond principal */
+  --bg-side:     #F8F9FB;   /* colonnes latérales (menu, détail) */
+  --bg-selected: #F1F3F6;   /* élément sélectionné */
+  --bg-hover:    var(--bg-selected);
 
-  /* Texte */
-  --ink:      #111111;   /* encre principale */
-  --ink-soft: #333333;   /* encre secondaire */
-  --taupe:    #555555;   /* navigation inactive, libellés (nom historique conservé) */
-  --mute:     #767676;   /* dates, compteurs — contraste AA sur blanc */
-  --ghost:    #BDBDBD;   /* très atténué, séparateurs */
+  /* Texte (contraste vérifié ≥ 4,5:1 sur --bg, --bg-side et --bg-selected) */
+  --ink:      #0F1115;   /* titres */
+  --text:     #2A2D33;   /* texte courant */
+  --text-2:   #5B616E;   /* texte secondaire, intitulés */
+  --ghost:    #C3C7CF;   /* décor uniquement, jamais pour du texte */
+  /* Noms historiques, conservés pour les pages existantes */
+  --ink-soft: var(--text);
+  --taupe:    var(--text-2);
+  --mute:     var(--text-2);
 
-  /* Bordures */
-  --line:        rgba(17, 17, 17, 0.08);
-  --line-strong: rgba(17, 17, 17, 0.16);
+  /* Filets */
+  --line:        #E6E8EC;   /* filets, bordures */
+  --line-row:    #EFF1F4;   /* filets entre les lignes d'une liste */
+  --line-strong: #D5D8DE;   /* bordures de champs et de boutons secondaires */
 
-  /* Accent unique — kaki (le nom --moutarde est conservé pour les pages existantes) */
-  --accent:    #5C6347;
-  --accent-bg: rgba(92, 99, 71, 0.08);
-  --on-accent: #FFFFFF;  /* texte posé sur l'accent */
-  --moutarde:  var(--accent);
-
-  /* Fond actif (bouton de tri sélectionné) */
+  /* Accent unique : noir */
+  --accent:    #0F1115;
+  --accent-bg: rgba(15, 17, 21, 0.10);   /* #0F11151A */
+  --on-accent: #FFFFFF;                  /* texte posé sur l'accent */
+  --moutarde:  var(--accent);            /* nom historique */
   --bg-triage-active: var(--accent-bg);
 
-  /* Erreur */
-  --color-error: #DC2626;
+  /* Niveaux (badges du Fil) */
+  --level-action-bg: var(--accent);
+  --level-action-fg: var(--on-accent);
+  --level-read-bg:   var(--accent-bg);
+  --level-read-fg:   var(--accent);
+  --level-info-bg:   #EEF0F3;
+  --level-info-fg:   #4A4E57;
 
-  /* Typographie */
-  --font:      'IBM Plex Sans', system-ui, -apple-system, sans-serif;
-  --font-mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+  /* Erreur */
+  --color-error:    #DC2626;
+  --color-error-bg: rgba(220, 38, 38, 0.08);
+
+  /* Ombre des menus déroulants */
+  --shadow-pop: 0 4px 12px rgba(15, 17, 21, 0.08);
+
+  /* Voile derrière le menu en tiroir (mobile) */
+  --scrim: rgba(15, 17, 21, 0.32);
+
+  /* Typographie : Geist partout (IBM Plex Sans et Mono retirés) */
+  --font:      'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: var(--font);   /* nom historique : plus de police à chasse fixe */
+
+  /* Intitulés (remplacent les petites majuscules espacées) */
+  --label-size:   12.5px;
+  --label-weight: 500;
+  --label-color:  var(--text-2);
+
+  /* Titres de page */
+  --title-weight:   600;
+  --title-tracking: -0.025em;
 
   /* Radii */
   --radius-sm: 4px;
@@ -61,11 +89,16 @@ body {
   font-size: 14px;
   font-weight: 400;
   line-height: 1.5;
-  color: var(--ink);
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
 }
 
 /* ---- Typographie utilitaires ---- */
 .ew-mono { font-family: var(--font-mono); }
+/* Intitulé : minuscules, 12,5 px, graisse 500, gris secondaire (charte noir et blanc). */
+.ew-label-text {
+  font-family: var(--font); font-size: var(--label-size); font-weight: var(--label-weight);
+  color: var(--label-color); text-transform: none; letter-spacing: normal;
+}
 .ew-mute { color: var(--mute); }
 .ew-taupe { color: var(--taupe); }

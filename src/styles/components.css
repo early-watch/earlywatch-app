@@ -40,27 +40,26 @@
 }
 
 .ew-logo {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.22em;
+  font-family: var(--font);
+  font-size: 16px;
+  letter-spacing: -0.01em;
   color: var(--ink);
   padding: 0 22px 32px;
-  font-weight: 500;
-  text-transform: uppercase;
+  font-weight: 600;
   text-decoration: none;
   display: block;
 }
-.ew-logo span { color: var(--taupe); }
+.ew-logo span { color: inherit; }
 
 /* Label de section (VEILLE, CONFORMITÉ…) */
 .ew-section {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.2em;
-  color: var(--ink-soft);
+  font-family: var(--font);
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  color: var(--label-color);
+  letter-spacing: normal;
+  text-transform: none;
   padding: 36px 22px 10px;
-  text-transform: uppercase;
-  font-weight: 500;
 }
 .ew-section:first-of-type { padding-top: 6px; }
 
@@ -168,17 +167,18 @@
 }
 .ew-h-title {
   font-size: 22px;
-  font-weight: 500;
+  font-weight: var(--title-weight);
   color: var(--ink);
-  letter-spacing: -0.015em;
+  letter-spacing: var(--title-tracking);
   margin: 0;
 }
 .ew-h-date {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  color: var(--mute);
-  text-transform: uppercase;
+  font-family: var(--font);
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  color: var(--label-color);
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 /* ================================================================
@@ -186,6 +186,12 @@
    ================================================================ */
 
 .ew-tabs {
+  font-family: var(--font);
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  color: var(--label-color);
+  letter-spacing: normal;
+  text-transform: none;
   display: flex;
   gap: 24px;
   padding-bottom: 14px;
@@ -193,10 +199,6 @@
   margin-bottom: 4px;
   flex-wrap: wrap;
   align-items: center;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 .ew-tab {
   color: var(--mute);
@@ -245,9 +247,9 @@
   position: relative;
 }
 .ew-sort-btn {
-  font-family: var(--font-sans);
+  font-family: var(--font);
   font-size: 13px;
-  color: #888;
+  color: var(--text-2);
   background: none;
   border: none;
   cursor: pointer;
@@ -264,13 +266,13 @@
   border-radius: var(--radius);
   min-width: 160px;
   z-index: 100;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow-pop);
 }
 .ew-sort-opt {
   display: block;
   width: 100%;
   padding: 8px 14px;
-  font-family: var(--font-sans);
+  font-family: var(--font);
   font-size: 13px;
   color: var(--ink);
   background: none;
@@ -330,13 +332,13 @@
 
 /* Métadonnées : source · date */
 .ew-meta {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  color: var(--mute);
-  text-transform: uppercase;
+  font-family: var(--font);
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  color: var(--label-color);
+  letter-spacing: normal;
+  text-transform: none;
   margin-bottom: 11px;
-  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 9px;
@@ -356,30 +358,26 @@
 
 /* Badge Nouveau — inline dans la meta (cas alternatif) */
 .ew-tag-new {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.18em;
+  font-family: var(--font);
+  font-size: 11px;
   color: var(--on-accent);
-  font-weight: 500;
-  background: var(--moutarde);
-  padding: 3px 8px;
-  border-radius: 2px;
+  font-weight: 600;
+  background: var(--accent);
+  padding: 2px 8px;
+  border-radius: var(--radius);
   white-space: nowrap;
-  text-transform: uppercase;
 }
 
 /* Badge Nouveau — colonne de droite (tag-new-right, style identique) */
 .tag-new-right {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.18em;
+  font-family: var(--font);
+  font-size: 11px;
   color: var(--on-accent);
-  font-weight: 500;
-  background: var(--moutarde);
-  padding: 3px 8px;
-  border-radius: 2px;
+  font-weight: 600;
+  background: var(--accent);
+  padding: 2px 8px;
+  border-radius: var(--radius);
   white-space: nowrap;
-  text-transform: uppercase;
 }
 
 /* Titre de l'article */
@@ -442,7 +440,7 @@
 
 /* Bouton triage actif (digest sélectionné) */
 .ew-btn-active {
-  border: 1.5px solid #5C6347;
+  border: 1.5px solid var(--accent);
   background: var(--bg-triage-active);
   font-weight: normal;
 }
@@ -466,23 +464,23 @@
   flex-shrink: 0;
 }
 
-/* Variante kaki (#5C6347) — boutons client (/app/veille) */
+/* Variante accent (nom historique « kaki ») — boutons client (/app/veille) */
 .ew-btn-kaki {
-  background: #5C6347;
+  background: var(--accent);
   color: var(--bg);
   border-color: transparent;
   font-weight: 500;
 }
-.ew-btn-kaki:hover { opacity: 0.88; background: #5C6347; }
+.ew-btn-kaki:hover { opacity: 0.88; background: var(--accent); }
 .ew-btn-kaki.ew-btn-kaki-removing {
-  background: #888;
+  background: var(--text-2);
   border-color: transparent;
 }
 .ew-btn-kaki-outline {
-  color: #5C6347;
-  border-color: #5C6347;
+  color: var(--accent);
+  border-color: var(--accent);
 }
-.ew-btn-kaki-outline:hover { background: rgba(92,99,71,0.06); }
+.ew-btn-kaki-outline:hover { background: var(--bg-selected); }
 
 /* ================================================================
    PANNEAU DROIT (dashboard inbox uniquement)
@@ -503,12 +501,12 @@
 
 /* Label de section dans le panel droit */
 .ew-r-title {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  color: var(--mute);
-  text-transform: uppercase;
-  font-weight: 500;
+  font-family: var(--font);
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  color: var(--label-color);
+  letter-spacing: normal;
+  text-transform: none;
   margin-bottom: 16px;
 }
 
@@ -519,11 +517,12 @@
 .ew-digest-block:last-of-type { margin-bottom: 0; }
 
 .ew-digest-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  color: var(--taupe);
-  text-transform: uppercase;
+  font-family: var(--font);
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  color: var(--label-color);
+  letter-spacing: normal;
+  text-transform: none;
   margin-bottom: 6px;
 }
 
@@ -648,7 +647,7 @@
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--mute);
-  letter-spacing: 0.1em;
+  letter-spacing: normal;
 }
 
 /* ================================================================
@@ -689,11 +688,12 @@
   line-height: 1.55;
 }
 .ew-empty-hint {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--mute);
+  font-family: var(--font);
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  color: var(--label-color);
+  letter-spacing: normal;
+  text-transform: none;
   margin-top: 4px;
 }
 
@@ -727,7 +727,7 @@
 .ew-input:hover,
 .ew-select:hover,
 .ew-textarea:hover {
-  border-color: rgba(26, 24, 20, 0.22);
+  border-color: var(--text-2);
 }
 .ew-input:focus,
 .ew-select:focus,
@@ -774,16 +774,15 @@
 }
 
 .ew-login-logo {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  font-family: var(--font);
+  font-size: 16px;
+  letter-spacing: -0.01em;
   color: var(--ink);
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 40px;
   text-align: left;
 }
-.ew-login-logo span { color: var(--taupe); }
+.ew-login-logo span { color: inherit; }
 
 .ew-login-title {
   font-size: 18px;
@@ -796,31 +795,19 @@
 /* Bouton submit login — outlined + souligné moutarde */
 .ew-login-btn {
   width: 100%;
-  padding: 10px;
-  background: transparent;
-  color: var(--ink);
-  border: 0.5px solid var(--line-strong);
-  border-radius: var(--radius);
-  font-size: 13px;
+  padding: 11px;
+  background: var(--accent);
+  color: var(--on-accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-lg);
+  font-size: 14px;
   font-weight: 500;
   font-family: var(--font);
   cursor: pointer;
-  position: relative;
-  transition: background 0.12s;
+  transition: opacity 0.12s;
   margin-top: 8px;
 }
-.ew-login-btn::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 7px;
-  width: 80px;
-  height: 1.5px;
-  background: var(--moutarde);
-  border-radius: 1px;
-}
-.ew-login-btn:hover { background: var(--bg-side); }
+.ew-login-btn:hover { opacity: 0.9; }
 
 .ew-login-error {
   font-size: 12px;
@@ -904,7 +891,7 @@
 .ew-badge-muted   { background: var(--bg-hover); color: var(--taupe); }
 .ew-badge-new     { background: var(--moutarde); color: var(--on-accent); }
 .ew-badge-ok      { background: var(--bg-hover); color: var(--ink-soft); }
-.ew-badge-error   { background: rgba(220, 38, 38, 0.08); color: var(--color-error); }
+.ew-badge-error   { background: var(--color-error-bg); color: var(--color-error); }
 
 /* ================================================================
    TABLES
@@ -916,14 +903,14 @@
   font-size: 13px;
 }
 .ew-table thead th {
+  font-family: var(--font);
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  color: var(--label-color);
+  letter-spacing: normal;
+  text-transform: none;
   text-align: left;
   padding: 8px 12px;
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--mute);
   border-bottom: 0.5px solid var(--line-strong);
 }
 .ew-table tbody td {
@@ -933,7 +920,7 @@
   color: var(--ink);
 }
 .ew-table tbody tr:last-child td { border-bottom: none; }
-.ew-table tbody tr:hover td { background: rgba(26, 24, 20, 0.02); }
+.ew-table tbody tr:hover td { background: var(--bg-side); }
 
 /* ================================================================
    EXPANDABLE (accordéon)
@@ -1023,10 +1010,9 @@
 .ew-scrim { display: none; }
 
 .ew-menu-btn {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
   color: var(--ink);
   background: transparent;
   border: 0.5px solid var(--line-strong);
@@ -1073,7 +1059,7 @@
     position: fixed;
     inset: 0;
     z-index: 40;
-    background: rgba(17, 17, 17, 0.32);
+    background: var(--scrim);
   }
 
   .ew-client .ew-main { padding: 20px 16px 28px; }
@@ -1095,7 +1081,7 @@
   .fil-layout { grid-template-columns: minmax(0, 1fr) 380px; gap: 32px; align-items: start; }
 }
 
-.fil-list { border-top: 0.5px solid var(--line); }
+.fil-list { border-top: 1px solid var(--line-row); }
 
 .fil-row {
   display: grid;
@@ -1103,30 +1089,27 @@
   gap: 14px;
   align-items: start;
   padding: 14px 10px;
-  border-bottom: 0.5px solid var(--line);
+  border-bottom: 1px solid var(--line-row);
   cursor: pointer;
   outline: none;
 }
 .fil-row:hover { background: var(--bg-side); }
 .fil-row:focus-visible { box-shadow: inset 0 0 0 1.5px var(--accent); }
-.fil-row.is-selected { background: var(--bg-side); box-shadow: inset 2px 0 0 var(--accent); }
+.fil-row.is-selected { background: var(--bg-selected); box-shadow: inset 2px 0 0 var(--accent); }
 
 .fil-level {
   display: inline-block;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 3px 6px;
-  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: var(--radius);
   white-space: nowrap;
-  border: 0.5px solid var(--line-strong);
-  color: var(--taupe);
-  background: var(--bg);
+  color: var(--level-info-fg);
+  background: var(--level-info-bg);
 }
-.fil-level-action { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-.fil-level-a_lire { color: var(--accent); border-color: var(--accent); background: var(--accent-bg); }
+.fil-level-action { background: var(--level-action-bg); color: var(--level-action-fg); }
+.fil-level-a_lire { background: var(--level-read-bg); color: var(--level-read-fg); }
 
 .fil-row-title { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--ink); margin: 0; overflow-wrap: anywhere; }
 .fil-row-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px; font-size: 12px; color: var(--mute); }
@@ -1161,20 +1144,25 @@
     top: 24px;
     max-height: calc(100vh - 48px);
     overflow-y: auto;
-    border: 0.5px solid var(--line);
+    border: 1px solid var(--line);
     border-radius: var(--radius-lg);
-    background: var(--bg);
+    background: var(--bg-side);
   }
 }
 .fil-detail-inner { padding: 22px 22px 26px; }
 .fil-detail-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .fil-detail-date { font-size: 12px; color: var(--mute); }
-.fil-detail-title { font-size: 17px; font-weight: 500; line-height: 1.4; color: var(--ink); margin: 0 0 6px; overflow-wrap: anywhere; }
+.fil-detail-title { font-size: 19px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.35; color: var(--ink); margin: 0 0 6px; overflow-wrap: anywhere; }
 .fil-detail-source { font-size: 12.5px; color: var(--taupe); margin-bottom: 18px; }
 .fil-detail-block { margin-bottom: 16px; }
 .fil-detail-block h3 {
-  font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--taupe); margin: 0 0 6px;
+  font-family: var(--font);
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  color: var(--label-color);
+  letter-spacing: normal;
+  text-transform: none;
+  margin: 0 0 6px;
 }
 .fil-detail-block p { font-size: 13.5px; line-height: 1.6; color: var(--ink-soft); margin: 0; }
 .fil-detail-link { display: inline-block; font-size: 13.5px; font-weight: 500; color: var(--accent); margin: 4px 0 20px; }
@@ -1232,7 +1220,7 @@
   text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
 }
 /* Compteurs du menu (Fil, Suivis) */
-.ew-client .ew-nav .ew-count { font-family: var(--font-mono); font-size: 11px; color: var(--mute); }
+.ew-client .ew-nav .ew-count { font-family: var(--font); font-size: 12.5px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
 .ew-client .ew-nav .ew-count[hidden] { display: none; }
 
 /* Fil sans publication à sélectionner : pas de panneau de détail. */
@@ -1246,8 +1234,13 @@
 }
 .fil-next[hidden] { display: none; }
 .fil-next-label, .fil-section-label {
-  font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--taupe); margin: 0 0 8px;
+  font-family: var(--font);
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  color: var(--label-color);
+  letter-spacing: normal;
+  text-transform: none;
+  margin: 0 0 8px;
 }
 .fil-section-label[hidden] { display: none; }
 .fil-next-when { font-size: 14px; font-weight: 500; color: var(--ink); }

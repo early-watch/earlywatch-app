@@ -578,8 +578,8 @@ const base = import.meta.env.BASE_URL;
     const impactRow = (a.has_impact && a.impacted_procedures?.length)
       ? `<div style="display:flex;align-items:center;gap:6px;margin-top:16px;flex-wrap:wrap" onclick="event.stopPropagation()">
           <span style="font-size:11px;color:#888">Impacte →</span>
-          ${a.impacted_procedures.map((p: string) => `<span style="font-size:11px;font-weight:500;color:#5C6347" title="${escHtml(p)}">${escHtml(procLabel(p))}</span>`).join(' · ')}
-          <a href="${BASE}controle" style="font-size:11px;color:#5C6347;text-decoration:underline;margin-left:auto" onclick="event.stopPropagation()">Voir reminder</a>
+          ${a.impacted_procedures.map((p: string) => `<span style="font-size:11px;font-weight:500;color:var(--ew-kaki)" title="${escHtml(p)}">${escHtml(procLabel(p))}</span>`).join(' · ')}
+          <a href="${BASE}controle" style="font-size:11px;color:var(--ew-kaki);text-decoration:underline;margin-left:auto" onclick="event.stopPropagation()">Voir reminder</a>
         </div>` : '';
 
     const newBadge = a.status === 'nouveau' ? `<span class="tag-new-right">Nouveau</span>` : '';
@@ -855,7 +855,7 @@ const base = import.meta.env.BASE_URL;
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <span style="font-size:12px;color:var(--taupe)">${escHtml(dateStr)}</span>
             ${a.original_url
-              ? `<a href="${escHtml(a.original_url)}" target="_blank" rel="noopener" style="font-size:12px;color:#5C6347;text-decoration:underline;display:flex;align-items:center;gap:3px">Voir l'original${LINK_ICON}</a>`
+              ? `<a href="${escHtml(a.original_url)}" target="_blank" rel="noopener" style="font-size:12px;color:var(--ew-kaki);text-decoration:underline;display:flex;align-items:center;gap:3px">Voir l'original${LINK_ICON}</a>`
               : ''}
             <a href="${BASE}article?id=${escHtml(a.id)}" style="font-size:11px;color:var(--mute);text-decoration:underline">Fiche complète</a>
           </div>
@@ -1451,7 +1451,7 @@ const base = import.meta.env.BASE_URL;
     font-size: 12px;
     padding: 6px 12px;
     background: transparent;
-    color: #5C6347;
+    color: var(--ew-kaki);
     border: 0.5px solid #D5D2CB;
     border-radius: var(--radius, 4px);
     font-family: var(--font);
@@ -1471,10 +1471,10 @@ const base = import.meta.env.BASE_URL;
   .ew-btn-v3.active-direct {
     color: #1A1918;
     background: var(--bg-triage-active, #EEE7D2);
-    border-color: #5C6347;
+    border-color: var(--ew-kaki);
     font-weight: 500;
     text-decoration: underline;
-    text-decoration-color: #5C6347;
+    text-decoration-color: var(--ew-kaki);
     text-underline-offset: 2px;
   }
 
@@ -1497,7 +1497,7 @@ const base = import.meta.env.BASE_URL;
   /* ── Carte sélectionnée (article ouvert dans le panneau) ── */
   .ew-item--selected {
     background: var(--bg-hover, #EAE6DA) !important;
-    border-left: 2px solid #5C6347 !important;
+    border-left: 2px solid var(--ew-kaki) !important;
     padding-left: 12px;
   }
 
@@ -1514,9 +1514,9 @@ const base = import.meta.env.BASE_URL;
     display: inline-block;
     font-family: var(--font-mono);
     font-size: 10px;
-    color: #5C6347;
-    background: rgba(92, 99, 71, 0.1);
-    border: 0.5px solid rgba(92, 99, 71, 0.4);
+    color: var(--ew-kaki);
+    background: var(--ew-kaki-bg);
+    border: 0.5px solid var(--ew-kaki-border-hover);
     border-radius: 2px;
     padding: 0 4px;
     margin-right: 5px;
@@ -1634,7 +1634,7 @@ const base = import.meta.env.BASE_URL;
     margin: 16px 0 6px;
   }
   .ew-panel-article-html p { margin: 0 0 10px; }
-  .ew-panel-article-html a { color: #5C6347; }
+  .ew-panel-article-html a { color: var(--ew-kaki); }
   .ew-panel-article-html ul,
   .ew-panel-article-html ol { padding-left: 18px; margin: 0 0 10px; }
 
