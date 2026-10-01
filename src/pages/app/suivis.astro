@@ -1,7 +1,9 @@
 ---
 // Suivis : publications que l'abonné a choisi de garder (statut client `to_process`),
-// avec un bouton « Traité ». Dessous, l'historique des publications traitées :
-// passées de `to_process` à `read` (processed_at renseigné), datées de read_at.
+// avec un bouton « Traité ». Dessous, toutes les publications à l'état Traité
+// (`read`), qu'elles aient été suivies d'abord ou traitées directement depuis le Fil,
+// par n'importe quel membre de l'équipe ; « Traité par … le … » (state_by_name /
+// state_at), les plus récentes en premier.
 // Aucune nouvelle notion : statuts existants de tenant_article_states.
 // Même présentation que le Fil (src/scripts/fil.js).
 import ClientLayout from '../../layouts/ClientLayout.astro';
@@ -58,7 +60,7 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
       : '<div class="fil-empty">Aucune publication suivie. Depuis le Fil, « Suivre » garde une publication ici.</div>';
     doneEl.innerHTML = traitees
       // « Traité par … le … » sous le titre quand le serveur le fournit ; sinon la date de traitement.
-      .map((a) => renderRow(a, { dateText: stateText(a) ? null : `traitée le ${longDate(a.read_at)}`, selected: WIDE.matches && a.id === selectedId }))
+      .map((a) => renderRow(a, { dateText: stateText(a) || !a.read_at ? null : `traitée le ${longDate(a.read_at)}`, selected: WIDE.matches && a.id === selectedId }))
       .join('');
     document.getElementById('traitees-section')!.hidden = !traitees.length;
     document.getElementById('fil-layout')!.classList.toggle('is-single', !suivis.length && !traitees.length);
@@ -134,8 +136,7 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
       ]);
       suivis = (s.articles || []).slice().sort(byLevelThenDate);
       traitees = (r.articles || [])
-        .filter((a: any) => a.processed_at)
-        .sort((a: any, b: any) => String(b.read_at || '').localeCompare(String(a.read_at || '')));
+        .sort((a: any, b: any) => String(b.state_at || b.read_at || '').localeCompare(String(a.state_at || a.read_at || '')));
       render();
       const first = suivis[0] || traitees[0];
       showDetail(WIDE.matches && first ? first.id : null);
