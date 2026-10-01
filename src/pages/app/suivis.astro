@@ -1,0 +1,134 @@
+---
+// Suivis : publications que l'abonné a choisi de garder (statut client `to_process`),
+// avec un bouton « Traité ». Dessous, l'historique des publications traitées :
+// passées de `to_process` à `read` (processed_at renseigné), datées de read_at.
+// Aucune nouvelle notion : statuts existants de tenant_article_states.
+// Même présentation que le Fil (src/scripts/fil.js).
+import ClientLayout from '../../layouts/ClientLayout.astro';
+---
+
+<ClientLayout title="Suivis" activePage="suivis">
+  <div class="ew-header">
+    <h1 class="ew-h-title" id="suivis-title">Suivis</h1>
+  </div>
+
+  <div class="fil-layout" id="fil-layout">
+    <div>
+      <div class="fil-list" id="suivis-list"><div class="ew-loading"><div class="ew-spinner"></div></div></div>
+      <section id="traitees-section" hidden>
+        <h2 class="sv-label">Traitées</h2>
+        <div class="fil-list" id="traitees-list"></div>
+      </section>
+    </div>
+    <aside class="fil-detail" id="fil-detail" aria-live="polite">
+      <div class="fil-detail-placeholder">Sélectionnez une publication pour voir le détail.</div>
+    </aside>
+  </div>
+</ClientLayout>
+
+<style>
+  .sv-label {
+    font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--taupe); margin: 36px 0 10px;
+  }
+</style>
+
+<script>
+  import { api, toast } from '../../scripts/api';
+  import { byLevelThenDate, renderRow, renderDetail, esc, longDate } from '../../scripts/fil.js';
+
+  const WIDE = window.matchMedia('(min-width: 1100px)');
+  let suivis: any[] = [];
+  let traitees: any[] = [];
+  let selectedId: string | null = null;
+
+  const listEl = document.getElementById('suivis-list')!;
+  const doneEl = document.getElementById('traitees-list')!;
+  const detailEl = document.getElementById('fil-detail')!;
+
+  const all = () => [...suivis, ...traitees];
+
+  function render(): void {
+    document.getElementById('suivis-title')!.textContent =
+      suivis.length ? `${suivis.length} publication${suivis.length > 1 ? 's' : ''} suivie${suivis.length > 1 ? 's' : ''}` : 'Suivis';
+    // Un seul message vide ; « Traitées » n'apparaît que si elle contient quelque chose ;
+    // sans publication à sélectionner, pas de panneau de détail.
+    listEl.innerHTML = suivis.length
+      ? suivis.map((a) => renderRow(a, { action: { label: 'Traité', value: 'read' }, selected: WIDE.matches && a.id === selectedId })).join('')
+      : '<div class="fil-empty">Aucune publication suivie. Depuis le Fil, « Suivre » garde une publication ici.</div>';
+    doneEl.innerHTML = traitees
+      .map((a) => renderRow(a, { dateText: `traitée le ${longDate(a.read_at)}`, selected: WIDE.matches && a.id === selectedId }))
+      .join('');
+    document.getElementById('traitees-section')!.hidden = !traitees.length;
+    document.getElementById('fil-layout')!.classList.toggle('is-single', !suivis.length && !traitees.length);
+  }
+
+  function showDetail(id: string | null, open = false): void {
+    selectedId = id;
+    const a = all().find((x) => x.id === id);
+    const isSuivie = !!suivis.find((x) => x.id === id);
+    detailEl.innerHTML = a
+      ? renderDetail(a, { actions: isSuivie
+          ? [{ label: 'Traité', value: 'read', primary: true }, { label: 'Ne plus suivre', value: 'inbox' }]
+          : [] })
+      : '<div class="fil-detail-placeholder">Sélectionnez une publication pour voir le détail.</div>';
+    document.querySelectorAll('.fil-row').forEach((r) =>
+      r.classList.toggle('is-selected', WIDE.matches && r.getAttribute('data-id') === id));
+    const full = open && !WIDE.matches && !!a;
+    detailEl.classList.toggle('is-open', full);
+    document.body.classList.toggle('fil-detail-open', full);
+  }
+
+  function closeDetail(): void {
+    detailEl.classList.remove('is-open');
+    document.body.classList.remove('fil-detail-open');
+  }
+
+  async function act(id: string, action: string, btn?: HTMLButtonElement): Promise<void> {
+    if (btn) btn.disabled = true;
+    try {
+      await api(`/api/v1/app/articles/${id}/state`, { method: 'PATCH', body: { action } });
+      toast(action === 'read' ? 'Publication marquée comme traitée' : 'Publication retirée de vos suivis');
+      window.dispatchEvent(new Event('ew:counts-changed'));
+      closeDetail();
+      await load();
+    } catch (e: any) {
+      if (btn) btn.disabled = false;
+      toast(e.message, 'error');
+    }
+  }
+
+  function onClick(e: Event): void {
+    const target = e.target as HTMLElement;
+    const btn = target.closest('[data-action]') as HTMLButtonElement | null;
+    if (btn) { e.stopPropagation(); act(btn.dataset.id!, btn.dataset.action!, btn); return; }
+    if (target.closest('[data-close-detail]')) { closeDetail(); return; }
+    const row = target.closest('.fil-row') as HTMLElement | null;
+    if (row) showDetail(row.dataset.id!, true);
+  }
+  [listEl, doneEl, detailEl].forEach((el) => el.addEventListener('click', onClick));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDetail(); });
+  WIDE.addEventListener('change', () => { closeDetail(); render(); showDetail(selectedId); });
+
+  async function load(): Promise<void> {
+    try {
+      const [s, r] = await Promise.all([
+        // days=30 : même fenêtre que le Fil. Les publications suivies ou traitées sont
+        // renvoyées par le serveur quel que soit leur âge.
+        api('/api/v1/app/articles?status=to_process&days=30&page_size=300'),
+        api('/api/v1/app/articles?status=read&days=30&page_size=300'),
+      ]);
+      suivis = (s.articles || []).slice().sort(byLevelThenDate);
+      traitees = (r.articles || [])
+        .filter((a: any) => a.processed_at)
+        .sort((a: any, b: any) => String(b.read_at || '').localeCompare(String(a.read_at || '')));
+      render();
+      const first = suivis[0] || traitees[0];
+      showDetail(WIDE.matches && first ? first.id : null);
+    } catch (e: any) {
+      listEl.innerHTML = `<div class="fil-empty">Erreur de chargement : ${esc(e.message)}</div>`;
+    }
+  }
+
+  load();
+</script>

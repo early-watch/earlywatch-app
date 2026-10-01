@@ -54,7 +54,7 @@ import AuthLayout from '../layouts/AuthLayout.astro';
     function destination(u: any): string {
       if (u?.role === 'superadmin') return 'superadmin';
       if (hasInactiveSubscription(u)) return 'choisir-formule';
-      return 'app/tableau-de-bord';
+      return 'app/fil';
     }
 
     // Already logged in?

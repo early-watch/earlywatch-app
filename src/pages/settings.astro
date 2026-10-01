@@ -118,7 +118,7 @@ const base = import.meta.env.BASE_URL;
     color: var(--mute); display: grid; place-items: center; cursor: pointer;
     transition: background 0.2s, color 0.2s;
   }
-  .wiz-dot.active { background: var(--moutarde); color: var(--ink); border-color: var(--moutarde); font-weight: 500; }
+  .wiz-dot.active { background: var(--moutarde); color: var(--on-accent); border-color: var(--moutarde); font-weight: 500; }
   .wiz-dot.done   { background: var(--ink); color: var(--bg); border-color: var(--ink); }
   .wiz-line { flex: 1; height: 0.5px; background: var(--line); margin: 0 14px; }
   .wiz-line.done { background: var(--ink); }
@@ -169,6 +169,7 @@ const base = import.meta.env.BASE_URL;
 
 <script>
   import { api, toast } from '../scripts/api';
+  import { planLabel, isPaidPlan } from '../scripts/plans';
   import { bootstrapAuth } from '../scripts/bootstrap-auth';
 
   let settingsData: any = {};
@@ -330,7 +331,7 @@ const base = import.meta.env.BASE_URL;
       return `<button class="st-chip ${active}" data-zone="${z}">${z}</button>`;
     }).join('');
 
-    const planCls: string = t.plan === 'pro' ? 'st-plan-pro' : t.plan === 'starter' ? 'st-plan-starter' : 'st-plan-demo';
+    const planCls: string = t.plan === 'pro' || isPaidPlan(t.plan) ? 'st-plan-pro' : t.plan === 'starter' ? 'st-plan-starter' : 'st-plan-demo';
 
     const usersRows: string = users.map((u: any) => {
       const roleCls: string = u.role === 'admin' ? 'role-admin' : u.role === 'compliance_officer' ? 'role-compliance_officer' : 'role-user';
@@ -348,7 +349,7 @@ const base = import.meta.env.BASE_URL;
       <div class="st-section">
         <div class="st-section-header">
           Profil d'assujetti
-          <span class="st-plan-badge ${planCls}">${t.plan || 'demo'}</span>
+          <span class="st-plan-badge ${planCls}">${planLabel(t.plan)}</span>
         </div>
         <div class="st-section-body">
           <div class="st-form-row">

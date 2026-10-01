@@ -47,12 +47,13 @@ const base = import.meta.env.BASE_URL;
               <label>Plan</label>
               <select id="c-plan">
                 <option value="demo">Demo</option>
-                <option value="starter">Starter</option>
-                <option value="pro">Pro</option>
-                <!-- EB-MVP-003 — formules commerciales (API : POST /admin/tenants). -->
-                <option value="pnf">PNF — professions non financières (99 € HT)</option>
-                <option value="solo">Solo (199 € HT)</option>
-                <option value="equipe">Équipe (590 € HT)</option>
+                <option value="pnf">Professions non financières</option>
+                <option value="solo">Responsable LCB-FT</option>
+                <option value="equipe">Équipe</option>
+                <optgroup label="Anciennes formules">
+                  <option value="starter">Starter</option>
+                  <option value="pro">Pro</option>
+                </optgroup>
               </select>
             </div>
           </div>
@@ -165,6 +166,7 @@ const base = import.meta.env.BASE_URL;
 
 <script>
   import { api, toast } from '../scripts/api';
+  import { planLabel, isPaidPlan } from '../scripts/plans';
   import { bootstrapAuth } from '../scripts/bootstrap-auth';
 
   let allTenants: any[] = [];
@@ -207,7 +209,7 @@ const base = import.meta.env.BASE_URL;
       </tr></thead><tbody>`;
 
     for (const t of allTenants) {
-      const planCls: string = t.plan === 'pro' ? 'plan-pro' : t.plan === 'starter' ? 'plan-starter' : 'plan-demo';
+      const planCls: string = t.plan === 'pro' || isPaidPlan(t.plan) ? 'plan-pro' : t.plan === 'starter' ? 'plan-starter' : 'plan-demo';
       const procPct: number = t.procedures_count ? Math.round(t.procedures_validated / t.procedures_count * 100) : 0;
 
       const modules: any[] = [
@@ -227,7 +229,7 @@ const base = import.meta.env.BASE_URL;
           <div style="font-size:11px;color:var(--mute)">${created}</div>
         </td>
         <td>${t.entity_type || '\u2014'}</td>
-        <td><span class="plan-badge ${planCls}">${t.plan}</span></td>
+        <td><span class="plan-badge ${planCls}">${planLabel(t.plan)}</span></td>
         <td>${t.users_count}</td>
         <td>${t.procedures_validated}/${t.procedures_count} <span style="font-size:11px;color:var(--mute)">(${procPct}%)</span></td>
         <td>${t.reminders_pending > 0 ? '<b style="color:#5C6347">' + t.reminders_pending + '</b>' : '0'}</td>

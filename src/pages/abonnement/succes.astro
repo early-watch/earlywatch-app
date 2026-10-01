@@ -20,7 +20,7 @@ import AuthLayout from '../../layouts/AuthLayout.astro';
     const msg = document.getElementById('msg')!;
     const go = document.getElementById('go') as HTMLAnchorElement;
     const retry = document.getElementById('retry') as HTMLButtonElement;
-    go.href = BASE + 'app/tableau-de-bord';
+    go.href = BASE + 'app/fil';
 
     // L'identifiant de session Stripe ne sert à rien ici : on le retire de l'URL.
     if (window.location.search) history.replaceState(null, '', window.location.pathname);

@@ -3,6 +3,7 @@ import AuthLayout from '../layouts/AuthLayout.astro';
 // EB-MVP-002 — compte connecté sans abonnement actif (API : 402).
 // EB-MVP-003 — paiement : formules proposées selon le profil (GET /billing/plans),
 // pays de facturation (France seule, TVA option A), redirection vers Stripe Checkout.
+// La formule Équipe n'est pas proposée ici : sur démonstration seulement.
 ---
 
 <AuthLayout title="Early Watch — Choisissez votre formule">
@@ -15,6 +16,10 @@ import AuthLayout from '../layouts/AuthLayout.astro';
     <div id="plans" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
       <p style="font-size:12px;color:var(--mute)">Chargement des formules…</p>
     </div>
+    <p style="font-size:12px;color:var(--mute);line-height:1.6;margin:-4px 0 16px">
+      Formule Équipe : sur démonstration seulement,
+      <a href="mailto:maria@early.consulting?subject=D%C3%A9monstration%20Early%20Watch" style="color:var(--taupe)">demandez une démonstration</a>.
+    </p>
 
     <div class="ew-field">
       <label class="ew-label" for="country">Pays de facturation</label>
@@ -48,7 +53,7 @@ import AuthLayout from '../layouts/AuthLayout.astro';
   <style is:global>
     .ew-plan { display: block; border: 1px solid var(--line, #E4E1D8); border-radius: 6px; padding: 12px 14px; cursor: pointer; }
     .ew-plan:has(input:checked) { border-color: var(--taupe); }
-    .ew-plan input { margin: 0 8px 0 0; }
+    .ew-plan input { margin: 0 8px 0 0; accent-color: var(--accent); }
     .ew-plan .row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 13px; color: var(--ink); }
     .ew-plan .price { white-space: nowrap; }
     .ew-plan .detail { font-size: 11px; color: var(--mute); margin-top: 4px; padding-left: 21px; }
@@ -63,6 +68,8 @@ import AuthLayout from '../layouts/AuthLayout.astro';
 
     type Plan = { code: string; label: string; price_ht_cents: number; price_ttc_cents: number | null;
                   max_users: number | null; available: boolean };
+
+    const DEMO_ONLY = ['equipe'];   // sur démonstration seulement
 
     const form = document.getElementById('checkout-form') as HTMLFormElement;
     const plansEl = document.getElementById('plans')!;
@@ -139,7 +146,7 @@ import AuthLayout from '../layouts/AuthLayout.astro';
         document.getElementById('not-admin')!.style.display = 'block';
       }
       api('/api/v1/billing/plans')
-        .then(renderPlans)
+        .then((plans: Plan[]) => renderPlans(plans.filter((p) => !DEMO_ONLY.includes(p.code))))
         .catch(() => {
           const p = document.createElement('p');
           p.style.cssText = 'font-size:12px;color:var(--mute);line-height:1.6';
@@ -156,7 +163,7 @@ import AuthLayout from '../layouts/AuthLayout.astro';
         .then(u => {
           if (u && (u.subscription_status === 'active' || u.role === 'superadmin')) {
             sessionStorage.setItem('ew_user', JSON.stringify(u));
-            window.location.href = BASE + (u.role === 'superadmin' ? 'superadmin' : 'app/tableau-de-bord');
+            window.location.href = BASE + (u.role === 'superadmin' ? 'superadmin' : 'app/fil');
           }
         })
         .catch(() => {});

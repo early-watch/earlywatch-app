@@ -2,6 +2,8 @@
 import AuthLayout from '../layouts/AuthLayout.astro';
 // EB-MVP-002 — inscription en libre-service. La liste des profils (et le libellé du
 // ressort par profession) vient de l'API : GET /api/v1/auth/signup-profiles.
+// Ressort : liste déroulante (src/data/ressorts.ts), affichée seulement si le profil a
+// un ressort (ressort_label) ET des ressorts connus.
 ---
 
 <AuthLayout title="Early Watch — Créer un compte">
@@ -40,16 +42,25 @@ import AuthLayout from '../layouts/AuthLayout.astro';
     </div>
     <div class="ew-field" id="ressort-field" style="display:none">
       <label class="ew-label" for="ressort" id="ressort-label">Ressort</label>
-      <input class="ew-input" id="ressort" maxlength="255">
-      <div style="font-size:11px;color:var(--mute);margin-top:4px">Facultatif.</div>
+      <select class="ew-input" id="ressort"></select>
+      <div style="font-size:11px;color:var(--mute);margin-top:4px">Facultatif. Les publications locales suivies dépendent de ce choix.</div>
     </div>
     <label style="display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--ink);line-height:1.5;margin:6px 0 16px">
       <input type="checkbox" id="terms" required style="margin-top:2px">
       <span>J'accepte les <a href={`${import.meta.env.BASE_URL}cgv`} target="_blank" rel="noopener" style="color:var(--taupe)">conditions générales</a>.</span>
     </label>
+    <label style="display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--ink);line-height:1.5;margin:-8px 0 16px">
+      <input type="checkbox" id="pro" required style="margin-top:2px">
+      <span>Je déclare agir à titre professionnel.</span>
+    </label>
     <div class="ew-login-error" id="err"></div>
-    <button type="submit" class="ew-login-btn" id="btn">Créer mon compte</button>
+    <button type="submit" class="ew-login-btn" id="btn" disabled>Créer mon compte</button>
   </form>
+
+  <style>
+    #btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    #btn:disabled:hover { background: transparent; }
+  </style>
 
   <div style="margin-top:20px;text-align:center;font-size:12px;color:var(--mute)">
     Déjà un compte ?
@@ -58,6 +69,7 @@ import AuthLayout from '../layouts/AuthLayout.astro';
 
   <script>
     import { API } from '../scripts/api';
+    import { RESSORTS } from '../data/ressorts';
 
     const BASE = import.meta.env.BASE_URL || '/earlywatch-app/';
     const FAMILY_LABELS: Record<string, string> = {
@@ -70,8 +82,15 @@ import AuthLayout from '../layouts/AuthLayout.astro';
     const select = document.getElementById('profile') as HTMLSelectElement;
     const ressortField = document.getElementById('ressort-field')!;
     const ressortLabel = document.getElementById('ressort-label')!;
-    const ressortInput = document.getElementById('ressort') as HTMLInputElement;
+    const ressortSelect = document.getElementById('ressort') as HTMLSelectElement;
     const err = document.getElementById('err')!;
+    const btn = document.getElementById('btn') as HTMLButtonElement;
+    const pro = document.getElementById('pro') as HTMLInputElement;
+
+    // Service réservé aux professionnels (CGV, art. 1) : sans la déclaration, le bouton reste inactif.
+    const syncButton = () => { btn.disabled = !pro.checked; };
+    pro.addEventListener('change', syncButton);
+    syncButton();
 
     function showError(text: string) {
       err.textContent = text;
@@ -107,12 +126,16 @@ import AuthLayout from '../layouts/AuthLayout.astro';
 
     select.addEventListener('change', () => {
       const p = profiles.find(x => x.code === select.value);
-      if (p && p.ressort_label) {
-        ressortLabel.textContent = p.ressort_label;
+      const list = (p && p.ressort_label && RESSORTS[p.code]) || [];
+      if (p && list.length) {
+        ressortLabel.textContent = p.ressort_label!;
+        ressortSelect.innerHTML = '<option value="">— Choisir —</option>'
+          + list.map(r => `<option value="${esc(r.value)}">${esc(r.label)}</option>`).join('')
+          + '<option value="">Autre / non listé</option>';
         ressortField.style.display = 'block';
       } else {
         ressortField.style.display = 'none';
-        ressortInput.value = '';
+        ressortSelect.innerHTML = '';
       }
     });
 
@@ -129,8 +152,8 @@ import AuthLayout from '../layouts/AuthLayout.astro';
       }
       if (password.length < 12) return showError('Le mot de passe doit contenir au moins 12 caractères.');
       if (!terms) return showError('Vous devez accepter les conditions générales pour créer un compte.');
+      if (!pro.checked) return showError('Le service est réservé aux professionnels.');
 
-      const btn = document.getElementById('btn') as HTMLButtonElement;
       btn.disabled = true;
       btn.textContent = 'Création…';
       try {
@@ -138,8 +161,11 @@ import AuthLayout from '../layouts/AuthLayout.astro';
           email, password,
           first_name: val('first_name'), last_name: val('last_name'),
           organisation: val('organisation'), profile: select.value, accept_terms: true,
+          // Déclaration « Je déclare agir à titre professionnel » (CGV, art. 1) : date conservée
+          // côté serveur (tenants.professional_use_declared_at).
+          professional_use: pro.checked,
         };
-        if (ressortField.style.display !== 'none' && val('ressort')) body.ressort = val('ressort');
+        if (ressortField.style.display !== 'none' && ressortSelect.value) body.ressort = ressortSelect.value;
         const r = await fetch(`${API}/api/v1/auth/signup`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -153,8 +179,8 @@ import AuthLayout from '../layouts/AuthLayout.astro';
         window.location.href = BASE + 'verifier-email?email=' + encodeURIComponent(email);
       } catch (ex: any) {
         showError(ex.message || 'Erreur de connexion au serveur.');
-        btn.disabled = false;
         btn.textContent = 'Créer mon compte';
+        syncButton();
       }
     });
 

@@ -1,91 +1,211 @@
 ---
+// Paramètres (MVP) — page unique : établissement, profil, e-mails, utilisateurs,
+// abonnement. Chaque information n'apparaît qu'une fois ; aucun module hors MVP.
+//
+// Sources : GET /api/v1/settings (tenant, settings, users), GET /api/v1/auth/signup-profiles
+// (libellés des profils), GET /api/v1/billing/status (abonnement).
+// Écritures : PUT /api/v1/settings (nom de l'établissement, préférences e-mail),
+// POST /api/v1/billing/portal-session (gestion de l'abonnement).
 import ClientLayout from '../../layouts/ClientLayout.astro';
 ---
 
 <ClientLayout title="Paramètres" activePage="parametres">
-
   <div class="ew-header">
-    <h1 class="ew-h-title">Profil organisation</h1>
+    <h1 class="ew-h-title">Paramètres</h1>
   </div>
 
-  <div style="max-width:520px">
-    <div style="background:var(--bg-side);border:0.5px solid var(--line);border-radius:var(--radius);padding:24px;margin-bottom:16px">
-      <div id="org-name" style="font-size:15px;font-weight:500;color:var(--ink);margin-bottom:4px">—</div>
-      <div id="org-type" style="font-size:12px;color:var(--taupe)">—</div>
-    </div>
-    <!-- EB-MVP-003 — abonnement : formule, statut, échéance ; gestion dans le portail Stripe. -->
-    <div id="billing" style="display:none;background:var(--bg-side);border:0.5px solid var(--line);border-radius:var(--radius);padding:24px;margin-bottom:16px">
-      <div style="font-size:12px;color:var(--taupe);margin-bottom:10px">Abonnement</div>
-      <div id="billing-plan" style="font-size:15px;font-weight:500;color:var(--ink);margin-bottom:4px">—</div>
-      <div id="billing-status" style="font-size:12px;color:var(--taupe);margin-bottom:4px">—</div>
-      <div id="billing-next" style="font-size:12px;color:var(--taupe)"></div>
-      <button type="button" class="ew-btn ew-btn-primary" id="billing-manage" style="display:none;margin-top:16px">Gérer mon abonnement</button>
-      <div id="billing-manage-note" style="display:none;font-size:11px;color:var(--taupe);margin-top:8px">
-        Carte bancaire, factures et résiliation, sur le portail sécurisé de Stripe.
-      </div>
-      <div id="billing-error" style="display:none;font-size:12px;color:var(--color-error);margin-top:8px"></div>
-    </div>
-
-    <div style="font-size:13px;color:var(--taupe);line-height:1.6">
-      La configuration détaillée du profil organisation (responsable LCB-FT, outils, périmètre) est accessible via la page Paramètres complète.<br>
-      <a href="#" style="color:#5C6347;text-decoration:underline" id="link-settings">Accéder aux paramètres →</a>
-    </div>
+  <div class="pm-wrap" id="pm-wrap">
+    <div class="ew-loading"><div class="ew-spinner"></div></div>
   </div>
-
 </ClientLayout>
 
+<style>
+  .pm-wrap { max-width: 720px; }
+  :global(.pm-section) { padding: 22px 0 26px; border-top: 0.5px solid var(--line); }
+  :global(.pm-section:first-child) { border-top: none; padding-top: 4px; }
+  :global(.pm-h2) {
+    font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--taupe); margin: 0 0 14px;
+  }
+  :global(.pm-row) { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 6px 20px; padding: 6px 0; font-size: 13.5px; }
+  :global(.pm-k) { color: var(--taupe); }
+  :global(.pm-v) { color: var(--ink); overflow-wrap: anywhere; }
+  :global(.pm-hint) { font-size: 12.5px; color: var(--mute); line-height: 1.55; margin-top: 8px; }
+  :global(.pm-hint a) { color: var(--accent); }
+  :global(.pm-form) { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  :global(.pm-input) {
+    font-family: inherit; font-size: 13.5px; color: var(--ink); background: var(--bg);
+    border: 0.5px solid var(--line-strong); border-radius: var(--radius); padding: 7px 10px;
+    flex: 1 1 240px; min-width: 0;
+  }
+  :global(.pm-btn) {
+    font-family: inherit; font-size: 12.5px; color: var(--on-accent); background: var(--accent);
+    border: 0.5px solid var(--accent); border-radius: var(--radius); padding: 7px 14px; cursor: pointer;
+    text-decoration: none; display: inline-block;
+  }
+  :global(.pm-btn:disabled) { opacity: 0.5; cursor: default; }
+  :global(.pm-choice) { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; margin: 0; font-size: 13.5px; font-weight: 400; color: var(--ink); cursor: pointer; }
+  :global(.pm-choice input) { flex: 0 0 auto; width: auto; margin-top: 3px; accent-color: var(--accent); }
+  :global(.pm-choice > span) { flex: 1 1 auto; min-width: 0; }
+  :global(.pm-choice small) { display: block; color: var(--mute); font-size: 12px; margin-top: 2px; }
+  :global(.pm-users) { width: 100%; border-collapse: collapse; font-size: 13px; }
+  :global(.pm-users th) { text-align: left; font-weight: 500; font-size: 11.5px; color: var(--taupe); padding: 6px 12px 6px 0; border-bottom: 0.5px solid var(--line); }
+  :global(.pm-users td) { padding: 9px 12px 9px 0; border-bottom: 0.5px solid var(--line); vertical-align: top; }
+  :global(.pm-users td.pm-email) { overflow-wrap: anywhere; }
+  :global(.pm-users td.pm-nowrap) { white-space: nowrap; }
+  :global(.pm-tag) { font-family: var(--font-mono); font-size: 10px; color: var(--accent); margin-left: 6px; }
+  :global(.pm-status) { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: var(--radius-sm); border: 0.5px solid var(--line-strong); color: var(--taupe); }
+  :global(.pm-status.ok) { color: var(--on-accent); background: var(--accent); border-color: var(--accent); }
+  :global(.pm-status.warn) { color: var(--color-error); border-color: var(--color-error); }
+
+  @media (max-width: 640px) {
+    :global(.pm-row) { grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 8px 0; }
+    :global(.pm-users thead) { display: none; }
+    :global(.pm-users tr) { display: block; padding: 10px 0; border-bottom: 0.5px solid var(--line); }
+    :global(.pm-users td) { display: block; padding: 1px 0; border: none; }
+  }
+</style>
+
 <script>
-  import { api, getUser, formatDate, openBillingPortal } from '../../scripts/api';
+  import { API, api, getUser, toast } from '../../scripts/api';
+  import { planLabel } from '../../scripts/plans.js';
+  import { ressortLabel } from '../../data/ressorts';
+
   const BASE = import.meta.env.BASE_URL || '/earlywatch-app/';
+  const wrap = document.getElementById('pm-wrap')!;
+  const me = getUser() || {};
+  const isAdmin = me.role === 'admin' || me.role === 'superadmin';
 
-  const user = getUser();
-  if (user) {
-    const nameEl = document.getElementById('org-name');
-    const typeEl = document.getElementById('org-type');
-    if (nameEl) nameEl.textContent = user.tenant_name || '—';
-    if (typeEl) typeEl.textContent = 'Tenant · ' + (user.role || '—');
+  const esc = (s: any) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+  const date = (iso?: string | null) => iso ? new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  // Le ressort est stocké normalisé en minuscules (normalize_ressort) : majuscule à l'affichage.
+  const capitalize = (v: string) => v.charAt(0).toUpperCase() + v.slice(1);
+  const row = (k: string, v: string) => `<div class="pm-row"><div class="pm-k">${k}</div><div class="pm-v">${v}</div></div>`;
+
+  // Préférences e-mail : trois choix exclusifs, traduits vers les deux champs lus par
+  // le serveur (weekly_digest.py : récapitulatif envoyé si alert_digest ∈ {weekly, daily}
+  // OU alert_email_enabled ; alertes importantes si alert_email_enabled).
+  const EMAIL_CHOICES = [
+    { value: 'none', label: 'Aucun e-mail', hint: 'Vous consultez la veille dans l’application.',
+      patch: { alert_email_enabled: false, alert_digest: 'immediate' } },
+    { value: 'immediate', label: 'Alertes importantes et récapitulatif hebdomadaire', hint: 'Un e-mail pour les publications importantes, et un récapitulatif chaque semaine.',
+      patch: { alert_email_enabled: true, alert_digest: 'immediate' } },
+    { value: 'weekly', label: 'Récapitulatif hebdomadaire seulement', hint: 'Un e-mail par semaine.',
+      patch: { alert_email_enabled: false, alert_digest: 'weekly' } },
+  ];
+  function emailChoice(s: any): string {
+    if (s.alert_email_enabled) return 'immediate';
+    return s.alert_digest === 'weekly' || s.alert_digest === 'daily' ? 'weekly' : 'none';
   }
 
-  const linkEl = document.getElementById('link-settings');
-  if (linkEl) linkEl.setAttribute('href', BASE + 'settings');
+  const ROLE_LABELS: Record<string, string> = { admin: 'Administrateur', editor: 'Éditeur', reader: 'Lecteur', superadmin: 'Early Watch' };
 
-  // ---- Abonnement (EB-MVP-003) ----
-  const PLAN_LABELS: Record<string, string> = {
-    pnf: 'Professions non financières', solo: 'Solo', equipe: 'Équipe',
-  };
-  const STATUS_LABELS: Record<string, string> = {
-    active: 'Actif', past_due: 'Paiement en échec', canceled: 'Résilié', none: 'Aucun abonnement',
+  const SUB_LABELS: Record<string, [string, string]> = {
+    active: ['Actif', 'ok'], past_due: ['Paiement en retard', 'warn'], canceled: ['Résilié', ''], none: ['Aucun abonnement', ''],
   };
 
-  if (user && user.role !== 'superadmin') {
-    api('/api/v1/billing/status').then((s) => {
-      document.getElementById('billing')!.style.display = 'block';
-      document.getElementById('billing-plan')!.textContent =
-        s.plan ? `Formule ${PLAN_LABELS[s.plan] || s.plan}` : 'Formule sur mesure';
-      let status = STATUS_LABELS[s.subscription_status] || s.subscription_status;
-      if (s.subscription_status === 'past_due' && s.grace_ends_at) {
-        status += ` — accès maintenu jusqu'au ${formatDate(s.grace_ends_at)}`;
-      }
-      document.getElementById('billing-status')!.textContent = status;
-      if (s.current_period_end && s.subscription_status !== 'canceled') {
-        document.getElementById('billing-next')!.textContent = `Prochaine échéance : ${formatDate(s.current_period_end)}`;
-      }
-      if (s.can_manage && user.role === 'admin') {
-        const btn = document.getElementById('billing-manage') as HTMLButtonElement;
-        btn.style.display = 'inline-block';
-        document.getElementById('billing-manage-note')!.style.display = 'block';
-        btn.addEventListener('click', async () => {
-          btn.disabled = true;
-          try {
-            await openBillingPortal();
-          } catch (err) {
-            const e = document.getElementById('billing-error')!;
-            e.textContent = (err as Error).message || 'Le portail est indisponible pour le moment.';
-            e.style.display = 'block';
-            btn.disabled = false;
-          }
-        });
-      }
-    }).catch(() => { /* section masquée si le statut est indisponible */ });
+  function subscriptionHtml(billing: any, t: any): string {
+    if (!billing) {
+      return row('Formule', esc(planLabel(t.plan))) + '<div class="pm-hint">Informations d’abonnement indisponibles pour le moment.</div>';
+    }
+    const [label, cls] = SUB_LABELS[billing.subscription_status] || [esc(billing.subscription_status), ''];
+    const grace = billing.subscription_status === 'past_due' && billing.grace_ends_at
+      ? `<div class="pm-hint">Accès maintenu jusqu’au ${date(billing.grace_ends_at)}. Mettez à jour votre moyen de paiement pour éviter la suspension.</div>` : '';
+    const action = billing.can_manage
+      ? `<button type="button" class="pm-btn" id="pm-portal" ${isAdmin ? '' : 'disabled'}>Gérer l’abonnement</button>`
+      : `<a class="pm-btn" href="${BASE}choisir-formule">Choisir une formule</a>`;
+    return row('Formule', esc(planLabel(billing.plan || t.plan)))
+      + row('Statut', `<span class="pm-status ${cls}">${label}</span>`)
+      + (billing.current_period_end ? row('Prochaine échéance', date(billing.current_period_end)) : '')
+      + grace
+      + `<div style="margin-top:14px">${action}</div>`
+      + (billing.can_manage ? '<div class="pm-hint">Factures, moyen de paiement et résiliation : portail sécurisé de notre prestataire de paiement.</div>' : '');
   }
+
+  async function load(): Promise<void> {
+    let data: any;
+    try {
+      data = await api('/api/v1/settings');
+    } catch (e: any) {
+      wrap.innerHTML = `<div class="pm-hint">Erreur de chargement : ${esc(e.message)}</div>`;
+      return;
+    }
+    const [profiles, billing] = await Promise.all([
+      fetch(`${API}/api/v1/auth/signup-profiles`).then((r) => (r.ok ? r.json() : [])).then((l) => (Array.isArray(l) ? l : [])).catch(() => []),
+      api('/api/v1/billing/status').catch(() => null),
+    ]);
+    const t = data.tenant || {};
+    const s = data.settings || {};
+    const users: any[] = data.users || [];
+    const profile = (profiles as any[]).find((p) => p.code === String(s.entity_type || '').toLowerCase());
+    const profileLabel = profile ? profile.label : (s.entity_type || 'Non renseigné');
+    const choice = emailChoice(s);
+
+    wrap.innerHTML = `
+      <section class="pm-section">
+        <h2 class="pm-h2">Établissement</h2>
+        ${isAdmin
+          ? `<form class="pm-form" id="pm-name-form"><input class="pm-input" id="pm-name" maxlength="255" value="${esc(t.name)}" aria-label="Nom de l’établissement"><button class="pm-btn" type="submit">Enregistrer</button></form>`
+          : row('Nom', esc(t.name))}
+      </section>
+
+      <section class="pm-section">
+        <h2 class="pm-h2">Profil</h2>
+        ${row('Activité', esc(profileLabel))}
+        ${s.ressort ? row(esc(profile?.ressort_label || 'Ressort'), esc(capitalize(ressortLabel(s.ressort)!))) : ''}
+        <div class="pm-hint">Votre profil détermine les sources suivies. Pour le modifier, écrivez-nous : <a href="mailto:maria@early.consulting">maria@early.consulting</a>.</div>
+      </section>
+
+      <section class="pm-section">
+        <h2 class="pm-h2">E-mails</h2>
+        <form id="pm-email-form">
+          ${EMAIL_CHOICES.map((c) => `
+            <label class="pm-choice"><input type="radio" name="pm-email" value="${c.value}" ${c.value === choice ? 'checked' : ''} ${isAdmin ? '' : 'disabled'}>
+              <span>${c.label}<small>${c.hint}</small></span></label>`).join('')}
+        </form>
+      </section>
+
+      <section class="pm-section">
+        <h2 class="pm-h2">Utilisateurs</h2>
+        <table class="pm-users">
+          <thead><tr><th>Nom</th><th>E-mail</th><th>Rôle</th><th>Dernière connexion</th></tr></thead>
+          <tbody>${users.map((u) => `
+            <tr>
+              <td>${esc([u.first_name, u.last_name].filter(Boolean).join(' ') || '—')}${u.id === me.id ? '<span class="pm-tag">vous</span>' : ''}</td>
+              <td class="pm-email">${esc(u.email)}</td>
+              <td class="pm-nowrap">${ROLE_LABELS[u.role] || esc(u.role)}</td>
+              <td class="pm-nowrap">${u.last_login_at ? date(u.last_login_at) : 'Jamais'}</td>
+            </tr>`).join('')}</tbody>
+        </table>
+      </section>
+
+      <section class="pm-section">
+        <h2 class="pm-h2">Abonnement</h2>
+        ${subscriptionHtml(billing, t)}
+      </section>`;
+
+    document.getElementById('pm-name-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = (document.getElementById('pm-name') as HTMLInputElement).value.trim();
+      if (name.length < 2) { toast('Nom trop court', 'error'); return; }
+      try { await api('/api/v1/settings', { method: 'PUT', body: { name } }); toast('Nom enregistré'); }
+      catch (err: any) { toast(err.message, 'error'); }
+    });
+
+    document.getElementById('pm-email-form')?.addEventListener('change', async (e) => {
+      const c = EMAIL_CHOICES.find((x) => x.value === (e.target as HTMLInputElement).value);
+      if (!c) return;
+      try { await api('/api/v1/settings', { method: 'PUT', body: c.patch }); toast('Préférence enregistrée'); }
+      catch (err: any) { toast(err.message, 'error'); }
+    });
+
+    document.getElementById('pm-portal')?.addEventListener('click', async (e) => {
+      const btn = e.currentTarget as HTMLButtonElement;
+      btn.disabled = true;
+      try { const r = await api('/api/v1/billing/portal-session', { method: 'POST' }); window.location.href = r.url; }
+      catch (err: any) { btn.disabled = false; toast(err.message, 'error'); }
+    });
+  }
+
+  load();
 </script>

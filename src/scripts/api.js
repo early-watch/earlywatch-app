@@ -52,11 +52,6 @@ export function formatEuros(cents) {
     style: 'currency', currency: 'EUR', minimumFractionDigits: cents % 100 ? 2 : 0,
   });
 }
-// Ouvre le portail client Stripe (carte, factures, résiliation). Administrateur du tenant.
-export async function openBillingPortal() {
-  const { url } = await api('/api/v1/billing/portal-session', { method: 'POST' });
-  window.location.href = url;
-}
 
 // ---- Client view auth ----
 export function requireClientAuth() {
