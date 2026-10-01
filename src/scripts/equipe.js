@@ -45,12 +45,20 @@ export function seatsLabel(used, limit) {
   return limit == null ? `${used} ${unit}` : `${used} / ${limit} ${unit}`;
 }
 
+// Formule supérieure de la même ligne (grille du 01/10/2026) :
+// professions non financières pnf → cabinet ; établissements financiers solo → equipe.
+export const UPGRADES = {
+  pnf: { code: 'cabinet', text: 'Passez à la formule Cabinet' },
+  solo: { code: 'equipe', text: 'Passez à Équipe' },
+};
+
 /** Message affiché quand toutes les places sont prises. */
 export function fullMessage(limit, plan) {
-  if (plan === 'equipe') {
+  const up = UPGRADES[plan];
+  if (!up) {
     return `Les ${limit} places de votre formule sont occupées. Retirez un utilisateur pour en inviter un autre.`;
   }
-  return `Votre formule comprend ${limit} utilisateur${limit > 1 ? 's' : ''}. Passez à Équipe pour inviter des collègues`;
+  return `Votre formule comprend ${limit} utilisateur${limit > 1 ? 's' : ''}. ${up.text} pour inviter des collègues`;
 }
 
 /** Jamais connecté (et pas soi-même) : invitation en attente. */
@@ -106,7 +114,7 @@ export function usersSectionHtml(opts) {
          <button type="button" class="pm-btn" id="pm-invite-open" ${full || formOpen ? 'disabled' : ''}>Ajouter un utilisateur</button></div>`
     : '';
   const fullNote = admin && full
-    ? `<div class="pm-hint pm-full" id="pm-full">${esc(fullMessage(limit, plan))}${plan === 'equipe' ? '' : ` — <a href="${esc(upgradeHref)}" data-upgrade>gérer l’abonnement</a>.`}</div>`
+    ? `<div class="pm-hint pm-full" id="pm-full">${esc(fullMessage(limit, plan))}${UPGRADES[plan] ? ` — <a href="${esc(upgradeHref)}" data-upgrade>gérer l’abonnement</a>.` : ''}</div>`
     : '';
   const rows = users.map((u) => `
     <tr data-user="${esc(u.id)}">

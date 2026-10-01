@@ -26,7 +26,9 @@ test('libellés', () => {
   assert.equal(seatsLabel(1, 1), '1 / 1 utilisateur');
   assert.equal(seatsLabel(2, null), '2 utilisateurs');
   assert.equal(fullMessage(1, 'solo'), 'Votre formule comprend 1 utilisateur. Passez à Équipe pour inviter des collègues');
+  assert.equal(fullMessage(1, 'pnf'), 'Votre formule comprend 1 utilisateur. Passez à la formule Cabinet pour inviter des collègues');
   assert.match(fullMessage(10, 'equipe'), /Les 10 places/);
+  assert.match(fullMessage(5, 'cabinet'), /Les 5 places/);
 });
 
 test('invitation en attente : jamais connecté, pas soi-même', () => {
@@ -42,6 +44,12 @@ test('admin : compteur, Renvoyer, Retirer sauf sur sa ligne et le superadmin', (
   assert.doesNotMatch(h, /data-remove="a"/);
   assert.doesNotMatch(h, /data-remove="s"/);
   assert.doesNotMatch(h, /disabled/);
+});
+
+test('places pleines, formule du haut de ligne (cabinet, equipe) : pas de lien vers l’abonnement', () => {
+  const h = usersSectionHtml({ users: U.slice(0, 1), used: 5, meId: 'a', admin: true, limit: 5, plan: 'cabinet', upgradeHref: '#' });
+  assert.match(h, /Les 5 places de votre formule sont occupées/);
+  assert.doesNotMatch(h, /data-upgrade/);
 });
 
 test('places pleines : bouton désactivé et message', () => {
