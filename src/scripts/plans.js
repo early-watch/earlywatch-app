@@ -1,10 +1,10 @@
 // Noms des formules (décisions des 30/09 et 01/10/2026). Codes techniques inchangés ;
 // mêmes libellés que app/core/billing_plans.py (GET /api/v1/billing/plans).
-// Professions non financières : pnf (1 utilisateur), cabinet (jusqu'à 5).
+// Professions non financières : pnf (1 utilisateur), pnf_cabinet (jusqu'à 5).
 // Établissements financiers et consultants : solo (1 utilisateur), equipe (jusqu'à 10).
 export const PLAN_LABELS = {
   pnf: 'Professions non financières',
-  cabinet: 'Cabinet',
+  pnf_cabinet: 'Cabinet',
   solo: 'Responsable LCB-FT',
   equipe: 'Équipe',
 };
