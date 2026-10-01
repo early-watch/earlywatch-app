@@ -97,7 +97,7 @@ import AuthLayout from '../layouts/AuthLayout.astro';
         const detail = document.createElement('div');
         detail.className = 'detail';
         const ttc = p.price_ttc_cents != null ? `soit ${formatEuros(p.price_ttc_cents)} TTC` : 'TVA calculée au paiement';
-        const users = p.max_users ? ` · ${p.max_users} utilisateur${p.max_users > 1 ? 's' : ''}` : '';
+        const users = !p.max_users ? '' : p.max_users > 1 ? ` · jusqu'à ${p.max_users} utilisateurs` : ' · 1 utilisateur';
         detail.textContent = ttc + users + (p.available ? '' : ' · bientôt disponible');
         label.append(row, detail);
         plansEl.append(label);
