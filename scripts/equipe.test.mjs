@@ -66,3 +66,17 @@ test('échappement', () => {
   const h = usersSectionHtml({ users: [{ id: 'x', first_name: '<b>', email: 'a"b@x.fr', role: 'reader' }], meId: 'a', admin: true });
   assert.doesNotMatch(h, /<b>/);
 });
+
+import { parseTeam } from '../src/scripts/equipe.js';
+
+test('réponse GET /tenants/{slug}/users (#291) : objet avec places', () => {
+  const t = parseTeam({ users: U, seats_used: 2, seats_max: 10, plan: 'equipe' });
+  assert.equal(t.users.length, 3);
+  assert.equal(t.used, 2);
+  assert.equal(t.limit, 10);
+  assert.equal(parseTeam({ users: [], seats_used: 0, seats_max: null }).limit, null);   // hors catalogue
+  assert.equal(parseTeam(U).limit, undefined);                                          // ancienne liste : repli
+  assert.equal(parseTeam({ detail: 'x' }), null);
+  const h = usersSectionHtml({ users: U, used: 5, meId: 'a', admin: true, limit: 10, plan: 'equipe' });
+  assert.match(h, /5 \/ 10 utilisateurs/);                                               // compte du serveur
+});

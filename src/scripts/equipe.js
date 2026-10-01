@@ -1,14 +1,13 @@
 // Paramètres > Utilisateurs (gestion par l'administrateur du compte).
 //
-// API (earlybrief-platform, app/api/v1/tenants.py) :
-//   GET    /api/v1/tenants/{slug}/users                          → liste
-//   POST   /api/v1/tenants/{slug}/users                          → invitation (sans mot de passe)
-//   POST   /api/v1/tenants/{slug}/users/{id}/resend-invitation   → renvoi de l'invitation
-//   DELETE /api/v1/tenants/{slug}/users/{id}                     → retrait
-// Places : comptées comme le serveur (ensure_seat_available) — utilisateurs actifs,
-// hors superadmin. Limite : max_users de la formule (GET /billing/plans), ou
-// billing.max_users si le statut d'abonnement le fournit ; aucune limite pour une
-// formule hors catalogue.
+// API (earlybrief-platform, app/api/v1/tenants.py, #291) :
+//   GET    /api/v1/tenants/{slug}/users                  → {users, seats_used, seats_max, plan}
+//   POST   /api/v1/tenants/{slug}/users                  → invitation (sans mot de passe) ; invitation_sent
+//   POST   /api/v1/tenants/{slug}/users/{id}/invitation  → renvoi ; {invitation_sent}
+//   DELETE /api/v1/tenants/{slug}/users/{id}             → retrait (le dernier admin est protégé)
+// Places : seats_used / seats_max du serveur. Repli (ancienne réponse en liste) :
+// comptage identique au serveur (actifs, hors superadmin) et max_users de la formule
+// (GET /billing/plans) ; aucune limite pour une formule hors catalogue.
 
 export const ROLE_LABELS = { admin: 'Administrateur', editor: 'Éditeur', reader: 'Lecteur', superadmin: 'Early Watch' };
 
@@ -18,6 +17,19 @@ const fullName = (u) => [u.first_name, u.last_name].filter(Boolean).join(' ');
 
 export function seatsUsed(users) {
   return (users || []).filter((u) => u.role !== 'superadmin' && u.is_active !== false).length;
+}
+
+/** Réponse de GET /tenants/{slug}/users : objet (#291) ou ancienne liste. */
+export function parseTeam(res) {
+  if (Array.isArray(res)) return { users: res, used: null, limit: undefined };
+  if (res && Array.isArray(res.users)) {
+    return {
+      users: res.users,
+      used: Number.isInteger(res.seats_used) ? res.seats_used : null,
+      limit: Number.isInteger(res.seats_max) ? res.seats_max : (res.seats_max === null ? null : undefined),
+    };
+  }
+  return null;
 }
 
 export function seatLimit(billing, plans) {
@@ -86,8 +98,8 @@ export function inviteFormHtml() {
  * Non administrateur : liste en lecture seule (sans compteur ni actions).
  */
 export function usersSectionHtml(opts) {
-  const { users = [], meId, admin, limit = null, plan = null, confirmId = null, formOpen = false, upgradeHref = '' } = opts;
-  const used = seatsUsed(users);
+  const { users = [], meId, admin, limit = null, plan = null, confirmId = null, formOpen = false, upgradeHref = '', used: usedFromServer = null } = opts;
+  const used = Number.isInteger(usedFromServer) ? usedFromServer : seatsUsed(users);
   const full = limit != null && used >= limit;
   const head = admin
     ? `<div class="pm-users-head"><span class="pm-seats" id="pm-seats">${esc(seatsLabel(used, limit))}</span>

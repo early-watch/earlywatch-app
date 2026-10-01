@@ -89,7 +89,7 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
 <script>
   import { API, api, getUser, toast } from '../../scripts/api';
   import { planLabel } from '../../scripts/plans.js';
-  import { usersSectionHtml, seatLimit, ROLE_LABELS } from '../../scripts/equipe.js';
+  import { usersSectionHtml, seatLimit, parseTeam, ROLE_LABELS } from '../../scripts/equipe.js';
 
   const BASE = import.meta.env.BASE_URL || '/earlywatch-app/';
   const wrap = document.getElementById('pm-wrap')!;
@@ -141,7 +141,7 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
   }
 
   // ── Utilisateurs (src/scripts/equipe.js) ───────────────────────────────────
-  const team: any = { users: [], slug: null, limit: null, plan: null, confirmId: null, formOpen: false, upgradeHref: '' };
+  const team: any = { users: [], used: null, slug: null, limit: null, plan: null, confirmId: null, formOpen: false, upgradeHref: '' };
   const usersUrl = (id = '') => `/api/v1/tenants/${encodeURIComponent(team.slug)}/users${id ? `/${encodeURIComponent(id)}` : ''}`;
 
   function renderUsers(): void {
@@ -149,13 +149,21 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
     if (!sec) return;
     sec.innerHTML = usersSectionHtml({
       users: team.users, meId: me.id, admin: isAdmin && !!team.slug,
-      limit: team.limit, plan: team.plan, confirmId: team.confirmId, formOpen: team.formOpen, upgradeHref: team.upgradeHref,
+      limit: team.limit, used: team.used, plan: team.plan, confirmId: team.confirmId, formOpen: team.formOpen, upgradeHref: team.upgradeHref,
     });
     if (team.formOpen) (sec.querySelector('[name=first_name]') as HTMLInputElement | null)?.focus();
   }
 
+  function applyTeam(res: any): void {
+    const t = parseTeam(res);
+    if (!t) return;
+    team.users = t.users;
+    team.used = t.used;
+    if (t.limit !== undefined) team.limit = t.limit;
+  }
+
   async function reloadUsers(): Promise<void> {
-    try { team.users = await api(usersUrl()); } catch { /* garde la liste affichée */ }
+    try { applyTeam(await api(usersUrl())); } catch { /* garde la liste affichée */ }
     renderUsers();
   }
 
@@ -188,8 +196,9 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
       const u = team.users.find((x: any) => x.id === d.resend);
       (el as HTMLButtonElement).disabled = true;
       try {
-        await api(`${usersUrl(d.resend)}/resend-invitation`, { method: 'POST' });
-        toast(`Invitation renvoyée à ${u?.email || ''}`);
+        const r = await api(`${usersUrl(d.resend)}/invitation`, { method: 'POST' });
+        if (r && r.invitation_sent === false) toast('L’invitation n’a pas pu être envoyée. Réessayez dans un instant.', 'error');
+        else toast(`Invitation renvoyée à ${u?.email || ''}`);
       } catch (err: any) { toast(err.message, 'error'); }
       (el as HTMLButtonElement).disabled = false;
     }
@@ -214,8 +223,12 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
     btn.disabled = true;
     try {
       // Sans mot de passe : le serveur envoie l'invitation.
-      await api(usersUrl(), { method: 'POST', body });
-      toast(`Invitation envoyée à ${body.email}`);
+      const created = await api(usersUrl(), { method: 'POST', body });
+      if (created && created.invitation_sent === false) {
+        toast(`${body.email} est ajouté, mais l’invitation n’a pas pu être envoyée : utilisez « Renvoyer ».`, 'error');
+      } else {
+        toast(`Invitation envoyée à ${body.email}`);
+      }
       team.formOpen = false;
       await reloadUsers();
     } catch (err: any) { btn.disabled = false; toast(err.message, 'error'); }
@@ -284,8 +297,8 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
         api(`/api/v1/tenants/${encodeURIComponent(t.slug)}/users`).catch(() => null),
         api('/api/v1/billing/plans').catch(() => []),
       ]);
-      if (Array.isArray(list)) team.users = list;
-      team.limit = seatLimit(billing, plans);
+      team.limit = seatLimit(billing, plans);    // repli si le serveur ne donne pas seats_max
+      applyTeam(list);
       renderUsers();
     }
 
