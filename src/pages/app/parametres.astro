@@ -53,6 +53,23 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
   :global(.pm-users td) { padding: 9px 12px 9px 0; border-bottom: 0.5px solid var(--line); vertical-align: top; }
   :global(.pm-users td.pm-email) { overflow-wrap: anywhere; }
   :global(.pm-users td.pm-nowrap) { white-space: nowrap; }
+  /* Utilisateurs : places, invitation, retrait (src/scripts/equipe.js) */
+  :global(.pm-users-head) { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 12px; }
+  :global(.pm-seats) { font-family: var(--font-mono); font-size: 12px; color: var(--ink); }
+  :global(.pm-full) { margin: 0 0 12px; }
+  :global(.pm-link) { font: inherit; font-size: 12.5px; color: var(--accent); background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+  :global(.pm-link:disabled) { opacity: 0.5; cursor: default; }
+  :global(.pm-link.pm-danger) { color: var(--color-error); }
+  :global(.pm-confirm) { font-size: 12.5px; color: var(--ink); white-space: normal; }
+  :global(.pm-confirm .pm-link) { margin-left: 8px; }
+  :global(.pm-users td.pm-act) { text-align: right; white-space: nowrap; }
+  :global(.pm-users td.pm-last .pm-link) { margin-left: 2px; }
+  :global(.pm-sr) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  :global(.pm-invite) { border: 0.5px solid var(--line-strong); border-radius: var(--radius); padding: 16px; margin: 0 0 16px; background: var(--bg-side); }
+  :global(.pm-invite-grid) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; }
+  :global(.pm-invite-grid label) { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 400; color: var(--taupe); }
+  :global(.pm-invite-grid .pm-input) { flex: none; width: 100%; }
+  :global(.pm-invite-actions) { display: flex; gap: 14px; align-items: center; margin-top: 14px; }
   :global(.pm-tag) { font-family: var(--font-mono); font-size: 10px; color: var(--accent); margin-left: 6px; }
   :global(.pm-status) { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: var(--radius-sm); border: 0.5px solid var(--line-strong); color: var(--taupe); }
   :global(.pm-status.ok) { color: var(--on-accent); background: var(--accent); border-color: var(--accent); }
@@ -63,12 +80,16 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
     :global(.pm-users thead) { display: none; }
     :global(.pm-users tr) { display: block; padding: 10px 0; border-bottom: 0.5px solid var(--line); }
     :global(.pm-users td) { display: block; padding: 1px 0; border: none; }
+    :global(.pm-users td.pm-act) { text-align: left; padding-top: 6px; }
+    :global(.pm-users td.pm-act:empty) { display: none; }
+    :global(.pm-invite-grid) { grid-template-columns: minmax(0, 1fr); }
   }
 </style>
 
 <script>
   import { API, api, getUser, toast } from '../../scripts/api';
   import { planLabel } from '../../scripts/plans.js';
+  import { usersSectionHtml, seatLimit, parseTeam, ROLE_LABELS } from '../../scripts/equipe.js';
 
   const BASE = import.meta.env.BASE_URL || '/earlywatch-app/';
   const wrap = document.getElementById('pm-wrap')!;
@@ -99,8 +120,6 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
     return s.alert_digest === 'weekly' || s.alert_digest === 'daily' ? 'weekly' : 'none';
   }
 
-  const ROLE_LABELS: Record<string, string> = { admin: 'Administrateur', editor: 'Éditeur', reader: 'Lecteur', superadmin: 'Early Watch' };
-
   const SUB_LABELS: Record<string, [string, string]> = {
     active: ['Actif', 'ok'], past_due: ['Paiement en retard', 'warn'], canceled: ['Résilié', ''], none: ['Aucun abonnement', ''],
   };
@@ -126,6 +145,100 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
       + (billing.can_manage && isAdmin ? '<div class="pm-hint">Factures, moyen de paiement et résiliation : portail sécurisé de notre prestataire de paiement.</div>' : '');
   }
 
+  // ── Utilisateurs (src/scripts/equipe.js) ───────────────────────────────────
+  const team: any = { users: [], used: null, slug: null, limit: null, plan: null, confirmId: null, formOpen: false, upgradeHref: '' };
+  const usersUrl = (id = '') => `/api/v1/tenants/${encodeURIComponent(team.slug)}/users${id ? `/${encodeURIComponent(id)}` : ''}`;
+
+  function renderUsers(): void {
+    const sec = document.getElementById('pm-users-section');
+    if (!sec) return;
+    sec.innerHTML = usersSectionHtml({
+      users: team.users, meId: me.id, admin: isAdmin && !!team.slug,
+      limit: team.limit, used: team.used, plan: team.plan, confirmId: team.confirmId, formOpen: team.formOpen, upgradeHref: team.upgradeHref,
+    });
+    if (team.formOpen) (sec.querySelector('[name=first_name]') as HTMLInputElement | null)?.focus();
+  }
+
+  function applyTeam(res: any): void {
+    const t = parseTeam(res);
+    if (!t) return;
+    team.users = t.users;
+    team.used = t.used;
+    if (t.limit !== undefined) team.limit = t.limit;
+  }
+
+  async function reloadUsers(): Promise<void> {
+    try { applyTeam(await api(usersUrl())); } catch { /* garde la liste affichée */ }
+    renderUsers();
+  }
+
+  async function openPortal(): Promise<void> {
+    try { const r = await api('/api/v1/billing/portal-session', { method: 'POST' }); window.location.href = r.url; }
+    catch (err: any) { toast(err.message, 'error'); }
+  }
+
+  wrap.addEventListener('click', async (e) => {
+    const el = (e.target as HTMLElement).closest('button, a') as HTMLElement | null;
+    if (!el || !el.closest('#pm-users-section')) return;
+    const d = el.dataset;
+    if (el.id === 'pm-invite-open') { team.formOpen = true; team.confirmId = null; renderUsers(); return; }
+    if ('inviteCancel' in d) { team.formOpen = false; renderUsers(); return; }
+    if ('upgrade' in d && team.upgradeHref === '#') { e.preventDefault(); openPortal(); return; }
+    if (d.remove) { team.confirmId = d.remove; renderUsers(); return; }
+    if ('removeCancel' in d) { team.confirmId = null; renderUsers(); return; }
+    if (d.removeConfirm) {
+      const u = team.users.find((x: any) => x.id === d.removeConfirm);
+      (el as HTMLButtonElement).disabled = true;
+      try {
+        await api(usersUrl(d.removeConfirm), { method: 'DELETE' });
+        toast(`${[u?.first_name, u?.last_name].filter(Boolean).join(' ') || u?.email || 'Utilisateur'} retiré du compte`);
+        team.confirmId = null;
+        await reloadUsers();
+      } catch (err: any) { (el as HTMLButtonElement).disabled = false; toast(err.message, 'error'); }
+      return;
+    }
+    if (d.resend) {
+      const u = team.users.find((x: any) => x.id === d.resend);
+      (el as HTMLButtonElement).disabled = true;
+      try {
+        const r = await api(`${usersUrl(d.resend)}/invitation`, { method: 'POST' });
+        if (r && r.invitation_sent === false) toast('L’invitation n’a pas pu être envoyée. Réessayez dans un instant.', 'error');
+        else toast(`Invitation renvoyée à ${u?.email || ''}`);
+      } catch (err: any) { toast(err.message, 'error'); }
+      (el as HTMLButtonElement).disabled = false;
+    }
+  });
+
+  wrap.addEventListener('submit', async (e) => {
+    const form = e.target as HTMLFormElement;
+    if (form.id !== 'pm-invite-form') return;
+    e.preventDefault();
+    const f = new FormData(form);
+    const body = {
+      first_name: String(f.get('first_name') || '').trim(),
+      last_name: String(f.get('last_name') || '').trim(),
+      email: String(f.get('email') || '').trim(),
+      role: f.get('role') === 'admin' ? 'admin' : 'reader',
+    };
+    if (!body.first_name || !body.last_name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(body.email)) {
+      toast('Renseignez le prénom, le nom et une adresse e-mail valide.', 'error');
+      return;
+    }
+    const btn = form.querySelector('button[type=submit]') as HTMLButtonElement;
+    btn.disabled = true;
+    try {
+      // Sans mot de passe : le serveur envoie l'invitation.
+      const created = await api(usersUrl(), { method: 'POST', body });
+      if (created && created.invitation_sent === false) {
+        toast(`${body.email} est ajouté, mais l’invitation n’a pas pu être envoyée : utilisez « Renvoyer ».`, 'error');
+      } else {
+        toast(`Invitation envoyée à ${body.email}`);
+      }
+      team.formOpen = false;
+      await reloadUsers();
+    } catch (err: any) { btn.disabled = false; toast(err.message, 'error'); }
+  });
+
   async function load(): Promise<void> {
     let data: any;
     try {
@@ -140,7 +253,13 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
     ]);
     const t = data.tenant || {};
     const s = data.settings || {};
-    const users: any[] = data.users || [];
+    team.users = data.users || [];
+    team.slug = t.slug;
+    team.plan = billing?.plan || t.plan || null;
+    team.upgradeHref = billing?.can_manage ? '#'
+      : billing?.subscription_status === 'active'
+        ? 'mailto:maria@early.consulting?subject=Passer%20%C3%A0%20la%20formule%20%C3%89quipe'
+        : `${BASE}choisir-formule`;
     const profile = (profiles as any[]).find((p) => p.code === String(s.entity_type || '').toLowerCase());
     const profileLabel = profile ? profile.label : (s.entity_type || 'Non renseigné');
     const choice = emailChoice(s);
@@ -169,24 +288,24 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
         </form>
       </section>
 
-      <section class="pm-section">
-        <h2 class="pm-h2">Utilisateurs</h2>
-        <table class="pm-users">
-          <thead><tr><th>Nom</th><th>E-mail</th><th>Rôle</th><th>Dernière connexion</th></tr></thead>
-          <tbody>${users.map((u) => `
-            <tr>
-              <td>${esc([u.first_name, u.last_name].filter(Boolean).join(' ') || '—')}${u.id === me.id ? '<span class="pm-tag">vous</span>' : ''}</td>
-              <td class="pm-email">${esc(u.email)}</td>
-              <td class="pm-nowrap">${ROLE_LABELS[u.role] || esc(u.role)}</td>
-              <td class="pm-nowrap">${u.last_login_at ? date(u.last_login_at) : 'Jamais'}</td>
-            </tr>`).join('')}</tbody>
-        </table>
-      </section>
+      <section class="pm-section" id="pm-users-section"></section>
 
       <section class="pm-section">
         <h2 class="pm-h2">Abonnement</h2>
         ${subscriptionHtml(billing, t)}
       </section>`;
+
+    renderUsers();
+    if (isAdmin && t.slug) {
+      // Liste complète et places de la formule : réservées à l'administrateur.
+      const [list, plans] = await Promise.all([
+        api(`/api/v1/tenants/${encodeURIComponent(t.slug)}/users`).catch(() => null),
+        api('/api/v1/billing/plans').catch(() => []),
+      ]);
+      team.limit = seatLimit(billing, plans);    // repli si le serveur ne donne pas seats_max
+      applyTeam(list);
+      renderUsers();
+    }
 
     document.getElementById('pm-name-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
