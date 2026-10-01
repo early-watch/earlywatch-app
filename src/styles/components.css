@@ -1203,3 +1203,43 @@
   .fil-row { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 14px 4px; }
   .fil-row-act { justify-self: start; }
 }
+
+/* Impersonation (superadmin) : fine barre sur une ligne, en haut de page. */
+.ew-imp {
+  display: flex; align-items: center; gap: 8px;
+  height: 30px; padding: 0 16px;
+  font-family: var(--font); font-size: 12.5px; font-weight: 400;
+  color: var(--on-accent); background: var(--accent);
+  white-space: nowrap; overflow: hidden;
+}
+.ew-imp[hidden] { display: none; }
+.ew-imp-text { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.ew-imp-text strong { font-weight: 500; }
+.ew-imp-sep { opacity: 0.7; }
+.ew-imp-back {
+  flex-shrink: 0; font: inherit; color: inherit; background: none; border: none; padding: 0;
+  text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
+}
+/* Compteurs du menu (Fil, Suivis) */
+.ew-client .ew-nav .ew-count { font-family: var(--font-mono); font-size: 11px; color: var(--mute); }
+.ew-client .ew-nav .ew-count[hidden] { display: none; }
+
+/* Fil sans publication à sélectionner : pas de panneau de détail. */
+.fil-layout.is-single { grid-template-columns: minmax(0, 1fr); }
+.fil-layout.is-single .fil-detail { display: none !important; }
+
+/* Fil « rien à traiter » : prochaine échéance, puis À lire / Info récents. */
+.fil-next {
+  border-top: 0.5px solid var(--line); border-bottom: 0.5px solid var(--line);
+  padding: 16px 0 18px; margin-bottom: 28px; max-width: 760px;
+}
+.fil-next[hidden] { display: none; }
+.fil-next-label, .fil-section-label {
+  font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--taupe); margin: 0 0 8px;
+}
+.fil-section-label[hidden] { display: none; }
+.fil-next-when { font-size: 14px; font-weight: 500; color: var(--ink); }
+.fil-next-count { color: var(--accent); }
+.fil-next-title { font-size: 14px; line-height: 1.5; color: var(--ink-soft); margin: 4px 0 10px; }
+.fil-next-link { font-size: 13px; color: var(--accent); }

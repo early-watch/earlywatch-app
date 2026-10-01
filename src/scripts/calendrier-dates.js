@@ -132,3 +132,34 @@ export function normalizeProfileCode(value) {
   const k = String(value || '').trim().toLowerCase();
   return LEGACY[k] || k || null;
 }
+
+/**
+ * Prochaine échéance (registre « a_venir », non échue) concernant ce profil,
+ * la plus proche par date de début ; une échéance en cours passe en premier.
+ * → { entry, status, days } ou null.
+ */
+export function nextDeadline(entries, now = new Date(), profile = null, familyOf = () => null) {
+  const t = todayUTC(now);
+  const candidates = entries
+    .filter((e) => e.registre === 'a_venir' && concerns(e, profile, familyOf))
+    .map((e) => ({ entry: e, period: parsePeriod(e.date), status: statusOf(e, now) }))
+    .filter((x) => x.period && x.status && x.status !== 'echue' && x.status !== 'en_vigueur')
+    .sort((a, b) => a.period.start - b.period.start);
+  const first = candidates[0];
+  if (!first) return null;
+  return { entry: first.entry, status: first.status, days: daysBetween(t, first.period.start) };
+}
+
+/** « aujourd'hui », « demain », « dans N jours », « en cours » (précision au jour). */
+export function relativeLabel(status, days, exact) {
+  if (status === 'aujourdhui') return "aujourd'hui";
+  if (status === 'en_cours') return 'en cours';
+  if (!exact || days == null || days <= 0) return null;
+  return days === 1 ? 'demain' : `dans ${days} jours`;
+}
+
+/** Le libellé désigne-t-il un jour précis (« 15 août 2026 ») ? */
+export function isExactDate(label) {
+  const p = parsePeriod(label);
+  return !!(p && !p.open && +p.start === +p.end);
+}

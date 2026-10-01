@@ -12,11 +12,13 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
     <h1 class="ew-h-title" id="suivis-title">Suivis</h1>
   </div>
 
-  <div class="fil-layout">
+  <div class="fil-layout" id="fil-layout">
     <div>
       <div class="fil-list" id="suivis-list"><div class="ew-loading"><div class="ew-spinner"></div></div></div>
-      <h2 class="sv-label">Traitées</h2>
-      <div class="fil-list" id="traitees-list"></div>
+      <section id="traitees-section" hidden>
+        <h2 class="sv-label">Traitées</h2>
+        <div class="fil-list" id="traitees-list"></div>
+      </section>
     </div>
     <aside class="fil-detail" id="fil-detail" aria-live="polite">
       <div class="fil-detail-placeholder">Sélectionnez une publication pour voir le détail.</div>
@@ -49,12 +51,16 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
   function render(): void {
     document.getElementById('suivis-title')!.textContent =
       suivis.length ? `${suivis.length} publication${suivis.length > 1 ? 's' : ''} suivie${suivis.length > 1 ? 's' : ''}` : 'Suivis';
+    // Un seul message vide ; « Traitées » n'apparaît que si elle contient quelque chose ;
+    // sans publication à sélectionner, pas de panneau de détail.
     listEl.innerHTML = suivis.length
       ? suivis.map((a) => renderRow(a, { action: { label: 'Traité', value: 'read' }, selected: WIDE.matches && a.id === selectedId })).join('')
       : '<div class="fil-empty">Aucune publication suivie. Depuis le Fil, « Suivre » garde une publication ici.</div>';
-    doneEl.innerHTML = traitees.length
-      ? traitees.map((a) => renderRow(a, { dateText: `traitée le ${longDate(a.read_at)}`, selected: WIDE.matches && a.id === selectedId })).join('')
-      : '<div class="fil-empty">Aucune publication traitée pour l’instant.</div>';
+    doneEl.innerHTML = traitees
+      .map((a) => renderRow(a, { dateText: `traitée le ${longDate(a.read_at)}`, selected: WIDE.matches && a.id === selectedId }))
+      .join('');
+    document.getElementById('traitees-section')!.hidden = !traitees.length;
+    document.getElementById('fil-layout')!.classList.toggle('is-single', !suivis.length && !traitees.length);
   }
 
   function showDetail(id: string | null, open = false): void {
@@ -83,6 +89,7 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
     try {
       await api(`/api/v1/app/articles/${id}/state`, { method: 'PATCH', body: { action } });
       toast(action === 'read' ? 'Publication marquée comme traitée' : 'Publication retirée de vos suivis');
+      window.dispatchEvent(new Event('ew:counts-changed'));
       closeDetail();
       await load();
     } catch (e: any) {

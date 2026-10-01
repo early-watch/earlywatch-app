@@ -54,18 +54,20 @@ const perimetreAttr = (e: EntreeCalendrier): string =>
             data-date={e.date}
             data-registre={e.registre}
           >
-            <div class="cal-card-top">
+            <div class="cal-when">
               <div class="cal-date ew-mono">{e.date}</div>
+              <div class="cal-rel" data-rel></div>
+            </div>
+            <div class="cal-body">
               <div class="cal-tags">
                 {estAncre(e) && <span class="cal-pill cal-pill-ancre">Concerne tous</span>}
-                <span class="cal-statut" data-statut></span>
                 <span class="cal-type ew-mono">{perimetreLabel(e)}</span>
               </div>
+              <div class="cal-oblig">{e.obligation}</div>
+              <div class="cal-acte ew-mono">{e.acte}</div>
+              {e.note && <div class="cal-note">{e.note}</div>}
+              <a class="cal-src" href={e.source_url} target="_blank" rel="noopener">Source officielle</a>
             </div>
-            <div class="cal-oblig">{e.obligation}</div>
-            <div class="cal-acte ew-mono">{e.acte}</div>
-            {e.note && <div class="cal-note">{e.note}</div>}
-            <a class="cal-src" href={e.source_url} target="_blank" rel="noopener">Source officielle</a>
           </article>
         ))}
       </div>
@@ -85,22 +87,23 @@ const perimetreAttr = (e: EntreeCalendrier): string =>
       <div class="cal-list">
         {enVigueur.map((e) => (
           <article
-            class="cal-card cal-card-context"
+            class="cal-card"
             data-perimetre={perimetreAttr(e)}
             data-date={e.date}
             data-registre={e.registre}
           >
-            <div class="cal-card-top">
+            <div class="cal-when">
               <div class="cal-date ew-mono">{e.date}</div>
+            </div>
+            <div class="cal-body">
               <div class="cal-tags">
-                <span class="cal-statut" data-statut></span>
                 <span class="cal-type ew-mono">{perimetreLabel(e)}</span>
               </div>
+              <div class="cal-oblig">{e.obligation}</div>
+              <div class="cal-acte ew-mono">{e.acte}</div>
+              {e.note && <div class="cal-note">{e.note}</div>}
+              <a class="cal-src" href={e.source_url} target="_blank" rel="noopener">Source officielle</a>
             </div>
-            <div class="cal-oblig">{e.obligation}</div>
-            <div class="cal-acte ew-mono">{e.acte}</div>
-            {e.note && <div class="cal-note">{e.note}</div>}
-            <a class="cal-src" href={e.source_url} target="_blank" rel="noopener">Source officielle</a>
           </article>
         ))}
       </div>
@@ -136,44 +139,33 @@ const perimetreAttr = (e: EntreeCalendrier): string =>
   .cal-section-hint { font-size: 12px; color: var(--mute); margin-bottom: 16px; }
   .cal-list { display: flex; flex-direction: column; gap: 12px; }
 
-  /* ---- Cartes ---- */
+  /* ---- Lignes à filets, date en colonne de gauche ---- */
+  .cal-list { display: block; border-top: 0.5px solid var(--line); }
   .cal-card {
-    background: var(--bg); border: 0.5px solid var(--line);
-    border-radius: var(--radius);
-    padding: 16px 18px; transition: border-color 0.12s;
+    display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 4px 24px;
+    padding: 16px 0 18px; border-bottom: 0.5px solid var(--line);
   }
-  .cal-card:hover { border-color: var(--line-strong); }
-  .cal-card-context { background: var(--bg-side); }
-  .cal-card.ancre { border-left: 2px solid var(--accent); }
-  .cal-card.is-echue { background: var(--bg-side); }
-  .cal-card.is-echue .cal-oblig { color: var(--ink-soft); }
-
-  .cal-card-top {
-    display: flex; justify-content: space-between; align-items: flex-start;
-    gap: 12px; margin-bottom: 10px;
-  }
+  .cal-when { padding-top: 1px; }
   .cal-date { font-size: 13px; font-weight: 500; color: var(--ink); }
+  .cal-rel { font-size: 12px; color: var(--accent); margin-top: 3px; }
+  .cal-rel:empty { display: none; }
+  .cal-card.is-echue .cal-date, .cal-card.is-echue .cal-oblig { color: var(--ink-soft); }
+  .cal-body { min-width: 0; }
 
-  .cal-tags { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
-  .cal-statut, .cal-type, .cal-pill {
-    font-size: 10px; padding: 3px 7px; border: 0.5px solid var(--line);
-    border-radius: 0; white-space: nowrap;
+  .cal-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+  .cal-type, .cal-pill {
+    font-size: 10px; padding: 2px 7px; border: 0.5px solid var(--line-strong);
+    border-radius: var(--radius-sm); white-space: nowrap;
   }
-  .cal-statut:empty { display: none; }
-  .cal-statut { color: var(--taupe); background: var(--bg-side); }
-  .cal-statut.st-imminente, .cal-statut.st-aujourdhui, .cal-statut.st-en_cours {
-    color: var(--on-accent); background: var(--accent); border-color: var(--accent);
-  }
-  .cal-statut.st-echue { color: var(--mute); background: transparent; }
-  .cal-type   { color: var(--taupe); background: transparent; }
+  .cal-type { color: var(--taupe); background: transparent; }
   .cal-pill-ancre {
     color: var(--on-accent); background: var(--accent); border-color: var(--accent);
     font-weight: 500; letter-spacing: 0.02em;
   }
 
-  .cal-oblig { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--ink); margin-bottom: 8px; }
-  .cal-acte  { font-size: 10.5px; color: var(--mute); margin-bottom: 8px; overflow-wrap: anywhere; }
-  .cal-note  { font-size: 12.5px; color: var(--taupe); line-height: 1.6; margin-bottom: 10px; }
+  .cal-oblig { font-size: 14px; font-weight: 500; line-height: 1.45; color: var(--ink); margin-bottom: 6px; }
+  .cal-acte  { font-size: 10.5px; color: var(--mute); margin-bottom: 6px; overflow-wrap: anywhere; }
+  .cal-note  { font-size: 12.5px; color: var(--taupe); line-height: 1.6; margin-bottom: 8px; }
 
   .cal-src { font-size: 11px; color: var(--taupe); text-decoration: underline; text-underline-offset: 2px; }
   .cal-src:hover { color: var(--ink); }
@@ -181,15 +173,16 @@ const perimetreAttr = (e: EntreeCalendrier): string =>
   .cal-empty { font-size: 13px; color: var(--mute); padding: 20px 0; }
 
   @media (max-width: 640px) {
-    .cal-card-top { flex-direction: column; gap: 8px; }
-    .cal-tags { justify-content: flex-start; }
+    .cal-card { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+    .cal-when { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+    .cal-rel { margin-top: 0; }
     .cal-today { margin-left: 0; width: 100%; }
   }
 </style>
 
 <script>
   import { API, getToken } from '../scripts/api';
-  import { statusOf, STATUS_LABELS, daysUntil, concerns, normalizeProfileCode } from '../scripts/calendrier-dates.js';
+  import { statusOf, daysUntil, relativeLabel, isExactDate, concerns, normalizeProfileCode } from '../scripts/calendrier-dates.js';
 
   type Profile = { code: string | null; family: string | null };
   const cards = Array.from(document.querySelectorAll<HTMLElement>('.cal-card'));
@@ -199,18 +192,17 @@ const perimetreAttr = (e: EntreeCalendrier): string =>
   // ── Statut du jour ────────────────────────────────────────────────────────
   const now = new Date();
   const todayEl = document.getElementById('cal-today');
-  if (todayEl) todayEl.textContent = 'Statuts au ' + now.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  if (todayEl) todayEl.textContent = 'Au ' + now.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
   const echuesList = document.getElementById('cal-list-echues')!;
+  // Pas d'étiquette de statut : la section le dit déjà. Sous la date, « dans N jours »
+  // pour un jour précis, « aujourd'hui », ou « en cours » pour une période entamée.
   cards.forEach((card) => {
     const entry = { date: card.dataset.date, registre: card.dataset.registre };
     const st = statusOf(entry, now);
-    const el = card.querySelector<HTMLElement>('[data-statut]');
-    if (!st || !el) return;
-    const n = daysUntil(entry, now);
-    el.textContent = STATUS_LABELS[st as keyof typeof STATUS_LABELS]
-      + (st === 'imminente' && n ? ` · J-${n}` : '');
-    el.className = `cal-statut st-${st}`;
+    if (!st) return;
+    const rel = card.querySelector<HTMLElement>('[data-rel]');
+    if (rel) rel.textContent = relativeLabel(st, daysUntil(entry, now), isExactDate(entry.date)) || '';
     if (st === 'echue') {
       card.classList.add('is-echue');
       echuesList.appendChild(card);   // quitte « À venir »

@@ -3,7 +3,13 @@
 // Publications à traiter (statut client `inbox`), niveau en tête, triées par niveau
 // puis par date. Une seule action visible par ligne (« Suivre ») ; les autres
 // dans le détail. Détail à droite (≥ 1100 px) ou plein écran (en dessous).
+//
+// Rien à traiter (aucune publication de niveau Action) : « Rien à traiter cette
+// semaine », prochaine échéance du calendrier avec compte à rebours, puis les
+// publications À lire / Info des 30 derniers jours. Sans publication à
+// sélectionner, le panneau de détail est masqué.
 import ClientLayout from '../../layouts/ClientLayout.astro';
+const base = import.meta.env.BASE_URL;
 ---
 
 <ClientLayout title="Fil" activePage="fil">
@@ -11,7 +17,16 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
     <h1 class="ew-h-title" id="fil-title">Fil</h1>
   </div>
 
-  <div class="fil-layout">
+  <section class="fil-next" id="fil-next" hidden>
+    <div class="fil-next-label">Prochaine échéance</div>
+    <div class="fil-next-when"><span id="fil-next-date"></span><span class="fil-next-count" id="fil-next-count"></span></div>
+    <div class="fil-next-title" id="fil-next-title"></div>
+    <a class="fil-next-link" href={`${base}app/calendrier`}>Voir le calendrier →</a>
+  </section>
+
+  <h2 class="fil-section-label" id="fil-recent-label" hidden>À lire et Info · 30 derniers jours</h2>
+
+  <div class="fil-layout" id="fil-layout">
     <div class="fil-list" id="fil-list"><div class="ew-loading"><div class="ew-spinner"></div></div></div>
     <aside class="fil-detail" id="fil-detail" aria-live="polite">
       <div class="fil-detail-placeholder">Sélectionnez une publication pour voir le détail.</div>
@@ -20,15 +35,20 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
 </ClientLayout>
 
 <script>
-  import { api, toast } from '../../scripts/api';
+  import { API, api, getToken, toast } from '../../scripts/api';
   import { levelOf, byLevelThenDate, renderRow, renderDetail, esc } from '../../scripts/fil.js';
+  import { nextDeadline, relativeLabel, isExactDate, normalizeProfileCode } from '../../scripts/calendrier-dates.js';
+  import { calendrier } from '../../data/calendrier';
 
   const WIDE = window.matchMedia('(min-width: 1100px)');
+  const RECENT_DAYS = 30;
   let items: any[] = [];
+  let calm = false;                 // aucune publication de niveau Action
   let selectedId: string | null = null;
 
   const listEl = document.getElementById('fil-list')!;
   const detailEl = document.getElementById('fil-detail')!;
+  const layoutEl = document.getElementById('fil-layout')!;
   const titleEl = document.getElementById('fil-title')!;
 
   const DETAIL_ACTIONS = [
@@ -44,15 +64,20 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
 
   function renderTitle(): void {
     const n = items.filter((a) => levelOf(a) === 'action').length;
-    titleEl.textContent = n === 0
-      ? 'Aucune publication ne demande une action'
+    titleEl.textContent = calm
+      ? 'Rien à traiter cette semaine'
       : `${n} publication${n > 1 ? 's demandent' : ' demande'} une action`;
   }
 
   function renderList(): void {
+    document.getElementById('fil-recent-label')!.hidden = !calm || !items.length;
+    // Rien à sélectionner : pas de panneau de détail.
+    layoutEl.classList.toggle('is-single', !items.length);
     listEl.innerHTML = items.length
       ? items.map((a) => renderRow(a, { action: { label: 'Suivre', value: 'to_process' }, selected: WIDE.matches && a.id === selectedId })).join('')
-      : '<div class="fil-empty">Aucune nouvelle publication. Les publications que vous suivez sont dans Suivis.</div>';
+      : `<div class="fil-empty">${calm
+          ? 'Aucune publication ces 30 derniers jours.'
+          : 'Aucune nouvelle publication.'} Les publications que vous suivez sont dans Suivis.</div>`;
   }
 
   function showDetail(id: string | null, open = false): void {
@@ -79,9 +104,15 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
     try {
       await api(`/api/v1/app/articles/${id}/state`, { method: 'PATCH', body: { action } });
       toast(DONE[action] || 'Mis à jour');
+      window.dispatchEvent(new Event('ew:counts-changed'));
+      closeDetail();
+      const wasActionMode = !calm;
       const idx = items.findIndex((x) => x.id === id);
       items = items.filter((x) => x.id !== id);   // quitte le Fil (suivie, lue ou ignorée)
-      closeDetail();
+      if (wasActionMode && !items.some((a) => levelOf(a) === 'action')) {
+        await load();                             // plus rien à traiter : vue « rien à traiter »
+        return;
+      }
       renderTitle();
       renderList();
       const next = items[Math.min(idx, items.length - 1)];
@@ -114,10 +145,52 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDetail(); });
   WIDE.addEventListener('change', () => { closeDetail(); renderList(); showDetail(selectedId); });
 
+  // ── Prochaine échéance (calendrier, filtré par le profil du client) ─────────
+  async function clientProfile(): Promise<{ code: string | null; family: string | null } | null> {
+    const token = getToken();
+    if (!token) return null;
+    try {
+      const [settings, profiles] = await Promise.all([
+        fetch(`${API}/api/v1/settings`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => (r.ok ? r.json() : null)),
+        fetch(`${API}/api/v1/auth/signup-profiles`).then((r) => (r.ok ? r.json() : [])).catch(() => []),
+      ]);
+      const code = normalizeProfileCode(settings?.settings?.entity_type);
+      if (!code) return null;
+      const p = (Array.isArray(profiles) ? profiles : []).find((x: any) => x.code === code);
+      return { code, family: p?.family || null };
+    } catch { return null; }
+  }
+
+  async function renderNext(): Promise<void> {
+    const box = document.getElementById('fil-next')!;
+    const profile = await clientProfile();
+    const next = nextDeadline(calendrier, new Date(), profile);
+    if (!next) { box.hidden = true; return; }
+    document.getElementById('fil-next-date')!.textContent = next.entry.date;
+    const rel = relativeLabel(next.status, next.days, isExactDate(next.entry.date));
+    document.getElementById('fil-next-count')!.textContent = rel ? ` · ${rel}` : '';
+    document.getElementById('fil-next-title')!.textContent = next.entry.obligation;
+    box.hidden = false;
+  }
+
   async function load(): Promise<void> {
     try {
       const data = await api('/api/v1/app/articles?status=inbox&page_size=200');
-      items = (data.articles || []).slice().sort(byLevelThenDate);
+      const inbox: any[] = data.articles || [];
+      calm = !inbox.some((a) => levelOf(a) === 'action');
+      if (calm) {
+        // À lire / Info des 30 derniers jours (hors publications suivies ou ignorées).
+        const all = await api('/api/v1/app/articles?status=all&page_size=200');
+        const since = Date.now() - RECENT_DAYS * 86400000;
+        items = (all.articles || [])
+          .filter((a: any) => a.client_status !== 'to_process' && levelOf(a) !== 'action')
+          .filter((a: any) => new Date(a.published_at).getTime() >= since)
+          .sort((a: any, b: any) => String(b.published_at || '').localeCompare(String(a.published_at || '')));
+        renderNext();
+      } else {
+        items = inbox.slice().sort(byLevelThenDate);
+        document.getElementById('fil-next')!.hidden = true;
+      }
       renderTitle();
       renderList();
       showDetail(WIDE.matches && items[0] ? items[0].id : null);
