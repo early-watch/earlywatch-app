@@ -120,12 +120,19 @@ nav .links a:not(.btn):hover{color:var(--ink)}
 .pc.pnf{background:var(--ink);border:1.4px solid var(--ink);color:var(--bg)}
 .pc.pnf .pt{color:var(--lime)}
 .pc.pnf p{color:#C9C8C1}
+.pc.wide{grid-column:1/-1}
+.pc.wide p{max-width:72ch}
 .pc.pnf .date{margin-top:auto;padding-top:16px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--lime)}
 @media (max-width:980px){.pgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:560px){.pgrid{grid-template-columns:1fr}}
 
 /* tarifs */
-.tgrid{margin-top:clamp(28px,3.4vw,46px);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,1.6vw,20px)}
+.trow{margin-top:clamp(28px,3.4vw,46px)}
+.trow+.trow{margin-top:clamp(36px,4.4vw,60px)}
+.trow-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.trow-title{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+.trow-note{font-size:14px;color:var(--ink2);max-width:70ch}
+.tgrid{margin-top:clamp(16px,2vw,24px);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(12px,1.6vw,20px)}
 .tc{border:1.4px dotted var(--line2);border-radius:22px;padding:clamp(22px,2.6vw,34px);display:flex;flex-direction:column;background:rgba(252,252,250,.55)}
 .tc.mid{border:1.4px solid var(--ink);background:var(--panel)}
 .tc .tn{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
@@ -140,7 +147,7 @@ nav .links a:not(.btn):hover{color:var(--ink)}
 .tc .tacts{margin-top:auto;display:flex;flex-wrap:wrap;gap:10px}.tc .tacts .btn{margin-top:0}
 .tc ul{margin-bottom:26px}
 .tfoot{margin-top:18px;font-size:13.5px;color:var(--ink3);max-width:70ch}
-@media (max-width:900px){.tgrid{grid-template-columns:1fr}}
+@media (max-width:760px){.tgrid{grid-template-columns:1fr}}
 
 /* engagements */
 .tablebox{overflow-x:auto;margin-top:clamp(24px,3vw,40px)}
@@ -264,6 +271,7 @@ footer .c{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-trans
       <div class="pc"><span class="pt">CASP</span><h3>Actifs numériques</h3><p>MiCA, règle de transfert des fonds, gel des avoirs : un cadre qui évolue plus vite que les autres.</p></div>
       <div class="pc"><span class="pt">Crédit</span><h3>Banques et établissements de crédit</h3><p>Périmètre large : le tri par gravité et par thème rend le volume gérable.</p></div>
       <div class="pc pnf"><span class="pt">Professions non financières</span><h3>Avocats, notaires, experts-comptables, immobilier, luxe, jeux…</h3><p>Les publications de votre ordre ou de votre chambre, les textes français et européens qui vous visent, et le calendrier de l'AMLR.</p><span class="date">AMLR applicable le 10/07/2027</span></div>
+      <div class="pc wide"><span class="pt">Conseil</span><h3>Consultants indépendants et cabinets de conseil</h3><p>Une veille complète, secteur financier et professions non financières, pour suivre l'ensemble des obligations des assujettis que vous accompagnez.</p></div>
     </div>
   </div>
 </section>
@@ -273,43 +281,69 @@ footer .c{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-trans
   <div class="wrap">
     <div class="head">
       <span class="lab">Tarifs</span>
-      <h2>Trois formules, sans engagement de durée</h2>
+      <h2>Quatre formules, sans engagement de durée</h2>
     </div>
-    <div class="tgrid">
-      <div class="tc">
-        <span class="tn">Professions non financières</span>
-        <h3>Pour un cabinet ou une agence</h3>
-        <div class="px"><b>99 €</b><span>HT / mois</span></div>
-        <ul>
-          <li>Publications de votre ordre ou de votre chambre</li>
-          <li>Textes français et européens qui vous visent, dont l'AMLR</li>
-          <li>Récapitulatif hebdomadaire par e-mail</li>
-        </ul>
-        <a class="btn ghost" href={`${base}inscription`}>Créer un compte</a>
+
+    <div class="trow">
+      <div class="trow-head"><h3 class="trow-title">Professions non financières</h3></div>
+      <div class="tgrid">
+        <div class="tc">
+          <span class="tn">Professions non financières</span>
+          <h3>Pour un professionnel seul</h3>
+          <div class="px"><b>99 €</b><span>HT / mois</span></div>
+          <ul>
+            <li>1 utilisateur</li>
+            <li>Publications de votre ordre ou de votre chambre</li>
+            <li>Textes français et européens qui vous visent, dont l'AMLR</li>
+            <li>Récapitulatif hebdomadaire par e-mail</li>
+          </ul>
+          <a class="btn ghost" href={`${base}inscription`}>Créer un compte</a>
+        </div>
+        <div class="tc">
+          <span class="tn">Cabinet</span>
+          <h3>Pour un cabinet ou une agence</h3>
+          <div class="px"><b>199 €</b><span>HT / mois</span></div>
+          <ul>
+            <li>Jusqu'à 5 utilisateurs sur le même espace</li>
+            <li>Tout ce que comprend Professions non financières</li>
+            <li>Suivi partagé : qui a traité quoi, et quand</li>
+          </ul>
+          <a class="btn ghost" href={`${base}inscription`}>Créer un compte</a>
+        </div>
       </div>
-      <div class="tc mid">
-        <span class="tn">Responsable LCB-FT</span>
-        <h3>Pour un responsable conformité</h3>
-        <div class="px"><b>199 €</b><span>HT / mois</span></div>
-        <ul>
-          <li>Veille filtrée sur votre statut réglementaire</li>
-          <li>Tri par gravité et par thème</li>
-          <li>Récapitulatif hebdomadaire par e-mail</li>
-        </ul>
-        <a class="btn" href={`${base}inscription`}>Créer un compte</a>
+    </div>
+
+    <div class="trow">
+      <div class="trow-head">
+        <h3 class="trow-title">Établissements financiers et consultants</h3>
+        <p class="trow-note">Consultants indépendants ou cabinets de conseil : veille complète, secteur financier et professions non financières.</p>
       </div>
-      <div class="tc">
-        <span class="tn">Équipe</span>
-        <h3>Pour une équipe conformité</h3>
-        <div class="px"><b>590 €</b><span>HT / mois</span></div>
-        <ul>
-          <li>Tout ce que comprend Responsable LCB-FT</li>
-          <li>Plusieurs utilisateurs sur le même espace</li>
-          <li>Démonstration sur votre périmètre</li>
-        </ul>
-        <div class="tacts">
+      <div class="tgrid">
+        <div class="tc mid">
+          <span class="tn">Responsable LCB-FT</span>
+          <h3>Pour un responsable conformité</h3>
+          <div class="px"><b>199 €</b><span>HT / mois</span></div>
+          <ul>
+            <li>1 utilisateur</li>
+            <li>Veille filtrée sur votre statut réglementaire</li>
+            <li>Tri par gravité et par thème</li>
+            <li>Récapitulatif hebdomadaire par e-mail</li>
+          </ul>
           <a class="btn" href={`${base}inscription`}>Créer un compte</a>
-          <a class="btn ghost" href="#contact">Demander une démonstration</a>
+        </div>
+        <div class="tc">
+          <span class="tn">Équipe</span>
+          <h3>Pour une équipe conformité</h3>
+          <div class="px"><b>590 €</b><span>HT / mois</span></div>
+          <ul>
+            <li>Jusqu'à 10 utilisateurs sur le même espace</li>
+            <li>Tout ce que comprend Responsable LCB-FT</li>
+            <li>Démonstration sur votre périmètre</li>
+          </ul>
+          <div class="tacts">
+            <a class="btn" href={`${base}inscription`}>Créer un compte</a>
+            <a class="btn ghost" href="#contact">Demander une démonstration</a>
+          </div>
         </div>
       </div>
     </div>
