@@ -2,13 +2,18 @@
 import AuthLayout from '../layouts/AuthLayout.astro';
 // EB-MVP-002 — inscription en libre-service. La liste des profils (et le libellé du
 // ressort par profession) vient de l'API : GET /api/v1/auth/signup-profiles.
-// Ressort : liste déroulante (src/data/ressorts.ts), affichée seulement si le profil a
-// un ressort (ressort_label) ET des ressorts connus.
+// Ressort : liste déroulante des ressorts existants, fournie par la même API
+// (`ressorts: [{id, label}]` ; le serveur refuse tout autre ressort). Affichée seulement
+// si le profil a des ressorts ; « Autre / non listé » n'envoie aucun ressort.
 ---
 
 <AuthLayout title="Early Watch — Créer un compte">
-  <p style="font-size:13px;color:var(--mute);line-height:1.6;margin-bottom:20px">
+  <h1 style="font-size:18px;font-weight:500;color:var(--ink);margin:0 0 8px">Créer un compte</h1>
+  <p style="font-size:13px;color:var(--mute);line-height:1.6;margin-bottom:6px">
     Créez votre compte en quelques instants. Vous confirmerez ensuite votre adresse e-mail.
+  </p>
+  <p style="font-size:12px;color:var(--mute);line-height:1.6;margin-bottom:20px">
+    À partir de 99&nbsp;€&nbsp;HT par mois, sans engagement de durée. La formule se choisit après la confirmation de l’adresse.
   </p>
   <form id="signup-form" novalidate>
     <div style="display:flex;gap:12px">
@@ -69,14 +74,14 @@ import AuthLayout from '../layouts/AuthLayout.astro';
 
   <script>
     import { API } from '../scripts/api';
-    import { RESSORTS } from '../data/ressorts';
 
     const BASE = import.meta.env.BASE_URL || '/earlywatch-app/';
     const FAMILY_LABELS: Record<string, string> = {
       financier: 'Secteur financier',
       non_financier: 'Professions non financières',
     };
-    type SignupProfile = { code: string; label: string; family: string; ressort_label?: string | null };
+    type Ressort = { id: string; label: string };
+    type SignupProfile = { code: string; label: string; family: string; ressort_label?: string | null; ressorts?: Ressort[] };
     let profiles: SignupProfile[] = [];
 
     const select = document.getElementById('profile') as HTMLSelectElement;
@@ -126,11 +131,11 @@ import AuthLayout from '../layouts/AuthLayout.astro';
 
     select.addEventListener('change', () => {
       const p = profiles.find(x => x.code === select.value);
-      const list = (p && p.ressort_label && RESSORTS[p.code]) || [];
+      const list = (p && p.ressort_label && Array.isArray(p.ressorts) && p.ressorts) || [];
       if (p && list.length) {
         ressortLabel.textContent = p.ressort_label!;
         ressortSelect.innerHTML = '<option value="">— Choisir —</option>'
-          + list.map(r => `<option value="${esc(r.value)}">${esc(r.label)}</option>`).join('')
+          + list.map(r => `<option value="${esc(r.id)}">${esc(r.label)}</option>`).join('')
           + '<option value="">Autre / non listé</option>';
         ressortField.style.display = 'block';
       } else {
