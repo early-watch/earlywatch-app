@@ -81,19 +81,21 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
   const capitalize = (v: string) => v.charAt(0).toUpperCase() + v.slice(1);
   const row = (k: string, v: string) => `<div class="pm-row"><div class="pm-k">${k}</div><div class="pm-v">${v}</div></div>`;
 
-  // Préférences e-mail : trois choix exclusifs, traduits vers les deux champs lus par
+  // Préférences e-mail : deux choix exclusifs, traduits vers les deux champs lus par
   // le serveur (weekly_digest.py : récapitulatif envoyé si alert_digest ∈ {weekly, daily}
   // OU alert_email_enabled ; alertes importantes si alert_email_enabled).
+  // Pas d'option « Alertes importantes » dans le MVP : les deux choix écrivent
+  // alert_email_enabled = false.
   const EMAIL_CHOICES = [
     { value: 'none', label: 'Aucun e-mail', hint: 'Vous consultez la veille dans l’application.',
       patch: { alert_email_enabled: false, alert_digest: 'immediate' } },
-    { value: 'immediate', label: 'Alertes importantes et récapitulatif hebdomadaire', hint: 'Un e-mail pour les publications importantes, et un récapitulatif chaque semaine.',
-      patch: { alert_email_enabled: true, alert_digest: 'immediate' } },
-    { value: 'weekly', label: 'Récapitulatif hebdomadaire seulement', hint: 'Un e-mail par semaine.',
+    { value: 'weekly', label: 'Récapitulatif hebdomadaire', hint: 'Un e-mail par semaine.',
       patch: { alert_email_enabled: false, alert_digest: 'weekly' } },
   ];
+  // Un établissement déjà réglé sur les alertes (alert_email_enabled) reçoit aussi le
+  // récapitulatif hebdomadaire : il apparaît sur ce choix.
   function emailChoice(s: any): string {
-    if (s.alert_email_enabled) return 'immediate';
+    if (s.alert_email_enabled) return 'weekly';
     return s.alert_digest === 'weekly' || s.alert_digest === 'daily' ? 'weekly' : 'none';
   }
 
