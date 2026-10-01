@@ -62,7 +62,10 @@ test('filtre par profil selon le périmètre, professions non financières compr
   const ep = { code: 'etablissement_paiement', family: 'financier' };
   const caspP = { code: 'casp', family: 'financier' };
   assert.equal(concerns(tous, avocat), true);
-  assert.equal(concerns(etat, avocat), true);
+  assert.equal(concerns(etat, avocat), false);              // État : masquée dès qu'un profil est choisi
+  assert.equal(concerns(etat, null), true);                  // … visible dans « Tous les profils »
+  assert.equal(concerns(etat, { code: null, family: 'financier' }), false);
+  assert.equal(concerns(etat, { code: 'consultant', family: 'financier' }), false);
   assert.equal(concerns(fin, avocat), false);
   assert.equal(concerns(fin, ep), true);
   assert.equal(concerns(casp, avocat), false);
