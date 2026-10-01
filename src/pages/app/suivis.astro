@@ -113,8 +113,10 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
   async function load(): Promise<void> {
     try {
       const [s, r] = await Promise.all([
-        api('/api/v1/app/articles?status=to_process&page_size=200'),
-        api('/api/v1/app/articles?status=read&page_size=200'),
+        // days=30 : même fenêtre que le Fil. Les publications suivies ou traitées sont
+        // renvoyées par le serveur quel que soit leur âge.
+        api('/api/v1/app/articles?status=to_process&days=30&page_size=300'),
+        api('/api/v1/app/articles?status=read&days=30&page_size=300'),
       ]);
       suivis = (s.articles || []).slice().sort(byLevelThenDate);
       traitees = (r.articles || [])

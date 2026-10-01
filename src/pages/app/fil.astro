@@ -180,7 +180,9 @@ const base = import.meta.env.BASE_URL;
       calm = !inbox.some((a) => levelOf(a) === 'action');
       if (calm) {
         // À lire / Info des 30 derniers jours (hors publications suivies ou ignorées).
-        const all = await api('/api/v1/app/articles?status=all&page_size=200');
+        // days=30 : le serveur élargit la boîte de réception à 30 jours ; les publications
+        // lues lui reviennent quel que soit leur âge, d'où le filtre de date ci-dessous.
+        const all = await api(`/api/v1/app/articles?status=all&days=${RECENT_DAYS}&page_size=300`);
         const since = Date.now() - RECENT_DAYS * 86400000;
         items = (all.articles || [])
           .filter((a: any) => a.client_status !== 'to_process' && levelOf(a) !== 'action')
