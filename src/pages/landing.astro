@@ -14,13 +14,13 @@ const base = import.meta.env.BASE_URL;
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style is:inline>
-/* Mise en page : colonne unique aérée, filets pointillés, un seul accent vert citron. Thème clair assumé (charte Early Watch). */
+/* Mise en page : colonne unique aérée, filets pointillés, un seul accent kaki. Thème clair assumé (charte Early Watch). */
 :root{
   color-scheme:light;
   --bg:#F3F3F0;--bg2:#EAEAE5;--panel:#FCFCFA;
   --ink:#101010;--ink2:#54524C;--ink3:#7A786F;
   --line:#DDDBD3;--line2:#CBC9BF;
-  --lime:#CFFF3E;--lime-d:#8FCC00;--lime-ink:#4F7300;
+  --lime:#DCE2C6;--lime-d:#5C6347;--lime-ink:#4A5039;
   --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
   --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
   --pad:clamp(16px,3.4vw,56px);
@@ -46,7 +46,7 @@ section{padding-block:clamp(56px,8vw,110px);border-top:1px solid var(--line)}
   border:1.4px solid var(--ink);transition:background .25s,color .25s,border-color .25s}
 .btn:hover{background:var(--lime);color:var(--ink);border-color:var(--lime-d)}
 .btn.ghost{background:transparent;color:var(--ink);border:1.4px dotted var(--ink2)}
-.btn.ghost:hover{border-color:var(--lime-d);background:rgba(207,255,62,.14)}
+.btn.ghost:hover{border-color:var(--lime-d);background:rgba(92,99,71,.10)}
 .btn.sm{padding:9px 18px;font-size:14px}
 
 /* nav */
@@ -98,7 +98,7 @@ nav .links a:not(.btn):hover{color:var(--ink)}
 .fsrc{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fttl{font-size:14.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .flink{font-family:var(--mono);font-size:11.5px;color:var(--lime-ink);opacity:0;transition:opacity .4s ease .2s;white-space:nowrap}
-.frow.win{background:rgba(207,255,62,.16);border-bottom-color:var(--lime-d);padding-inline:12px;border-radius:8px}
+.frow.win{background:rgba(92,99,71,.10);border-bottom-color:var(--lime-d);padding-inline:12px;border-radius:8px}
 .frow.win .fsrc,.frow.win .fttl{color:var(--ink)}
 .frow.win .fttl{font-weight:500}
 .frow.win .flink{opacity:1}
@@ -110,14 +110,6 @@ nav .links a:not(.btn):hover{color:var(--ink)}
   .fttl{white-space:normal}
   .flink{display:none}.frow.win .flink{display:block}
 }
-
-/* diff */
-.dbox{margin-top:32px;border:1.4px dotted var(--line2);border-radius:22px;background:rgba(252,252,250,.6);padding:clamp(22px,3vw,44px)}
-.dtext{font-size:clamp(19px,2.4vw,32px);line-height:1.45;font-weight:300}
-.dtext del{text-decoration:line-through;text-decoration-thickness:1.6px;color:var(--ink3)}
-.dtext ins{text-decoration:none;background:var(--lime);color:var(--ink);padding:0 .12em;border-radius:2px}
-.dfoot{margin-top:26px;padding-top:18px;border-top:1px solid var(--line);display:flex;gap:20px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
-.dfoot b{color:var(--ink)}
 
 /* pour qui */
 .pgrid{margin-top:clamp(28px,3.4vw,46px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(12px,1.6vw,20px)}
@@ -240,7 +232,7 @@ footer .c{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-trans
         </div>
         <div class="frail"><i id="frailfill"></i></div>
         <div class="ftable" id="ftable">
-          <div class="frow" data-k="4" data-win="1"><span class="fsrc">ACPR</span><span class="fttl">Position : vigilance renforcée et risque élevé</span><span class="flink">→ Classification des risques · §4</span></div>
+          <div class="frow" data-k="4" data-win="1"><span class="fsrc">ACPR</span><span class="fttl">Position : vigilance renforcée et risque élevé</span><span class="flink">→ À traiter aujourd'hui</span></div>
           <div class="frow" data-k="3"><span class="fsrc">Tracfin</span><span class="fttl">Lignes directrices : déclaration de soupçon</span></div>
           <div class="frow" data-k="3"><span class="fsrc">Conseil de l'UE</span><span class="fttl">Décision : sanctions internationales</span></div>
           <div class="frow" data-k="2"><span class="fsrc">EBA</span><span class="fttl">Orientations : approche par les risques</span></div>
@@ -253,25 +245,6 @@ footer .c{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-trans
           <div class="frow" data-k="1"><span class="fsrc">ACPR</span><span class="fttl">Communiqué : agréments délivrés</span></div>
         </div>
         <p class="fnote">Chiffres et intitulés donnés à titre d'exemple.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- DIFF -->
-<section id="diff">
-  <div class="wrap">
-    <div class="head">
-      <span class="lab">Le cœur du dispositif</span>
-      <h2>Un mot change dans un texte. Votre procédure aussi.</h2>
-      <p>Quand un texte est modifié, vous voyez exactement ce qui a changé, et la section de votre procédure qu'il faut relire.</p>
-    </div>
-    <div class="dbox">
-      <p class="dtext">L'établissement met en œuvre des mesures de vigilance <del>simplifiées</del> <ins>renforcées</ins> lorsque la relation d'affaires présente un risque <del>faible</del> <ins>élevé</ins>.</p>
-      <div class="dfoot">
-        <span>Comparaison mot à mot</span>
-        <span>Procédure liée : <b>classification des risques · §4</b></span>
-        <span>Statut : <b>à réviser</b></span>
       </div>
     </div>
   </div>
@@ -351,10 +324,8 @@ footer .c{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-trans
       <table class="etab">
         <thead><tr><th>Engagement</th><th>Portée</th><th>Vérifiable par</th></tr></thead>
         <tbody>
-          <tr><td class="k">Validation humaine</td><td>Aucun contenu généré n'entre dans votre dispositif sans qu'un responsable l'ait validé.</td><td class="n">Journal des validations</td></tr>
           <tr><td class="k">Source primaire</td><td>Chaque information renvoie au texte officiel qui la fonde.</td><td class="n">Lien vers le texte</td></tr>
           <tr><td class="k">Hébergement en France</td><td>Données hébergées en France, espace isolé pour chaque client.</td><td class="n">Politique de confidentialité</td></tr>
-          <tr><td class="k">Réversibilité</td><td>Votre historique de veille est exportable dans des formats ouverts.</td><td class="n">Export à la demande</td></tr>
         </tbody>
       </table>
     </div>
@@ -373,10 +344,8 @@ footer .c{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-trans
         <div class="ans">En France, chez Scaleway. Chaque client dispose d'un espace isolé : aucune donnée n'est partagée entre clients. Les autres prestataires qui interviennent, par exemple pour le paiement ou l'envoi des e-mails, sont listés dans la <a href={`${base}confidentialite`}>politique de confidentialité</a>.</div></details>
       <details><summary>Je suis avocat, notaire ou agent immobilier. Suis-je concerné par l'AMLR ?<span class="pl">+</span></summary>
         <div class="ans">Oui. Le règlement européen AMLR s'applique à partir du 10 juillet 2027 à toutes les entités assujetties, y compris les professions non financières. Early Watch vous signale les textes européens et français qui vous visent, sans le bruit propre aux banques ou aux actifs numériques.</div></details>
-      <details><summary>L'outil rédige-t-il mes procédures à ma place ?<span class="pl">+</span></summary>
-        <div class="ans">Non. Il signale les textes qui ont changé et les sections concernées. La décision et la responsabilité restent celles du responsable conformité.</div></details>
       <details><summary>Comment démontrer mon dispositif de veille en contrôle ?<span class="pl">+</span></summary>
-        <div class="ans">Chaque publication reçue et chaque décision de traitement est datée, avec le lien vers le texte officiel. Vous pouvez exporter cet historique.</div></details>
+        <div class="ans">Chaque publication reçue et chaque décision de traitement est datée, avec le lien vers le texte officiel.</div></details>
       <details><summary>Puis-je changer de formule ou résilier ?<span class="pl">+</span></summary>
         <div class="ans">Oui, depuis votre espace, à tout moment. Les conditions sont détaillées dans les <a href={`${base}cgv`}>conditions générales de vente</a>.</div></details>
     </div>
@@ -456,7 +425,7 @@ const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
       const s=Math.max(0,Math.min(1,1-Math.hypot(p.tx-p.x,p.ty-p.y)/40));
       const w=Math.sin(t*1.1+i*.37)*.4*(1-s);
       x.globalAlpha=p.stray?.1:(.34+.56*s);
-      x.fillStyle=`rgb(${Math.round(143-127*s)},${Math.round(204-188*s)},${Math.round(0+16*s)})`;
+      x.fillStyle=`rgb(${Math.round(92-76*s)},${Math.round(99-83*s)},${Math.round(71-55*s)})`;
       x.beginPath();x.arc(p.x+w,p.y+w*.6,p.r,0,7);x.fill();
     });
     x.globalAlpha=1;
