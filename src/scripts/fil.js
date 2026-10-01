@@ -64,13 +64,19 @@ export function levelBadge(a) {
  * discret (contour gris) ; la couleur pleine est réservée au détail et au badge Action.
  * `dateText` remplace la date affichée (ex. « traité le … »).
  */
+/** Titre affiché : `display_title` (titre nettoyé par l'API), sinon le titre d'origine.
+ *  Le niveau provisoire (levelOf) reste calculé sur le titre d'origine. */
+export function titleOf(a) {
+  return a.display_title || a.title || 'Sans titre';
+}
+
 export function renderRow(a, { action = null, dateText = null, selected = false } = {}) {
   const reason = (a.reason || '').trim();
   return `
-    <article class="fil-row${selected ? ' is-selected' : ''}" data-id="${esc(a.id)}" tabindex="0" aria-label="${esc(a.title)}">
+    <article class="fil-row${selected ? ' is-selected' : ''}" data-id="${esc(a.id)}" tabindex="0" aria-label="${esc(titleOf(a))}">
       <div class="fil-row-level">${levelBadge(a)}</div>
       <div class="fil-row-body">
-        <h3 class="fil-row-title">${esc(a.title || 'Sans titre')}</h3>
+        <h3 class="fil-row-title">${esc(titleOf(a))}</h3>
         <div class="fil-row-meta">
           <span class="fil-row-source">${esc(a.source_name || '—')}</span>
           <span class="fil-row-date">${esc(dateText ?? shortDate(a.published_at))}</span>
@@ -92,7 +98,7 @@ export function renderDetail(a, { actions = [] } = {}) {
     <div class="fil-detail-inner">
       <button type="button" class="fil-detail-back" data-close-detail>← Retour</button>
       <div class="fil-detail-top">${levelBadge(a)}<span class="fil-detail-date">${esc(longDate(a.published_at))}</span></div>
-      <h2 class="fil-detail-title">${esc(a.title || 'Sans titre')}</h2>
+      <h2 class="fil-detail-title">${esc(titleOf(a))}</h2>
       <div class="fil-detail-source">${esc(a.source_name || '—')}</div>
       ${summary ? `<section class="fil-detail-block"><h3>Résumé</h3><p>${esc(summary)}</p></section>` : ''}
       ${reason ? `<section class="fil-detail-block"><h3>Pourquoi pour vous</h3><p>${esc(reason)}</p></section>` : ''}
