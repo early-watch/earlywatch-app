@@ -46,9 +46,9 @@ export function seatsLabel(used, limit) {
 }
 
 // Formule supérieure de la même ligne (grille du 01/10/2026) :
-// professions non financières pnf → cabinet ; établissements financiers solo → equipe.
+// professions non financières pnf → pnf_cabinet ; établissements financiers solo → equipe.
 export const UPGRADES = {
-  pnf: { code: 'cabinet', text: 'Passez à la formule Cabinet' },
+  pnf: { code: 'pnf_cabinet', text: 'Passez à la formule Cabinet' },
   solo: { code: 'equipe', text: 'Passez à Équipe' },
 };
 
