@@ -1,4 +1,6 @@
 ---
+import { MENU_PAGES, HOME_PAGE } from '../data/client-pages';
+
 interface Props {
   activePage?: string;
 }
@@ -6,50 +8,19 @@ const { activePage = '' } = Astro.props;
 const base = import.meta.env.BASE_URL;
 ---
 
-<aside class="ew-side">
+<aside class="ew-side" id="ew-side">
 
-  <!-- Bannière impersonation — visible uniquement quand Maria simule le tenant -->
-  <div id="impersonate-banner" style="display:none;background:#5C6347;padding:8px 16px;margin-bottom:8px">
-    <button
-      id="btn-back-admin"
-      style="width:100%;background:none;border:none;color:#EDEAE3;font-size:12px;font-weight:500;font-family:var(--font-mono);letter-spacing:0.08em;cursor:pointer;text-align:left;padding:0"
-    >
-      ← Retour admin Early Brief
-    </button>
-  </div>
+  <a href={`${base}${HOME_PAGE.path}`} class="ew-logo">Early <span>Watch</span></a>
 
-  <a href={`${base}app/tableau-de-bord`} class="ew-logo">Early <span>Watch</span></a>
-
-  <div class="ew-section">Ma Veille</div>
-  <a href={`${base}app/tableau-de-bord`} class:list={['ew-nav', { active: activePage === 'tableau-de-bord' }]}>
-    Tableau de bord
-    <span id="client-badge-unread" class="ew-count" style="display:none"></span>
-  </a>
-  <a href={`${base}app/veille`} class:list={['ew-nav', { active: activePage === 'veille' }]}>
-    Fil réglementaire
-  </a>
-  <a href={`${base}app/tracker`} class:list={['ew-nav', { active: activePage === 'tracker' }]}>
-    Registre réglementaire
-  </a>
-
-  <div class="ew-section">Conformité</div>
-  <a href={`${base}app/feuille-de-route`} class:list={['ew-nav', { active: activePage === 'feuille-de-route' }]}>
-    Feuille de route
-  </a>
-  <a href={`${base}app/procedures`} class:list={['ew-nav', { active: activePage === 'procedures' }]}>
-    Mes procédures
-  </a>
-  <a href={`${base}app/fiches-reflexes`} class:list={['ew-nav', { active: activePage === 'fiches-reflexes' }]}>
-    Fiches réflexes
-  </a>
-  <a href={`${base}app/pays-risque`} class:list={['ew-nav', { active: activePage === 'pays-risque' }]}>
-    Pays à risque
-  </a>
-
-  <div class="ew-section">Paramètres</div>
-  <a href={`${base}app/parametres`} class:list={['ew-nav', { active: activePage === 'parametres' }]}>
-    Profil organisation
-  </a>
+  <nav aria-label="Menu principal">
+    {MENU_PAGES.map((p) => (
+      <a href={`${base}${p.path}`} class:list={['ew-nav', { active: activePage === p.key }]}
+         aria-current={activePage === p.key ? 'page' : undefined}>
+        <span>{p.label}</span>
+        {(p.key === 'fil' || p.key === 'suivis') && <span class="ew-count" data-count={p.key} hidden></span>}
+      </a>
+    ))}
+  </nav>
 
   <!-- Footer utilisateur -->
   <div class="ew-user">
@@ -63,13 +34,13 @@ const base = import.meta.env.BASE_URL;
       </div>
     </div>
   </div>
+  <a href="#" id="client-nav-logout" class="ew-settings-link" style="padding:0 22px 4px">Se déconnecter</a>
 
 </aside>
 
 <script>
-  import { getUser, isImpersonating, stopImpersonation } from '../scripts/api';
-
-  const BASE = import.meta.env.BASE_URL || '/earlywatch-app/';
+  import { api, getUser, logout } from '../scripts/api';
+  import { levelOf } from '../scripts/fil.js';
 
   function initClientNav() {
     const user = getUser();
@@ -89,27 +60,35 @@ const base = import.meta.env.BASE_URL;
     if (tenantEl) {
       tenantEl.textContent = user.tenant_name || '—';
     }
-
-    // Bannière impersonation
-    const banner = document.getElementById('impersonate-banner');
-    if (banner && isImpersonating()) {
-      banner.style.display = 'block';
-    }
   }
 
-  function initBackAdmin() {
-    const btn = document.getElementById('btn-back-admin');
-    if (!btn) return;
-    btn.addEventListener('click', () => {
-      stopImpersonation();
-      window.location.href = BASE + 'dashboard';
-    });
+  // Compteurs du menu, rafraîchis après une action (événement « ew:counts-changed ») :
+  //   Fil    = publications de niveau Action à traiter (même règle que le titre du Fil) ;
+  //   Suivis = publications suivies (statut to_process).
+  function setCount(key, n) {
+    const el = document.querySelector(`[data-count="${key}"]`);
+    if (!el) return;
+    el.textContent = n > 0 ? String(n) : '';
+    el.hidden = !(n > 0);
   }
+  async function loadCounts() {
+    try {
+      const [inbox, c] = await Promise.all([
+        api('/api/v1/app/articles?status=inbox&page_size=200'),
+        api('/api/v1/app/articles/counts'),
+      ]);
+      setCount('fil', (inbox?.articles || []).filter((a) => levelOf(a) === 'action').length);
+      setCount('suivis', c?.to_process ?? 0);
+    } catch { /* compteurs facultatifs */ }
+  }
+
+  document.getElementById('client-nav-logout')?.addEventListener('click', (e) => { e.preventDefault(); logout(); });
 
   initClientNav();
-  initBackAdmin();
+  loadCounts();
+  window.addEventListener('ew:counts-changed', loadCounts);
   document.addEventListener('astro:after-swap', () => {
     initClientNav();
-    initBackAdmin();
+    loadCounts();
   });
 </script>

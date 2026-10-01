@@ -1,32 +1,35 @@
 /* ================================================================
-   Early Watch — Design Tokens V9
-   Crème · IBM Plex Sans + Mono · Moutarde · Zéro shadow · Zéro gradient
+   Early Watch — Design Tokens (palette MVP unique)
+   Blanc · encre #111111 · gris neutres · accent kaki #5C6347 · IBM Plex Sans + Mono
    ================================================================ */
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap');
 
-/* ---- Palette V9 ---- */
+/* ---- Palette MVP (unique) : blanc, encre #111111, gris neutres, accent kaki #5C6347 ---- */
 :root {
   /* Surfaces */
-  --bg:       #F4F0E6;   /* crème principale */
-  --bg-side:  #EFEADC;   /* sidebar / panel droit */
-  --bg-hover: #E8E2D0;   /* hover, avatar, fond actif */
+  --bg:       #FFFFFF;   /* fond principal */
+  --bg-side:  #F7F7F7;   /* colonne de navigation, panneaux */
+  --bg-hover: #EFEFEF;   /* survol, avatar, fond actif */
 
   /* Texte */
-  --ink:      #1A1814;   /* encre principale */
-  --ink-soft: #3A3530;   /* encre secondaire */
-  --taupe:    #5C574E;   /* nav inactif, labels */
-  --mute:     #8A8579;   /* muted, dates, counts */
-  --ghost:    #BFB8A5;   /* très atténué, separateurs tabs */
+  --ink:      #111111;   /* encre principale */
+  --ink-soft: #333333;   /* encre secondaire */
+  --taupe:    #555555;   /* navigation inactive, libellés (nom historique conservé) */
+  --mute:     #767676;   /* dates, compteurs — contraste AA sur blanc */
+  --ghost:    #BDBDBD;   /* très atténué, séparateurs */
 
   /* Bordures */
-  --line:        rgba(26, 24, 20, 0.08);  /* bordure douce */
-  --line-strong: rgba(26, 24, 20, 0.14); /* bordure visible */
+  --line:        rgba(17, 17, 17, 0.08);
+  --line-strong: rgba(17, 17, 17, 0.16);
 
-  /* Accent unique — moutarde */
-  --moutarde: #EAB308;
+  /* Accent unique — kaki (le nom --moutarde est conservé pour les pages existantes) */
+  --accent:    #5C6347;
+  --accent-bg: rgba(92, 99, 71, 0.08);
+  --on-accent: #FFFFFF;  /* texte posé sur l'accent */
+  --moutarde:  var(--accent);
 
-  /* Fond actif digest (triage bouton sélectionné) */
-  --bg-triage-active: #EEE7D2;
+  /* Fond actif (bouton de tri sélectionné) */
+  --bg-triage-active: var(--accent-bg);
 
   /* Erreur */
   --color-error: #DC2626;

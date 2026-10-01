@@ -254,7 +254,7 @@
   padding: 0;
   white-space: nowrap;
 }
-.ew-sort-btn:hover { color: #1A1918; }
+.ew-sort-btn:hover { color: var(--ink); }
 .ew-sort-menu {
   position: absolute;
   right: 0;
@@ -359,7 +359,7 @@
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.18em;
-  color: var(--ink);
+  color: var(--on-accent);
   font-weight: 500;
   background: var(--moutarde);
   padding: 3px 8px;
@@ -373,7 +373,7 @@
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.18em;
-  color: var(--ink);
+  color: var(--on-accent);
   font-weight: 500;
   background: var(--moutarde);
   padding: 3px 8px;
@@ -469,7 +469,7 @@
 /* Variante kaki (#5C6347) — boutons client (/app/veille) */
 .ew-btn-kaki {
   background: #5C6347;
-  color: #F4F0E6;
+  color: var(--bg);
   border-color: transparent;
   font-weight: 500;
 }
@@ -594,7 +594,7 @@
   background: var(--moutarde);
   border-radius: 1px;
 }
-.ew-close:hover { background: #FAF6EC; }
+.ew-close:hover { background: var(--bg-side); }
 
 .ew-close-note {
   font-size: 11px;
@@ -902,7 +902,7 @@
 
 /* Variantes badge */
 .ew-badge-muted   { background: var(--bg-hover); color: var(--taupe); }
-.ew-badge-new     { background: var(--moutarde); color: var(--ink); }
+.ew-badge-new     { background: var(--moutarde); color: var(--on-accent); }
 .ew-badge-ok      { background: var(--bg-hover); color: var(--ink-soft); }
 .ew-badge-error   { background: rgba(220, 38, 38, 0.08); color: var(--color-error); }
 
@@ -997,3 +997,249 @@
 .ew-gap-16 { gap: 16px; }
 .ew-gap-24 { gap: 24px; }
 .ew-flex-1 { flex: 1; min-width: 0; }
+
+/* ================================================================
+   GABARIT CLIENT (MVP) — ClientLayout
+   ≥ 900 px : colonne de menu + contenu. < 900 px : barre du haut
+   avec bouton « Menu », menu en tiroir, aucun défilement horizontal.
+   ================================================================ */
+
+.ew-client { background: var(--bg); overflow-x: hidden; }
+.ew-client-frame { grid-template-columns: 220px minmax(0, 1fr); }
+/* Fond de la colonne de menu sur toute la hauteur, même quand la page dépasse l'écran
+   (la colonne est collante, hauteur 100vh). */
+@media (min-width: 900px) {
+  .ew-client-frame {
+    background: linear-gradient(to right,
+      var(--bg-side) 0 219.5px, var(--line-strong) 219.5px 220px, var(--bg) 220px);
+  }
+  .ew-client .ew-side { border-right: none; }   /* le filet est porté par le fond du cadre */
+}
+.ew-client .ew-nav.active::before { background: var(--accent); }
+.ew-client .ew-main { max-width: 100%; }
+.ew-client .ew-main img, .ew-client .ew-main table { max-width: 100%; }
+
+.ew-topbar { display: none; }
+.ew-scrim { display: none; }
+
+.ew-menu-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: transparent;
+  border: 0.5px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: 7px 12px;
+  cursor: pointer;
+}
+.ew-menu-btn:hover { background: var(--bg-hover); }
+
+@media (max-width: 899px) {
+  .ew-client-frame { display: block; }
+
+  .ew-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    height: 52px;
+    padding: 0 16px;
+    background: var(--bg);
+    border-bottom: 0.5px solid var(--line);
+  }
+  .ew-topbar-logo { padding: 0; }
+
+  .ew-client .ew-side {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(280px, 82vw);
+    height: auto;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.18s ease;
+    box-shadow: none;
+  }
+  .ew-client.ew-menu-open .ew-side { transform: translateX(0); }
+  .ew-client.ew-menu-open { overflow: hidden; }
+
+  .ew-scrim:not([hidden]) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(17, 17, 17, 0.32);
+  }
+
+  .ew-client .ew-main { padding: 20px 16px 28px; }
+  .ew-client .ew-header { flex-wrap: wrap; gap: 6px 12px; }
+  .ew-client .ew-h-title { font-size: 19px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ew-client .ew-side { transition: none; }
+}
+
+/* ================================================================
+   FIL / SUIVIS (MVP) — src/scripts/fil.js
+   ≥ 1100 px : liste + détail à droite. En dessous : détail plein écran.
+   ================================================================ */
+
+.fil-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
+@media (min-width: 1100px) {
+  .fil-layout { grid-template-columns: minmax(0, 1fr) 380px; gap: 32px; align-items: start; }
+}
+
+.fil-list { border-top: 0.5px solid var(--line); }
+
+.fil-row {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  padding: 14px 10px;
+  border-bottom: 0.5px solid var(--line);
+  cursor: pointer;
+  outline: none;
+}
+.fil-row:hover { background: var(--bg-side); }
+.fil-row:focus-visible { box-shadow: inset 0 0 0 1.5px var(--accent); }
+.fil-row.is-selected { background: var(--bg-side); box-shadow: inset 2px 0 0 var(--accent); }
+
+.fil-level {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  border: 0.5px solid var(--line-strong);
+  color: var(--taupe);
+  background: var(--bg);
+}
+.fil-level-action { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.fil-level-a_lire { color: var(--accent); border-color: var(--accent); background: var(--accent-bg); }
+
+.fil-row-title { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--ink); margin: 0; overflow-wrap: anywhere; }
+.fil-row-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px; font-size: 12px; color: var(--mute); }
+.fil-row-source { color: var(--taupe); }
+.fil-row-reason { margin-top: 6px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; }
+
+.fil-btn {
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--bg);
+  border: 0.5px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.fil-btn:hover { background: var(--bg-hover); }
+.fil-btn-primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.fil-btn-primary:hover { background: var(--accent); opacity: 0.9; }
+.fil-btn:disabled { opacity: 0.5; cursor: default; }
+
+.fil-empty { font-size: 13px; color: var(--mute); padding: 18px 10px; }
+
+/* Détail */
+.fil-detail { display: none; }
+.fil-detail-back { display: none; }
+@media (min-width: 1100px) {
+  .fil-detail {
+    display: block;
+    position: sticky;
+    top: 24px;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    border: 0.5px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--bg);
+  }
+}
+.fil-detail-inner { padding: 22px 22px 26px; }
+.fil-detail-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.fil-detail-date { font-size: 12px; color: var(--mute); }
+.fil-detail-title { font-size: 17px; font-weight: 500; line-height: 1.4; color: var(--ink); margin: 0 0 6px; overflow-wrap: anywhere; }
+.fil-detail-source { font-size: 12.5px; color: var(--taupe); margin-bottom: 18px; }
+.fil-detail-block { margin-bottom: 16px; }
+.fil-detail-block h3 {
+  font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--taupe); margin: 0 0 6px;
+}
+.fil-detail-block p { font-size: 13.5px; line-height: 1.6; color: var(--ink-soft); margin: 0; }
+.fil-detail-link { display: inline-block; font-size: 13.5px; font-weight: 500; color: var(--accent); margin: 4px 0 20px; }
+.fil-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 16px; border-top: 0.5px solid var(--line); }
+.fil-detail-placeholder { padding: 22px; font-size: 13px; color: var(--mute); }
+
+/* Téléphone / tablette : détail plein écran */
+@media (max-width: 1099px) {
+  .fil-detail.is-open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: var(--bg);
+    overflow-y: auto;
+  }
+  .fil-detail.is-open .fil-detail-back {
+    display: inline-block;
+    font-family: inherit; font-size: 13px; color: var(--ink);
+    background: none; border: none; padding: 0; margin-bottom: 18px; cursor: pointer;
+  }
+  .fil-detail-inner { padding: 18px 16px 32px; }
+  body.fil-detail-open { overflow: hidden; }
+}
+@media (max-width: 520px) {
+  .fil-row { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 14px 4px; }
+  .fil-row-act { justify-self: start; }
+}
+
+/* Impersonation (superadmin) : fine barre sur une ligne, en haut de page. */
+.ew-imp {
+  display: flex; align-items: center; gap: 8px;
+  height: 30px; padding: 0 16px;
+  font-family: var(--font); font-size: 12.5px; font-weight: 400;
+  color: var(--on-accent); background: var(--accent);
+  white-space: nowrap; overflow: hidden;
+}
+.ew-imp[hidden] { display: none; }
+.ew-imp-text { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.ew-imp-text strong { font-weight: 500; }
+.ew-imp-sep { opacity: 0.7; }
+.ew-imp-back {
+  flex-shrink: 0; font: inherit; color: inherit; background: none; border: none; padding: 0;
+  text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
+}
+/* Compteurs du menu (Fil, Suivis) */
+.ew-client .ew-nav .ew-count { font-family: var(--font-mono); font-size: 11px; color: var(--mute); }
+.ew-client .ew-nav .ew-count[hidden] { display: none; }
+
+/* Fil sans publication à sélectionner : pas de panneau de détail. */
+.fil-layout.is-single { grid-template-columns: minmax(0, 1fr); }
+.fil-layout.is-single .fil-detail { display: none !important; }
+
+/* Fil « rien à traiter » : prochaine échéance, puis À lire / Info récents. */
+.fil-next {
+  border-top: 0.5px solid var(--line); border-bottom: 0.5px solid var(--line);
+  padding: 16px 0 18px; margin-bottom: 28px; max-width: 760px;
+}
+.fil-next[hidden] { display: none; }
+.fil-next-label, .fil-section-label {
+  font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--taupe); margin: 0 0 8px;
+}
+.fil-section-label[hidden] { display: none; }
+.fil-next-when { font-size: 14px; font-weight: 500; color: var(--ink); }
+.fil-next-count { color: var(--accent); }
+.fil-next-title { font-size: 14px; line-height: 1.5; color: var(--ink-soft); margin: 4px 0 10px; }
+.fil-next-link { font-size: 13px; color: var(--accent); }

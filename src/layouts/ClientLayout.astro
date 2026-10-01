@@ -1,5 +1,9 @@
 ---
+// Gabarit unique de l'espace client (MVP) : menu Fil, Calendrier, Suivis, Paramètres
+// (réglage central : src/data/client-pages.ts). Sous 900 px, barre du haut avec
+// bouton menu ; le menu s'ouvre en tiroir.
 import ClientNav from '../components/ClientNav.astro';
+import { HOME_PAGE, isHidden } from '../data/client-pages';
 import '../styles/global.css';
 import '../styles/design-tokens.css';
 import '../styles/components.css';
@@ -10,6 +14,10 @@ interface Props {
 }
 
 const { title, activePage = '' } = Astro.props;
+const base = import.meta.env.BASE_URL;
+// Page masquée par le réglage central : redirection vers l'accueil, contenu non rendu.
+const hidden = isHidden(activePage);
+const homeUrl = `${base}${HOME_PAGE.path}`;
 ---
 
 <!DOCTYPE html>
@@ -18,19 +26,62 @@ const { title, activePage = '' } = Astro.props;
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{title} — Early Watch</title>
+  {hidden && <meta http-equiv="refresh" content={`0;url=${homeUrl}`} />}
+  {hidden && <script is:inline define:vars={{ homeUrl }}>window.location.replace(homeUrl);</script>}
 </head>
-<body>
-  <div class="ew-frame-2col">
-    <ClientNav activePage={activePage} />
-    <main class="ew-main" id="ew-main">
-      <slot />
-    </main>
+<body class="ew-client">
+  <!-- Impersonation (superadmin) : fine barre en haut de page, sur une ligne. -->
+  <div class="ew-imp" id="ew-imp" hidden>
+    <span class="ew-imp-text">Vous voyez l'espace de <strong id="ew-imp-name">ce client</strong></span>
+    <span class="ew-imp-sep" aria-hidden="true">·</span>
+    <button type="button" class="ew-imp-back" id="ew-imp-back">Revenir à l'administration</button>
   </div>
+  {!hidden && (
+    <div class="ew-frame-2col ew-client-frame">
+      <header class="ew-topbar">
+        <a href={homeUrl} class="ew-logo ew-topbar-logo">Early <span>Watch</span></a>
+        <button type="button" class="ew-menu-btn" id="ew-menu-btn" aria-controls="ew-side" aria-expanded="false">
+          Menu
+        </button>
+      </header>
+      <ClientNav activePage={activePage} />
+      <div class="ew-scrim" id="ew-scrim" hidden></div>
+      <main class="ew-main" id="ew-main">
+        <slot />
+      </main>
+    </div>
+  )}
   <div class="ew-toast-container" id="toast-container"></div>
 
   <script>
-    import { requireClientAuth } from '../scripts/api';
+    import { requireClientAuth, isImpersonating, stopImpersonation, getUser } from '../scripts/api';
     if (!requireClientAuth()) throw new Error('redirect');
+
+    // Impersonation : nom du client vu, retour à l'administration.
+    const imp = document.getElementById('ew-imp');
+    if (imp && isImpersonating()) {
+      const name = getUser()?.tenant_name;
+      if (name) document.getElementById('ew-imp-name')!.textContent = name;
+      imp.hidden = false;
+      document.getElementById('ew-imp-back')?.addEventListener('click', () => {
+        stopImpersonation();
+        window.location.href = (import.meta.env.BASE_URL || '/earlywatch-app/') + 'dashboard';
+      });
+    }
+
+    // Menu en tiroir (< 900 px)
+    const btn = document.getElementById('ew-menu-btn');
+    const side = document.getElementById('ew-side');
+    const scrim = document.getElementById('ew-scrim');
+    function setOpen(open: boolean): void {
+      document.body.classList.toggle('ew-menu-open', open);
+      btn?.setAttribute('aria-expanded', String(open));
+      if (scrim) scrim.hidden = !open;
+    }
+    btn?.addEventListener('click', () => setOpen(!document.body.classList.contains('ew-menu-open')));
+    scrim?.addEventListener('click', () => setOpen(false));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+    side?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
   </script>
 </body>
 </html>
