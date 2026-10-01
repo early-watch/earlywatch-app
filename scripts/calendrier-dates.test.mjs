@@ -100,3 +100,24 @@ test('valeurs historiques du profil', () => {
   assert.equal(normalizeProfileCode('avocat'), 'avocat');
   assert.equal(normalizeProfileCode(''), null);
 });
+
+test('prochaine échéance et compte à rebours', async () => {
+  const { nextDeadline, relativeLabel, isExactDate } = await import('../src/scripts/calendrier-dates.js');
+  const entries = [
+    { date: '15 août 2026', registre: 'a_venir', perimetre: 'financier' },
+    { date: 'janvier–mars 2027', registre: 'a_venir', perimetre: 'financier' },
+    { date: '10 juillet 2027', registre: 'a_venir', perimetre: 'tous' },
+    { date: '9 juillet 2024', registre: 'en_vigueur', perimetre: 'tous' },
+  ];
+  const avocat = { code: 'avocat', family: 'non_financier' };
+  const n = nextDeadline(entries, at('2026-10-01'), avocat);
+  assert.equal(n.entry.date, '10 juillet 2027');
+  assert.equal(n.days, 282);
+  assert.equal(relativeLabel(n.status, n.days, isExactDate(n.entry.date)), 'dans 282 jours');
+  assert.equal(nextDeadline(entries, at('2026-10-01'), null).entry.date, 'janvier–mars 2027');
+  assert.equal(nextDeadline(entries, at('2027-08-01'), avocat), null);
+  assert.equal(relativeLabel('a_venir', 1, true), 'demain');
+  assert.equal(relativeLabel('a_venir', 40, false), null);       // période (« fin 2027 ») : pas de compte au jour
+  assert.equal(relativeLabel('aujourdhui', 0, true), "aujourd'hui");
+  assert.equal(isExactDate('fin 2027'), false);
+});

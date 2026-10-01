@@ -30,6 +30,12 @@ const homeUrl = `${base}${HOME_PAGE.path}`;
   {hidden && <script is:inline define:vars={{ homeUrl }}>window.location.replace(homeUrl);</script>}
 </head>
 <body class="ew-client">
+  <!-- Impersonation (superadmin) : fine barre en haut de page, sur une ligne. -->
+  <div class="ew-imp" id="ew-imp" hidden>
+    <span class="ew-imp-text">Vous voyez l'espace de <strong id="ew-imp-name">ce client</strong></span>
+    <span class="ew-imp-sep" aria-hidden="true">·</span>
+    <button type="button" class="ew-imp-back" id="ew-imp-back">Revenir à l'administration</button>
+  </div>
   {!hidden && (
     <div class="ew-frame-2col ew-client-frame">
       <header class="ew-topbar">
@@ -48,8 +54,20 @@ const homeUrl = `${base}${HOME_PAGE.path}`;
   <div class="ew-toast-container" id="toast-container"></div>
 
   <script>
-    import { requireClientAuth } from '../scripts/api';
+    import { requireClientAuth, isImpersonating, stopImpersonation, getUser } from '../scripts/api';
     if (!requireClientAuth()) throw new Error('redirect');
+
+    // Impersonation : nom du client vu, retour à l'administration.
+    const imp = document.getElementById('ew-imp');
+    if (imp && isImpersonating()) {
+      const name = getUser()?.tenant_name;
+      if (name) document.getElementById('ew-imp-name')!.textContent = name;
+      imp.hidden = false;
+      document.getElementById('ew-imp-back')?.addEventListener('click', () => {
+        stopImpersonation();
+        window.location.href = (import.meta.env.BASE_URL || '/earlywatch-app/') + 'dashboard';
+      });
+    }
 
     // Menu en tiroir (< 900 px)
     const btn = document.getElementById('ew-menu-btn');
