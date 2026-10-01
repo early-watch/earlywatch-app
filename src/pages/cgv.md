@@ -31,9 +31,10 @@ Le Client crée son compte en ligne et confirme son adresse e-mail. Il garantit 
 
 | Formule | Destinataires | Utilisateurs | Prix mensuel hors taxes |
 | --- | --- | --- | --- |
-| Professions non financières | Professions assujetties hors secteur financier | 1 | 99 € |
-| Responsable LCB-FT | Responsable seul ou consultant | 1 | 199 € |
-| Équipe | Équipe d'un même établissement | Jusqu'à 10 | 590 € |
+| Professions non financières | Professionnel seul, assujetti hors secteur financier | 1 | 99 € |
+| Cabinet | Cabinet ou agence, assujetti hors secteur financier | Jusqu'à 5 | 199 € |
+| Responsable LCB-FT | Responsable conformité d'un établissement financier, consultant indépendant ou cabinet de conseil | 1 | 199 € |
+| Équipe | Équipe conformité d'un établissement financier, consultant indépendant ou cabinet de conseil | Jusqu'à 10 | 590 € |
 
 Les prix s'entendent hors taxes ; la TVA en vigueur s'y ajoute. L'Éditeur peut modifier ses prix. Toute hausse est notifiée au moins 30 jours avant son application. Le Client peut alors résilier avant qu'elle s'applique.
 
@@ -58,9 +59,10 @@ L'Éditeur peut résilier l'abonnement en cas de manquement grave du Client, apr
 
 ## Article 7 — Usage du service
 
-Le service est destiné aux besoins propres du Client. Le Client peut citer une information du service à ses propres clients ou dans ses documents internes, en mentionnant sa source. Il s'interdit notamment :
+Le service est destiné à l'usage interne du Client. Il est interdit de revendre, redistribuer ou retransmettre à des tiers, y compris aux clients d'un consultant, tout ou partie des contenus du service, sauf extraits ponctuels cités avec leur source.
 
-- de revendre, redistribuer ou mettre à disposition de tiers le contenu du service de façon systématique ;
+Le Client s'interdit également :
+
 - d'extraire tout ou partie substantielle de la base de données, y compris par des moyens automatisés ;
 - de partager ses identifiants au-delà du nombre d'utilisateurs de sa formule.
 
