@@ -1,0 +1,130 @@
+---
+// Fil (MVP) — page d'accueil de l'espace client.
+// Publications à traiter (statut client `inbox`), niveau en tête, triées par niveau
+// puis par date. Une seule action visible par ligne (« Suivre ») ; les autres
+// dans le détail. Détail à droite (≥ 1100 px) ou plein écran (en dessous).
+import ClientLayout from '../../layouts/ClientLayout.astro';
+---
+
+<ClientLayout title="Fil" activePage="fil">
+  <div class="ew-header">
+    <h1 class="ew-h-title" id="fil-title">Fil</h1>
+  </div>
+
+  <div class="fil-layout">
+    <div class="fil-list" id="fil-list"><div class="ew-loading"><div class="ew-spinner"></div></div></div>
+    <aside class="fil-detail" id="fil-detail" aria-live="polite">
+      <div class="fil-detail-placeholder">Sélectionnez une publication pour voir le détail.</div>
+    </aside>
+  </div>
+</ClientLayout>
+
+<script>
+  import { api, toast } from '../../scripts/api';
+  import { levelOf, byLevelThenDate, renderRow, renderDetail, esc } from '../../scripts/fil.js';
+
+  const WIDE = window.matchMedia('(min-width: 1100px)');
+  let items: any[] = [];
+  let selectedId: string | null = null;
+
+  const listEl = document.getElementById('fil-list')!;
+  const detailEl = document.getElementById('fil-detail')!;
+  const titleEl = document.getElementById('fil-title')!;
+
+  const DETAIL_ACTIONS = [
+    { label: 'Suivre', value: 'to_process', primary: true },
+    { label: 'Marquer comme lu', value: 'read' },
+    { label: 'Ignorer', value: 'ignored' },
+  ];
+  const DONE: Record<string, string> = {
+    to_process: 'Publication ajoutée à vos suivis',
+    read: 'Publication marquée comme lue',
+    ignored: 'Publication ignorée',
+  };
+
+  function renderTitle(): void {
+    const n = items.filter((a) => levelOf(a) === 'action').length;
+    titleEl.textContent = n === 0
+      ? 'Aucune publication ne demande une action'
+      : `${n} publication${n > 1 ? 's demandent' : ' demande'} une action`;
+  }
+
+  function renderList(): void {
+    listEl.innerHTML = items.length
+      ? items.map((a) => renderRow(a, { action: { label: 'Suivre', value: 'to_process' }, selected: WIDE.matches && a.id === selectedId })).join('')
+      : '<div class="fil-empty">Aucune nouvelle publication. Les publications que vous suivez sont dans Suivis.</div>';
+  }
+
+  function showDetail(id: string | null, open = false): void {
+    selectedId = id;
+    const a = items.find((x) => x.id === id);
+    detailEl.innerHTML = a
+      ? renderDetail(a, { actions: DETAIL_ACTIONS })
+      : '<div class="fil-detail-placeholder">Sélectionnez une publication pour voir le détail.</div>';
+    listEl.querySelectorAll('.fil-row').forEach((r) =>
+      r.classList.toggle('is-selected', WIDE.matches && r.getAttribute('data-id') === id));
+    const full = open && !WIDE.matches && !!a;
+    detailEl.classList.toggle('is-open', full);
+    document.body.classList.toggle('fil-detail-open', full);
+    if (full) detailEl.scrollTop = 0;
+  }
+
+  function closeDetail(): void {
+    detailEl.classList.remove('is-open');
+    document.body.classList.remove('fil-detail-open');
+  }
+
+  async function act(id: string, action: string, btn?: HTMLButtonElement): Promise<void> {
+    if (btn) btn.disabled = true;
+    try {
+      await api(`/api/v1/app/articles/${id}/state`, { method: 'PATCH', body: { action } });
+      toast(DONE[action] || 'Mis à jour');
+      const idx = items.findIndex((x) => x.id === id);
+      items = items.filter((x) => x.id !== id);   // quitte le Fil (suivie, lue ou ignorée)
+      closeDetail();
+      renderTitle();
+      renderList();
+      const next = items[Math.min(idx, items.length - 1)];
+      showDetail(WIDE.matches && next ? next.id : null);
+    } catch (e: any) {
+      if (btn) btn.disabled = false;
+      toast(e.message, 'error');
+    }
+  }
+
+  function onClick(e: Event): void {
+    const target = e.target as HTMLElement;
+    const btn = target.closest('[data-action]') as HTMLButtonElement | null;
+    if (btn) {
+      e.stopPropagation();
+      act(btn.dataset.id!, btn.dataset.action!, btn);
+      return;
+    }
+    if (target.closest('[data-close-detail]')) { closeDetail(); return; }
+    const row = target.closest('.fil-row') as HTMLElement | null;
+    if (row) showDetail(row.dataset.id!, true);
+  }
+
+  listEl.addEventListener('click', onClick);
+  detailEl.addEventListener('click', onClick);
+  listEl.addEventListener('keydown', (e) => {
+    const row = (e.target as HTMLElement).closest('.fil-row') as HTMLElement | null;
+    if (row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); showDetail(row.dataset.id!, true); }
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDetail(); });
+  WIDE.addEventListener('change', () => { closeDetail(); renderList(); showDetail(selectedId); });
+
+  async function load(): Promise<void> {
+    try {
+      const data = await api('/api/v1/app/articles?status=inbox&page_size=200');
+      items = (data.articles || []).slice().sort(byLevelThenDate);
+      renderTitle();
+      renderList();
+      showDetail(WIDE.matches && items[0] ? items[0].id : null);
+    } catch (e: any) {
+      listEl.innerHTML = `<div class="fil-empty">Erreur de chargement : ${esc(e.message)}</div>`;
+    }
+  }
+
+  load();
+</script>
