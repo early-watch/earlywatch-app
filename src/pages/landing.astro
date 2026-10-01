@@ -137,6 +137,7 @@ nav .links a:not(.btn):hover{color:var(--ink)}
 .tc li{display:flex;gap:10px}
 .tc li::before{content:"";flex:none;width:6px;height:6px;margin-top:.62em;border-radius:50%;background:var(--lime-d)}
 .tc .btn{margin-top:auto;align-self:flex-start}
+.tc .tacts{margin-top:auto;display:flex;flex-wrap:wrap;gap:10px}.tc .tacts .btn{margin-top:0}
 .tc ul{margin-bottom:26px}
 .tfoot{margin-top:18px;font-size:13.5px;color:var(--ink3);max-width:70ch}
 @media (max-width:900px){.tgrid{grid-template-columns:1fr}}
@@ -306,7 +307,10 @@ footer .c{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-trans
           <li>Plusieurs utilisateurs sur le même espace</li>
           <li>Démonstration sur votre périmètre</li>
         </ul>
-        <a class="btn ghost" href="#contact">Demander une démonstration</a>
+        <div class="tacts">
+          <a class="btn" href={`${base}inscription`}>Créer un compte</a>
+          <a class="btn ghost" href="#contact">Demander une démonstration</a>
+        </div>
       </div>
     </div>
     <p class="tfoot">Paiement par carte, facture disponible dans votre espace. Vous pouvez résilier à tout moment depuis votre compte.</p>
