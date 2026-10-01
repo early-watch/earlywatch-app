@@ -112,15 +112,18 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
     const [label, cls] = SUB_LABELS[billing.subscription_status] || [esc(billing.subscription_status), ''];
     const grace = billing.subscription_status === 'past_due' && billing.grace_ends_at
       ? `<div class="pm-hint">Accès maintenu jusqu’au ${date(billing.grace_ends_at)}. Mettez à jour votre moyen de paiement pour éviter la suspension.</div>` : '';
-    const action = billing.can_manage
-      ? `<button type="button" class="pm-btn" id="pm-portal" ${isAdmin ? '' : 'disabled'}>Gérer l’abonnement</button>`
-      : `<a class="pm-btn" href="${BASE}choisir-formule">Choisir une formule</a>`;
+    // L'abonnement est réservé à l'administrateur : un lecteur le voit en lecture seule.
+    const action = !isAdmin
+      ? '<div class="pm-hint">L’abonnement est géré par l’administrateur du compte.</div>'
+      : billing.can_manage
+        ? '<button type="button" class="pm-btn" id="pm-portal">Gérer l’abonnement</button>'
+        : `<a class="pm-btn" href="${BASE}choisir-formule">Choisir une formule</a>`;
     return row('Formule', esc(planLabel(billing.plan || t.plan)))
       + row('Statut', `<span class="pm-status ${cls}">${label}</span>`)
       + (billing.current_period_end ? row('Prochaine échéance', date(billing.current_period_end)) : '')
       + grace
       + `<div style="margin-top:14px">${action}</div>`
-      + (billing.can_manage ? '<div class="pm-hint">Factures, moyen de paiement et résiliation : portail sécurisé de notre prestataire de paiement.</div>' : '');
+      + (billing.can_manage && isAdmin ? '<div class="pm-hint">Factures, moyen de paiement et résiliation : portail sécurisé de notre prestataire de paiement.</div>' : '');
   }
 
   async function load(): Promise<void> {

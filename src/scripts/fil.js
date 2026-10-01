@@ -7,6 +7,9 @@
 // Info = le reste.
 // Résumé et raison : champs `summary` et `reason` du serveur ; bloc masqué s'ils
 // sont vides — rien n'est inventé côté interface.
+// Qui a traité quoi : `state_by_name` et `state_at` (dernier changement d'état,
+// journal serveur) → « Suivi par … le JJ/MM » / « Traité par … » / « Ignoré par … ».
+// Rien si l'article n'a jamais changé d'état (ou est revenu dans le Fil).
 
 export const LEVELS = {
   action: { label: 'Action', rank: 0 },
@@ -54,6 +57,55 @@ export function longDate(iso) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
+const STATE_VERBS = { to_process: 'Suivi', read: 'Traité', ignored: 'Ignoré' };
+
+export function dayMonth(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+}
+
+/** « Traité par Camille Martin le 01/10 », ou '' (jamais changé, ou revenu dans le Fil). */
+export function stateText(a) {
+  const verb = STATE_VERBS[a.client_status];
+  const who = String(a.state_by_name || '').trim();
+  if (!verb || !who || !a.state_at) return '';
+  return `${verb} par ${who} le ${dayMonth(a.state_at)}`;
+}
+
+function stateLine(a, cls) {
+  const t = stateText(a);
+  return t ? `<div class="${cls}">${esc(t)}</div>` : '';
+}
+
+/**
+ * Message de confirmation avec « Annuler » (quelques secondes), dans la pile des
+ * messages de api.js (.toast-container). `onUndo` est appelé au clic sur « Annuler ».
+ */
+export function undoToast(message, onUndo, ms = 6000) {
+  let box = document.querySelector('.toast-container');
+  if (!box) {
+    box = document.createElement('div');
+    box.className = 'toast-container';
+    document.body.appendChild(box);
+  }
+  const el = document.createElement('div');
+  el.className = 'toast toast-success fil-undo';
+  el.setAttribute('role', 'status');
+  const text = document.createElement('span');
+  text.textContent = `${message} · `;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'fil-undo-btn';
+  btn.textContent = 'Annuler';
+  let done = false;
+  const close = () => { if (!done) { done = true; el.remove(); } };
+  btn.addEventListener('click', () => { if (done) return; close(); onUndo(); });
+  el.append(text, btn);
+  box.appendChild(el);
+  setTimeout(close, ms);
+  return el;
+}
+
 export function levelBadge(a) {
   const lv = levelOf(a);
   return `<span class="fil-level fil-level-${lv}">${LEVELS[lv].label}</span>`;
@@ -77,6 +129,7 @@ export function renderRow(a, { action = null, dateText = null, selected = false 
       <div class="fil-row-level">${levelBadge(a)}</div>
       <div class="fil-row-body">
         <h3 class="fil-row-title">${esc(titleOf(a))}</h3>
+        ${stateLine(a, 'fil-row-state')}
         <div class="fil-row-meta">
           <span class="fil-row-source">${esc(a.source_name || '—')}</span>
           <span class="fil-row-date">${esc(dateText ?? shortDate(a.published_at))}</span>
@@ -99,6 +152,7 @@ export function renderDetail(a, { actions = [] } = {}) {
       <button type="button" class="fil-detail-back" data-close-detail>← Retour</button>
       <div class="fil-detail-top">${levelBadge(a)}<span class="fil-detail-date">${esc(longDate(a.published_at))}</span></div>
       <h2 class="fil-detail-title">${esc(titleOf(a))}</h2>
+      ${stateLine(a, 'fil-detail-state')}
       <div class="fil-detail-source">${esc(a.source_name || '—')}</div>
       ${summary ? `<section class="fil-detail-block"><h3>Résumé</h3><p>${esc(summary)}</p></section>` : ''}
       ${reason ? `<section class="fil-detail-block"><h3>Pourquoi pour vous</h3><p>${esc(reason)}</p></section>` : ''}
