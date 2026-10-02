@@ -52,13 +52,13 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
             <span class="src">${e.source || '—'}</span>
             <span class="dot">·</span>
             <span class="date">${fmtDate(e.date)}</span>
-            ${typeLabel ? `<span class="dot">·</span><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--taupe);text-transform:uppercase">${typeLabel}</span>` : ''}
+            ${typeLabel ? `<span class="dot">·</span><span class="ew-label-text">${typeLabel}</span>` : ''}
           </div>
           <h3 class="ew-title">${titleHtml}</h3>
           ${e.description ? `<div style="font-size:12px;color:var(--taupe);margin-top:8px;line-height:1.55">${e.description}</div>` : ''}
         </div>
         <div class="ew-item-side" style="padding-top:2px;white-space:nowrap">
-          ${statut ? `<span style="font-family:var(--font-mono);font-size:9px;font-weight:500;letter-spacing:.08em;color:var(--mute);text-transform:uppercase">${statut}</span>` : ''}
+          ${statut ? `<span class="ew-label-text">${statut}</span>` : ''}
         </div>
       </div>`;
   }

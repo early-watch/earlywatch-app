@@ -25,22 +25,15 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
     gap: 20px;
     align-items: start;
   }
-  .deadline-card.imminent { border-color: #5C6347; }
+  .deadline-card.imminent { border-color: var(--accent); }
   .dl-day {
-    font-family: var(--font-mono);
+    font-family: var(--font);
     font-size: 42px;
     font-weight: 300;
     line-height: 1;
     color: var(--ink);
   }
-  .dl-monthyear {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--taupe);
-    margin-top: 3px;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-  }
+  .dl-monthyear { font-family: var(--font); font-size: 12.5px; font-weight: 500; color: var(--label-color); letter-spacing: normal; text-transform: none; margin-top: 3px; }
   .dl-countdown {
     font-size: 11px;
     color: var(--taupe);
@@ -50,58 +43,40 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
   .dl-desc    { font-size: 12px; color: var(--taupe); margin-bottom: 8px; line-height: 1.5; }
   .dl-procs   { font-size: 11px; color: var(--mute); }
   .badge-critical {
-    font-family: var(--font-mono);
+    font-family: var(--font);
     font-size: 9px;
     font-weight: 500;
-    letter-spacing: 0.1em;
-    color: #F4F0E6;
-    background: #5C6347;
+    letter-spacing: normal;
+    color: var(--on-accent);
+    background: var(--accent);
     border-radius: 3px;
     padding: 3px 8px;
     white-space: nowrap;
   }
   .badge-high {
-    font-family: var(--font-mono);
+    font-family: var(--font);
     font-size: 9px;
     font-weight: 500;
-    letter-spacing: 0.1em;
-    color: #5C6347;
-    background: rgba(92,99,71,0.12);
+    letter-spacing: normal;
+    color: var(--accent);
+    background: var(--accent-bg);
     border-radius: 3px;
     padding: 3px 8px;
     white-space: nowrap;
   }
   .badge-medium {
-    font-family: var(--font-mono);
+    font-family: var(--font);
     font-size: 9px;
     font-weight: 500;
-    letter-spacing: 0.1em;
+    letter-spacing: normal;
     color: var(--taupe);
-    background: rgba(92,99,71,0.06);
+    background: var(--bg-selected);
     border-radius: 3px;
     padding: 3px 8px;
     white-space: nowrap;
   }
-  .section-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--mute);
-    font-weight: 500;
-  }
-  .past-toggle-btn {
-    font-family: var(--font-mono);
-    font-size: 9px;
-    letter-spacing: .08em;
-    color: var(--mute);
-    background: none;
-    border: 0.5px solid var(--line);
-    border-radius: 3px;
-    padding: 3px 8px;
-    cursor: pointer;
-    text-transform: uppercase;
-  }
+  .section-label { font-family: var(--font); font-size: var(--label-size); font-weight: var(--label-weight); color: var(--label-color); letter-spacing: var(--label-tracking); text-transform: var(--label-transform); }
+  .past-toggle-btn { font-family: var(--font); font-size: 12.5px; font-weight: 500; color: var(--label-color); letter-spacing: normal; text-transform: none; background: none; border: 0.5px solid var(--line); border-radius: 3px; padding: 3px 8px; cursor: pointer; }
   .past-toggle-btn:hover { color: var(--ink); border-color: var(--line-strong); }
 </style>
 

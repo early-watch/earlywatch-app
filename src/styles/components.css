@@ -9,7 +9,7 @@
 
 /* Frame 3 colonnes : sidebar + main + panel droit (dashboard inbox) */
 .ew-frame {
-  background: var(--bg);
+  background: transparent;
   display: grid;
   grid-template-columns: 220px 1fr 300px;
   min-height: 100vh;
@@ -17,7 +17,7 @@
 
 /* Frame 2 colonnes : sidebar + main (toutes les autres pages) */
 .ew-frame-2col {
-  background: var(--bg);
+  background: transparent;
   display: grid;
   grid-template-columns: 220px 1fr;
   min-height: 100vh;
@@ -40,27 +40,26 @@
 }
 
 .ew-logo {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.22em;
+  font-family: var(--font);
+  font-size: 16px;
+  letter-spacing: -0.01em;
   color: var(--ink);
   padding: 0 22px 32px;
-  font-weight: 500;
-  text-transform: uppercase;
+  font-weight: 600;
   text-decoration: none;
   display: block;
 }
-.ew-logo span { color: var(--taupe); }
+.ew-logo span { color: inherit; }
 
 /* Label de section (VEILLE, CONFORMITÉ…) */
 .ew-section {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.2em;
-  color: var(--ink-soft);
+  font-family: var(--font);
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  color: var(--label-color);
+  letter-spacing: var(--label-tracking);
+  text-transform: var(--label-transform);
   padding: 36px 22px 10px;
-  text-transform: uppercase;
-  font-weight: 500;
 }
 .ew-section:first-of-type { padding-top: 6px; }
 
@@ -84,7 +83,7 @@
   color: var(--ink);
 }
 .ew-nav.active {
-  background: var(--bg-hover);
+  background: var(--accent-bg);
   color: var(--ink);
   font-weight: 500;
 }
@@ -167,18 +166,20 @@
   margin-bottom: 22px;
 }
 .ew-h-title {
-  font-size: 22px;
-  font-weight: 500;
+  font-size: 30px;
+  line-height: 1.15;
+  font-weight: var(--title-weight);
   color: var(--ink);
-  letter-spacing: -0.015em;
+  letter-spacing: var(--title-tracking);
   margin: 0;
 }
 .ew-h-date {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  color: var(--mute);
-  text-transform: uppercase;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--label-color);
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 /* ================================================================
@@ -186,6 +187,12 @@
    ================================================================ */
 
 .ew-tabs {
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--label-color);
+  letter-spacing: normal;
+  text-transform: none;
   display: flex;
   gap: 24px;
   padding-bottom: 14px;
@@ -193,10 +200,6 @@
   margin-bottom: 4px;
   flex-wrap: wrap;
   align-items: center;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 .ew-tab {
   color: var(--mute);
@@ -245,9 +248,9 @@
   position: relative;
 }
 .ew-sort-btn {
-  font-family: var(--font-sans);
+  font-family: var(--font);
   font-size: 13px;
-  color: #888;
+  color: var(--text-2);
   background: none;
   border: none;
   cursor: pointer;
@@ -264,13 +267,13 @@
   border-radius: var(--radius);
   min-width: 160px;
   z-index: 100;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow-pop);
 }
 .ew-sort-opt {
   display: block;
   width: 100%;
   padding: 8px 14px;
-  font-family: var(--font-sans);
+  font-family: var(--font);
   font-size: 13px;
   color: var(--ink);
   background: none;
@@ -304,7 +307,7 @@
 .ew-item-body { min-width: 0; }
 .ew-item-side { padding-top: 2px; }
 
-/* Avatar source — cercle 40px, IBM Plex Mono, sigle 2–4 lettres */
+/* Avatar source — cercle 40px, sigle 2–4 lettres */
 .ew-source-avatar {
   width: 40px;
   height: 40px;
@@ -330,13 +333,13 @@
 
 /* Métadonnées : source · date */
 .ew-meta {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  color: var(--mute);
-  text-transform: uppercase;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--label-color);
+  letter-spacing: normal;
+  text-transform: none;
   margin-bottom: 11px;
-  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 9px;
@@ -356,30 +359,26 @@
 
 /* Badge Nouveau — inline dans la meta (cas alternatif) */
 .ew-tag-new {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.18em;
+  font-family: var(--font);
+  font-size: 11px;
   color: var(--on-accent);
-  font-weight: 500;
-  background: var(--moutarde);
-  padding: 3px 8px;
-  border-radius: 2px;
+  font-weight: 600;
+  background: var(--accent);
+  padding: 2px 8px;
+  border-radius: var(--radius);
   white-space: nowrap;
-  text-transform: uppercase;
 }
 
 /* Badge Nouveau — colonne de droite (tag-new-right, style identique) */
 .tag-new-right {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.18em;
+  font-family: var(--font);
+  font-size: 11px;
   color: var(--on-accent);
-  font-weight: 500;
-  background: var(--moutarde);
-  padding: 3px 8px;
-  border-radius: 2px;
+  font-weight: 600;
+  background: var(--accent);
+  padding: 2px 8px;
+  border-radius: var(--radius);
   white-space: nowrap;
-  text-transform: uppercase;
 }
 
 /* Titre de l'article */
@@ -442,7 +441,7 @@
 
 /* Bouton triage actif (digest sélectionné) */
 .ew-btn-active {
-  border: 1.5px solid #5C6347;
+  border: 1.5px solid var(--accent);
   background: var(--bg-triage-active);
   font-weight: normal;
 }
@@ -466,23 +465,23 @@
   flex-shrink: 0;
 }
 
-/* Variante kaki (#5C6347) — boutons client (/app/veille) */
+/* Variante accent (nom historique « kaki ») — boutons client (/app/veille) */
 .ew-btn-kaki {
-  background: #5C6347;
+  background: var(--accent);
   color: var(--bg);
   border-color: transparent;
   font-weight: 500;
 }
-.ew-btn-kaki:hover { opacity: 0.88; background: #5C6347; }
+.ew-btn-kaki:hover { opacity: 0.88; background: var(--accent); }
 .ew-btn-kaki.ew-btn-kaki-removing {
-  background: #888;
+  background: var(--text-2);
   border-color: transparent;
 }
 .ew-btn-kaki-outline {
-  color: #5C6347;
-  border-color: #5C6347;
+  color: var(--accent);
+  border-color: var(--accent);
 }
-.ew-btn-kaki-outline:hover { background: rgba(92,99,71,0.06); }
+.ew-btn-kaki-outline:hover { background: var(--bg-selected); }
 
 /* ================================================================
    PANNEAU DROIT (dashboard inbox uniquement)
@@ -503,12 +502,12 @@
 
 /* Label de section dans le panel droit */
 .ew-r-title {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  color: var(--mute);
-  text-transform: uppercase;
-  font-weight: 500;
+  font-family: var(--font);
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  color: var(--label-color);
+  letter-spacing: var(--label-tracking);
+  text-transform: var(--label-transform);
   margin-bottom: 16px;
 }
 
@@ -519,11 +518,12 @@
 .ew-digest-block:last-of-type { margin-bottom: 0; }
 
 .ew-digest-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  color: var(--taupe);
-  text-transform: uppercase;
+  font-family: var(--font);
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  color: var(--label-color);
+  letter-spacing: var(--label-tracking);
+  text-transform: var(--label-transform);
   margin-bottom: 6px;
 }
 
@@ -648,7 +648,7 @@
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--mute);
-  letter-spacing: 0.1em;
+  letter-spacing: normal;
 }
 
 /* ================================================================
@@ -689,11 +689,12 @@
   line-height: 1.55;
 }
 .ew-empty-hint {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--mute);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--label-color);
+  letter-spacing: normal;
+  text-transform: none;
   margin-top: 4px;
 }
 
@@ -727,7 +728,7 @@
 .ew-input:hover,
 .ew-select:hover,
 .ew-textarea:hover {
-  border-color: rgba(26, 24, 20, 0.22);
+  border-color: var(--text-2);
 }
 .ew-input:focus,
 .ew-select:focus,
@@ -759,7 +760,8 @@
    ================================================================ */
 
 .ew-login-page {
-  background: var(--bg);
+  background: transparent;
+  padding: 24px 16px;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -774,16 +776,15 @@
 }
 
 .ew-login-logo {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  font-family: var(--font);
+  font-size: 16px;
+  letter-spacing: -0.01em;
   color: var(--ink);
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 40px;
   text-align: left;
 }
-.ew-login-logo span { color: var(--taupe); }
+.ew-login-logo span { color: inherit; }
 
 .ew-login-title {
   font-size: 18px;
@@ -796,31 +797,19 @@
 /* Bouton submit login — outlined + souligné moutarde */
 .ew-login-btn {
   width: 100%;
-  padding: 10px;
-  background: transparent;
-  color: var(--ink);
-  border: 0.5px solid var(--line-strong);
-  border-radius: var(--radius);
-  font-size: 13px;
+  padding: 11px;
+  background: var(--accent);
+  color: var(--on-accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-lg);
+  font-size: 14px;
   font-weight: 500;
   font-family: var(--font);
   cursor: pointer;
-  position: relative;
-  transition: background 0.12s;
+  transition: opacity 0.12s;
   margin-top: 8px;
 }
-.ew-login-btn::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 7px;
-  width: 80px;
-  height: 1.5px;
-  background: var(--moutarde);
-  border-radius: 1px;
-}
-.ew-login-btn:hover { background: var(--bg-side); }
+.ew-login-btn:hover { opacity: 0.9; }
 
 .ew-login-error {
   font-size: 12px;
@@ -904,7 +893,7 @@
 .ew-badge-muted   { background: var(--bg-hover); color: var(--taupe); }
 .ew-badge-new     { background: var(--moutarde); color: var(--on-accent); }
 .ew-badge-ok      { background: var(--bg-hover); color: var(--ink-soft); }
-.ew-badge-error   { background: rgba(220, 38, 38, 0.08); color: var(--color-error); }
+.ew-badge-error   { background: var(--color-error-bg); color: var(--color-error); }
 
 /* ================================================================
    TABLES
@@ -916,14 +905,14 @@
   font-size: 13px;
 }
 .ew-table thead th {
+  font-family: var(--font);
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  color: var(--label-color);
+  letter-spacing: var(--label-tracking);
+  text-transform: var(--label-transform);
   text-align: left;
   padding: 8px 12px;
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--mute);
   border-bottom: 0.5px solid var(--line-strong);
 }
 .ew-table tbody td {
@@ -933,7 +922,7 @@
   color: var(--ink);
 }
 .ew-table tbody tr:last-child td { border-bottom: none; }
-.ew-table tbody tr:hover td { background: rgba(26, 24, 20, 0.02); }
+.ew-table tbody tr:hover td { background: var(--bg-side); }
 
 /* ================================================================
    EXPANDABLE (accordéon)
@@ -1004,18 +993,20 @@
    avec bouton « Menu », menu en tiroir, aucun défilement horizontal.
    ================================================================ */
 
-.ew-client { background: var(--bg); overflow-x: hidden; }
-.ew-client-frame { grid-template-columns: 220px minmax(0, 1fr); }
-/* Fond de la colonne de menu sur toute la hauteur, même quand la page dépasse l'écran
-   (la colonne est collante, hauteur 100vh). */
+/* Fond « lever de soleil » fixe : le contenu défile par-dessus. */
+.ew-client { overflow-x: hidden; }
+.ew-client-frame { grid-template-columns: 220px minmax(0, 1fr); background: transparent; }
+/* ≥ 900 px : le menu est un panneau de verre posé à 20 px des bords. */
 @media (min-width: 900px) {
-  .ew-client-frame {
-    background: linear-gradient(to right,
-      var(--bg-side) 0 219.5px, var(--line-strong) 219.5px 220px, var(--bg) 220px);
+  .ew-client-frame { gap: 0 4px; padding-left: 20px; }
+  .ew-client .ew-side {
+    top: 20px; height: calc(100vh - 40px); margin: 20px 0;
+    border-radius: var(--radius-lg); padding: 22px 0 16px;
   }
-  .ew-client .ew-side { border-right: none; }   /* le filet est porté par le fond du cadre */
 }
-.ew-client .ew-nav.active::before { background: var(--accent); }
+.ew-client .ew-nav.active::before { display: none; }
+.ew-client .ew-nav { border-radius: 9px; padding: 8px 12px; font-size: 14px; }
+.ew-client .ew-main { padding-top: 34px; }
 .ew-client .ew-main { max-width: 100%; }
 .ew-client .ew-main img, .ew-client .ew-main table { max-width: 100%; }
 
@@ -1023,10 +1014,9 @@
 .ew-scrim { display: none; }
 
 .ew-menu-btn {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
   color: var(--ink);
   background: transparent;
   border: 0.5px solid var(--line-strong);
@@ -1048,12 +1038,15 @@
     z-index: 30;
     height: 52px;
     padding: 0 16px;
-    background: var(--bg);
-    border-bottom: 0.5px solid var(--line);
+    background: var(--glass);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--glass-border);
   }
   .ew-topbar-logo { padding: 0; }
 
   .ew-client .ew-side {
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
     position: fixed;
     top: 0;
     left: 0;
@@ -1073,12 +1066,12 @@
     position: fixed;
     inset: 0;
     z-index: 40;
-    background: rgba(17, 17, 17, 0.32);
+    background: var(--scrim);
   }
 
   .ew-client .ew-main { padding: 20px 16px 28px; }
   .ew-client .ew-header { flex-wrap: wrap; gap: 6px 12px; }
-  .ew-client .ew-h-title { font-size: 19px; }
+  .ew-client .ew-h-title { font-size: 24px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1095,49 +1088,57 @@
   .fil-layout { grid-template-columns: minmax(0, 1fr) 380px; gap: 32px; align-items: start; }
 }
 
-.fil-list { border-top: 0.5px solid var(--line); }
+.fil-list { border-radius: var(--radius-lg); overflow: hidden; }
+.fil-list:empty { display: none; }
 
 .fil-row {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) auto;
+  grid-template-columns: 76px minmax(0, 1fr) auto;
   gap: 14px;
   align-items: start;
-  padding: 14px 10px;
-  border-bottom: 0.5px solid var(--line);
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--line-row);
   cursor: pointer;
   outline: none;
 }
-.fil-row:hover { background: var(--bg-side); }
+.fil-row:last-child { border-bottom: none; }
+.fil-row:hover { background: rgba(255, 255, 255, 0.4); }
 .fil-row:focus-visible { box-shadow: inset 0 0 0 1.5px var(--accent); }
-.fil-row.is-selected { background: var(--bg-side); box-shadow: inset 2px 0 0 var(--accent); }
+.fil-row.is-selected { background: var(--bg-selected); }
 
+/* Niveau : jauge de 3 barres (3 px, hauteurs 6 / 9 / 12 px) suivie du mot.
+   Action : 3 barres « lever de soleil ». À lire : 2 barres. Info : 1 barre. */
 .fil-level {
-  display: inline-block;
-  font-family: var(--font-mono);
-  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font);
+  font-size: 13px;
   font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 3px 6px;
-  border-radius: var(--radius-sm);
+  color: var(--level-text);
   white-space: nowrap;
-  border: 0.5px solid var(--line-strong);
-  color: var(--taupe);
-  background: var(--bg);
+  padding-top: 1px;
 }
-.fil-level-action { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-.fil-level-a_lire { color: var(--accent); border-color: var(--accent); background: var(--accent-bg); }
+.fil-gauge { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
+.fil-gauge i { display: block; width: 3px; border-radius: 2px; background: var(--level-bar-off); }
+.fil-gauge i:nth-child(1) { height: 6px; }
+.fil-gauge i:nth-child(2) { height: 9px; }
+.fil-gauge i:nth-child(3) { height: 12px; }
+.fil-level-info   .fil-gauge i:nth-child(1),
+.fil-level-a_lire .fil-gauge i:nth-child(-n+2) { background: var(--level-bar-on); }
+.fil-level-action .fil-gauge i { background: var(--dawn); }
 
-.fil-row-title { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--ink); margin: 0; overflow-wrap: anywhere; }
+.fil-row-title { font-size: 14.5px; font-weight: 500; line-height: 1.4; color: var(--ink); margin: 0; overflow-wrap: anywhere; }
 .fil-row-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px; font-size: 12px; color: var(--mute); }
 .fil-row-source { color: var(--taupe); }
 .fil-row-reason { margin-top: 6px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; }
 
 .fil-btn {
   font-family: inherit;
-  font-size: 12px;
+  font-size: 12.5px;
+  font-weight: 500;
   color: var(--ink);
-  background: var(--bg);
+  background: var(--bg-field);
   border: 0.5px solid var(--line-strong);
   border-radius: var(--radius);
   padding: 6px 12px;
@@ -1161,22 +1162,25 @@
     top: 24px;
     max-height: calc(100vh - 48px);
     overflow-y: auto;
-    border: 0.5px solid var(--line);
     border-radius: var(--radius-lg);
-    background: var(--bg);
   }
 }
-.fil-detail-inner { padding: 22px 22px 26px; }
+.fil-detail-inner { padding: 24px 24px 26px; }
 .fil-detail-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.fil-detail-date { font-size: 12px; color: var(--mute); }
-.fil-detail-title { font-size: 17px; font-weight: 500; line-height: 1.4; color: var(--ink); margin: 0 0 6px; overflow-wrap: anywhere; }
+.fil-detail-date { font-size: 12.5px; color: var(--mute); }
+.fil-detail-title { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.3; color: var(--ink); margin: 0 0 6px; overflow-wrap: anywhere; }
 .fil-detail-source { font-size: 12.5px; color: var(--taupe); margin-bottom: 18px; }
 .fil-detail-block { margin-bottom: 16px; }
 .fil-detail-block h3 {
-  font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--taupe); margin: 0 0 6px;
+  font-family: var(--font);
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  color: var(--label-color);
+  letter-spacing: var(--label-tracking);
+  text-transform: var(--label-transform);
+  margin: 0 0 6px;
 }
-.fil-detail-block p { font-size: 13.5px; line-height: 1.6; color: var(--ink-soft); margin: 0; }
+.fil-detail-block p { font-size: 14px; line-height: 1.6; color: var(--ink-soft); margin: 0; }
 .fil-detail-link { display: inline-block; font-size: 13.5px; font-weight: 500; color: var(--accent); margin: 4px 0 20px; }
 .fil-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 16px; border-top: 0.5px solid var(--line); }
 .fil-detail-placeholder { padding: 22px; font-size: 13px; color: var(--mute); }
@@ -1188,7 +1192,7 @@
     position: fixed;
     inset: 0;
     z-index: 60;
-    background: var(--bg);
+    background: var(--bg-dawn);
     overflow-y: auto;
   }
   .fil-detail.is-open .fil-detail-back {
@@ -1232,8 +1236,10 @@
   text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
 }
 /* Compteurs du menu (Fil, Suivis) */
-.ew-client .ew-nav .ew-count { font-family: var(--font-mono); font-size: 11px; color: var(--mute); }
+.ew-client .ew-nav .ew-count { font-family: var(--font); font-size: 13px; font-weight: 500; color: var(--mute); font-variant-numeric: tabular-nums; }
 .ew-client .ew-nav .ew-count[hidden] { display: none; }
+/* Sur l'élément actif (fond anthracite 7 %), le gris passerait sous 4,5:1 : compteur en anthracite. */
+.ew-client .ew-nav.active .ew-count { color: var(--ink); }
 
 /* Fil sans publication à sélectionner : pas de panneau de détail. */
 .fil-layout.is-single { grid-template-columns: minmax(0, 1fr); }
@@ -1246,11 +1252,103 @@
 }
 .fil-next[hidden] { display: none; }
 .fil-next-label, .fil-section-label {
-  font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--taupe); margin: 0 0 8px;
+  font-family: var(--font);
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  color: var(--label-color);
+  letter-spacing: var(--label-tracking);
+  text-transform: var(--label-transform);
+  margin: 0 0 8px;
 }
 .fil-section-label[hidden] { display: none; }
 .fil-next-when { font-size: 14px; font-weight: 500; color: var(--ink); }
 .fil-next-count { color: var(--accent); }
 .fil-next-title { font-size: 14px; line-height: 1.5; color: var(--ink-soft); margin: 4px 0 10px; }
 .fil-next-link { font-size: 13px; color: var(--accent); }
+
+/* ================================================================
+   VERSION 3 — fond « lever de soleil » (pages connectées)
+   Calque fixe derrière le contenu : le fond reste en place au défilement, y compris
+   sur iOS (où background-attachment: fixed est ignoré).
+   ================================================================ */
+body { background: var(--bg); }
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--bg-dawn);
+  pointer-events: none;
+}
+
+/* ================================================================
+   VERSION 3 — panneaux en verre sur le fond « lever de soleil »
+   Menu, liste du Fil, détail, menus déroulants, cartes de Paramètres et du
+   Calendrier. Repli opaque (--glass-fallback) si backdrop-filter n'est pas supporté.
+   ================================================================ */
+.ew-side,
+.ew-client .fil-list,
+.ew-client .fil-detail,
+.ew-client .ew-sort-menu,
+.ew-glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .ew-side,
+  .ew-client .fil-list,
+  .ew-client .fil-detail,
+  .ew-client .ew-sort-menu,
+  .ew-client .ew-topbar,
+  .ew-glass { background: var(--glass-fallback); }
+}
+/* Détail plein écran (téléphone) : fond « lever de soleil », pas de verre. */
+@media (max-width: 1099px) {
+  .ew-client .fil-detail.is-open {
+    background: var(--bg-dawn); border: none; box-shadow: none; border-radius: 0;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+}
+/* Tiroir de menu (téléphone) : presque opaque, le Fil ne transparaît pas sous le menu. */
+@media (max-width: 899px) {
+  .ew-client .ew-side { background: var(--bg-drawer); border-left: none; }
+}
+
+/* Panneau de contenu (Calendrier, Paramètres) : le texte gris ne repose jamais
+   directement sur le dégradé, où il passerait sous 4,5:1. */
+.ew-panel { border-radius: var(--radius-lg); padding: 22px 28px 26px; }
+@media (max-width: 899px) { .ew-panel { padding: 18px 16px 20px; } }
+
+/* Boutons pleins : anthracite, texte clair ; secondaires : verre clair. */
+.ew-client .ew-btn { background: var(--bg-field); border-color: var(--line-strong); }
+
+/* Logo : carré anthracite 26 px avec « e », suivi du nom. */
+.ew-logo, .ew-login-logo { line-height: 26px; letter-spacing: -0.01em; white-space: nowrap; }
+.ew-client .ew-logo { padding: 0 18px 28px; }
+.ew-logo::before, .ew-login-logo::before {
+  content: 'e';
+  width: 26px; height: 26px; border-radius: 8px; margin-right: 10px; vertical-align: top;
+  display: inline-grid; place-items: center;
+  background: var(--ink); color: var(--on-accent);
+  font-size: 14px; font-weight: 600; line-height: 1;
+}
+.ew-client .ew-topbar-logo { padding: 0; }
+
+/* Connexion, inscription : formulaire sur un panneau de verre. */
+.ew-login-wrap {
+  width: min(400px, 100%);
+  padding: 32px 28px;
+  border-radius: var(--radius-lg);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .ew-login-wrap { background: var(--glass-fallback); }
+}
+

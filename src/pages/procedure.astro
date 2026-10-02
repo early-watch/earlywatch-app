@@ -58,7 +58,7 @@ const base = import.meta.env.BASE_URL;
     display: flex; align-items: center; gap: 6px;
     width: 100%; padding: 10px 4px; background: none; border: none; border-top: 0.5px solid var(--line-strong);
     font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--taupe); cursor: pointer; font-family: 'IBM Plex Sans', sans-serif; margin-top: 8px;
+    color: var(--taupe); cursor: pointer; font-family: var(--font); margin-top: 8px;
   }
   .section-toggle:hover { color: var(--taupe); }
   .toggle-arrow { font-size: 8px; transition: transform 0.2s; }
@@ -125,7 +125,7 @@ const base = import.meta.env.BASE_URL;
   .result-actions { display: flex; gap: 8px; margin-top: 16px; }
   .btn-docx, .btn-validate {
     flex: 1; padding: 9px 12px; font-size: 12px; font-weight: 600; border: none;
-    border-radius: var(--radius); cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;
+    border-radius: var(--radius); cursor: pointer; font-family: var(--font);
     transition: opacity 0.15s;
   }
   .btn-docx { background: var(--ink); color: var(--bg); }

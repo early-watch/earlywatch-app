@@ -257,7 +257,7 @@ const base = import.meta.env.BASE_URL;
           <span>&middot;</span>
           <span>${a.published_at ? formatDate(a.published_at) : 'Date inconnue'}</span>
           <span style="margin-left:auto;display:flex;align-items:center;gap:6px">
-            ${a.score != null ? `<span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--taupe)">${a.score}</span>` : ''}
+            ${a.score != null ? `<span style="font-family:var(--font);font-size:11px;color:var(--taupe)">${a.score}</span>` : ''}
             ${lifecycleBadge(a.lifecycle_status)}
           </span>
         </div>

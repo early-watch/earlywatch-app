@@ -2,7 +2,7 @@
  * Early Watch — Map source_name → sigle (avatar 40px)
  *
  * Clé   : source_name exact tel que retourné par l'API (= "name" dans sources.yaml).
- * Sigle : 2–5 caractères, IBM Plex Mono.
+ * Sigle : 2–5 caractères, Instrument Sans.
  * Taille: SM_SIGLES liste explicitement tous les sigles ≥ 4 caractères → classe .sm (9px).
  *         Approche data plutôt que CSS conditionnel : maintenable si un sigle change.
  *

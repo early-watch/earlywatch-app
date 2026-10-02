@@ -1,47 +1,94 @@
 /* ================================================================
-   Early Watch — Design Tokens (palette MVP unique)
-   Blanc · encre #111111 · gris neutres · accent kaki #5C6347 · IBM Plex Sans + Mono
+   Early Watch — Design Tokens
+   Version 3 (02/10/2026) : fond clair chaud, anthracite #2F2A2E, panneaux en verre
+   sur un fond « lever de soleil », police Instrument Sans. Toutes les couleurs de
+   l'espace client passent par ces variables : un changement de charte se fait ici.
    ================================================================ */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap');
 
-/* ---- Palette MVP (unique) : blanc, encre #111111, gris neutres, accent kaki #5C6347 ---- */
 :root {
   /* Surfaces */
-  --bg:       #FFFFFF;   /* fond principal */
-  --bg-side:  #F7F7F7;   /* colonne de navigation, panneaux */
-  --bg-hover: #EFEFEF;   /* survol, avatar, fond actif */
+  --bg:          #F7F3F0;                    /* fond principal */
+  --bg-side:     rgba(255, 255, 255, 0.55);  /* panneaux (menu, liste, détail) : verre */
+  --bg-selected: rgba(255, 255, 255, 0.70);  /* ligne sélectionnée */
+  --bg-hover:    rgba(47, 42, 46, 0.04);
+  --bg-field:    rgba(255, 255, 255, 0.70);  /* champs, boutons secondaires */
 
-  /* Texte */
-  --ink:      #111111;   /* encre principale */
-  --ink-soft: #333333;   /* encre secondaire */
-  --taupe:    #555555;   /* navigation inactive, libellés (nom historique conservé) */
-  --mute:     #767676;   /* dates, compteurs — contraste AA sur blanc */
-  --ghost:    #BDBDBD;   /* très atténué, séparateurs */
+  /* Fond « lever de soleil » : lilas en haut, pêche / rose en bas */
+  --bg-dawn:
+    radial-gradient(70% 55% at 50% 115%, #FFC9A3 0%, rgba(255, 201, 163, 0) 70%),
+    radial-gradient(55% 45% at 15% 105%, #F8B8C8 0%, rgba(248, 184, 200, 0) 70%),
+    radial-gradient(55% 45% at 90% 100%, #F4D3B5 0%, rgba(244, 211, 181, 0) 70%),
+    radial-gradient(80% 60% at 50% 0%, #E7E3F2 0%, rgba(231, 227, 242, 0) 75%),
+    #F7F3F0;
 
-  /* Bordures */
-  --line:        rgba(17, 17, 17, 0.08);
-  --line-strong: rgba(17, 17, 17, 0.16);
+  /* Verre (panneaux) — repli opaque si backdrop-filter n'est pas supporté */
+  --glass:          rgba(255, 255, 255, 0.55);
+  --glass-fallback: rgba(255, 255, 255, 0.85);
+  --glass-border:   rgba(255, 255, 255, 0.75);
+  --glass-blur:     blur(18px) saturate(140%);
+  --glass-shadow:   0 1px 2px rgba(47, 42, 46, 0.04), 0 12px 32px rgba(47, 42, 46, 0.06);
+  --bg-drawer:      rgba(247, 243, 240, 0.96);   /* menu en tiroir (téléphone) */
 
-  /* Accent unique — kaki (le nom --moutarde est conservé pour les pages existantes) */
-  --accent:    #5C6347;
-  --accent-bg: rgba(92, 99, 71, 0.08);
-  --on-accent: #FFFFFF;  /* texte posé sur l'accent */
-  --moutarde:  var(--accent);
+  /* Texte (contraste vérifié ≥ 4,5:1 sur le fond, le verre et la ligne sélectionnée) */
+  --ink:      #2F2A2E;   /* titres, anthracite */
+  --text:     #4A4347;   /* texte courant */
+  --text-2:   #6E676B;   /* texte secondaire, intitulés */
+  --ghost:    #A39C9F;   /* séparateurs uniquement, jamais pour du texte */
+  /* Noms historiques, conservés pour les pages existantes */
+  --ink-soft: var(--text);
+  --taupe:    var(--text-2);
+  --mute:     var(--text-2);
 
-  /* Fond actif (bouton de tri sélectionné) */
+  /* Filets */
+  --line:        rgba(47, 42, 46, 0.08);
+  --line-row:    rgba(47, 42, 46, 0.06);   /* filets entre les lignes d'une liste */
+  --line-strong: rgba(47, 42, 46, 0.14);   /* bordures de champs et de boutons secondaires */
+
+  /* Accent : anthracite */
+  --accent:    var(--ink);
+  --accent-bg: rgba(47, 42, 46, 0.07);
+  --on-accent: #F7F3F0;                  /* texte posé sur l'accent */
+  --moutarde:  var(--accent);            /* nom historique */
   --bg-triage-active: var(--accent-bg);
 
-  /* Erreur */
-  --color-error: #DC2626;
+  /* Lever de soleil (niveau Action) */
+  --dawn: linear-gradient(180deg, #FF9A6B, #F0668A);
 
-  /* Typographie */
-  --font:      'IBM Plex Sans', system-ui, -apple-system, sans-serif;
-  --font-mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+  /* Niveaux du Fil : jauge de 3 barres suivie du mot */
+  --level-bar-on:  var(--ink);
+  --level-bar-off: var(--line-strong);
+  --level-text:    var(--ink);
+
+  /* Erreur */
+  --color-error:    #C42B2B;
+  --color-error-bg: rgba(196, 43, 43, 0.08);
+
+  /* Ombre des menus déroulants */
+  --shadow-pop: 0 12px 32px rgba(47, 42, 46, 0.10);
+
+  /* Voile derrière le menu en tiroir (mobile) */
+  --scrim: rgba(47, 42, 46, 0.28);
+
+  /* Typographie : Instrument Sans partout, sans italique ni empattements */
+  --font:      'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: var(--font);   /* nom historique : plus de police à chasse fixe */
+
+  /* Intitulés (petites capitales espacées, maquette V3) */
+  --label-size:      11px;
+  --label-weight:    600;
+  --label-color:     var(--text-2);
+  --label-transform: uppercase;
+  --label-tracking:  0.08em;
+
+  /* Titres */
+  --title-weight:   600;
+  --title-tracking: -0.035em;
 
   /* Radii */
-  --radius-sm: 4px;
-  --radius:    6px;
-  --radius-lg: 10px;
+  --radius-sm: 6px;
+  --radius:    10px;   /* boutons, champs */
+  --radius-lg: 16px;   /* panneaux */
 }
 
 /* ---- Reset ---- */
@@ -61,11 +108,16 @@ body {
   font-size: 14px;
   font-weight: 400;
   line-height: 1.5;
-  color: var(--ink);
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
 }
 
 /* ---- Typographie utilitaires ---- */
 .ew-mono { font-family: var(--font-mono); }
+/* Intitulé : 11 px, graisse 600, capitales espacées, gris secondaire (version 3). */
+.ew-label-text {
+  font-family: var(--font); font-size: var(--label-size); font-weight: var(--label-weight);
+  color: var(--label-color); text-transform: var(--label-transform); letter-spacing: var(--label-tracking);
+}
 .ew-mute { color: var(--mute); }
 .ew-taupe { color: var(--taupe); }

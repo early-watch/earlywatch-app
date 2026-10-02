@@ -108,7 +108,8 @@ export function undoToast(message, onUndo, ms = 6000) {
 
 export function levelBadge(a) {
   const lv = levelOf(a);
-  return `<span class="fil-level fil-level-${lv}">${LEVELS[lv].label}</span>`;
+  // Jauge de 3 barres (décor, masquée aux lecteurs d'écran) suivie du mot.
+  return `<span class="fil-level fil-level-${lv}"><span class="fil-gauge" aria-hidden="true"><i></i><i></i><i></i></span>${LEVELS[lv].label}</span>`;
 }
 
 /**
