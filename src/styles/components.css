@@ -1168,7 +1168,7 @@
 .fil-detail-inner { padding: 24px 24px 26px; }
 .fil-detail-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .fil-detail-date { font-size: 12.5px; color: var(--mute); }
-.fil-detail-title { font-size: 21px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.35; color: var(--ink); margin: 0 0 6px; overflow-wrap: anywhere; }
+.fil-detail-title { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.3; color: var(--ink); margin: 0 0 6px; overflow-wrap: anywhere; }
 .fil-detail-source { font-size: 12.5px; color: var(--taupe); margin-bottom: 18px; }
 .fil-detail-block { margin-bottom: 16px; }
 .fil-detail-block h3 {
