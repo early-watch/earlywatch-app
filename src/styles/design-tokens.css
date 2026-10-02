@@ -1,75 +1,94 @@
 /* ================================================================
    Early Watch — Design Tokens
-   Charte « noir et blanc » (option B, validée le 01/10/2026) : blanc, noir #0F1115,
-   gris froids, police Geist. Toutes les couleurs de l'espace client passent par ces
-   variables : un changement de charte se fait ici, et seulement ici.
+   Version 3 (02/10/2026) : fond clair chaud, anthracite #2F2A2E, panneaux en verre
+   sur un fond « lever de soleil », police Instrument Sans. Toutes les couleurs de
+   l'espace client passent par ces variables : un changement de charte se fait ici.
    ================================================================ */
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap');
 
 :root {
   /* Surfaces */
-  --bg:          #FFFFFF;   /* fond principal */
-  --bg-side:     #F8F9FB;   /* colonnes latérales (menu, détail) */
-  --bg-selected: #F1F3F6;   /* élément sélectionné */
-  --bg-hover:    var(--bg-selected);
+  --bg:          #F7F3F0;                    /* fond principal */
+  --bg-side:     rgba(255, 255, 255, 0.55);  /* panneaux (menu, liste, détail) : verre */
+  --bg-selected: rgba(255, 255, 255, 0.70);  /* ligne sélectionnée */
+  --bg-hover:    rgba(47, 42, 46, 0.04);
+  --bg-field:    rgba(255, 255, 255, 0.70);  /* champs, boutons secondaires */
 
-  /* Texte (contraste vérifié ≥ 4,5:1 sur --bg, --bg-side et --bg-selected) */
-  --ink:      #0F1115;   /* titres */
-  --text:     #2A2D33;   /* texte courant */
-  --text-2:   #5B616E;   /* texte secondaire, intitulés */
-  --ghost:    #C3C7CF;   /* décor uniquement, jamais pour du texte */
+  /* Fond « lever de soleil » : lilas en haut, pêche / rose en bas */
+  --bg-dawn:
+    radial-gradient(70% 55% at 50% 115%, #FFC9A3 0%, rgba(255, 201, 163, 0) 70%),
+    radial-gradient(55% 45% at 15% 105%, #F8B8C8 0%, rgba(248, 184, 200, 0) 70%),
+    radial-gradient(55% 45% at 90% 100%, #F4D3B5 0%, rgba(244, 211, 181, 0) 70%),
+    radial-gradient(80% 60% at 50% 0%, #E7E3F2 0%, rgba(231, 227, 242, 0) 75%),
+    #F7F3F0;
+
+  /* Verre (panneaux) — repli opaque si backdrop-filter n'est pas supporté */
+  --glass:          rgba(255, 255, 255, 0.55);
+  --glass-fallback: rgba(255, 255, 255, 0.85);
+  --glass-border:   rgba(255, 255, 255, 0.75);
+  --glass-blur:     blur(18px) saturate(140%);
+  --glass-shadow:   0 1px 2px rgba(47, 42, 46, 0.04), 0 12px 32px rgba(47, 42, 46, 0.06);
+  --bg-drawer:      rgba(247, 243, 240, 0.96);   /* menu en tiroir (téléphone) */
+
+  /* Texte (contraste vérifié ≥ 4,5:1 sur le fond, le verre et la ligne sélectionnée) */
+  --ink:      #2F2A2E;   /* titres, anthracite */
+  --text:     #4A4347;   /* texte courant */
+  --text-2:   #6E676B;   /* texte secondaire, intitulés */
+  --ghost:    #A39C9F;   /* séparateurs uniquement, jamais pour du texte */
   /* Noms historiques, conservés pour les pages existantes */
   --ink-soft: var(--text);
   --taupe:    var(--text-2);
   --mute:     var(--text-2);
 
   /* Filets */
-  --line:        #E6E8EC;   /* filets, bordures */
-  --line-row:    #EFF1F4;   /* filets entre les lignes d'une liste */
-  --line-strong: #D5D8DE;   /* bordures de champs et de boutons secondaires */
+  --line:        rgba(47, 42, 46, 0.08);
+  --line-row:    rgba(47, 42, 46, 0.06);   /* filets entre les lignes d'une liste */
+  --line-strong: rgba(47, 42, 46, 0.14);   /* bordures de champs et de boutons secondaires */
 
-  /* Accent unique : noir */
-  --accent:    #0F1115;
-  --accent-bg: rgba(15, 17, 21, 0.10);   /* #0F11151A */
-  --on-accent: #FFFFFF;                  /* texte posé sur l'accent */
+  /* Accent : anthracite */
+  --accent:    var(--ink);
+  --accent-bg: rgba(47, 42, 46, 0.07);
+  --on-accent: #F7F3F0;                  /* texte posé sur l'accent */
   --moutarde:  var(--accent);            /* nom historique */
   --bg-triage-active: var(--accent-bg);
 
-  /* Niveaux (badges du Fil) */
-  --level-action-bg: var(--accent);
-  --level-action-fg: var(--on-accent);
-  --level-read-bg:   var(--accent-bg);
-  --level-read-fg:   var(--accent);
-  --level-info-bg:   #EEF0F3;
-  --level-info-fg:   #4A4E57;
+  /* Lever de soleil (niveau Action) */
+  --dawn: linear-gradient(180deg, #FF9A6B, #F0668A);
+
+  /* Niveaux du Fil : jauge de 3 barres suivie du mot */
+  --level-bar-on:  var(--ink);
+  --level-bar-off: var(--line-strong);
+  --level-text:    var(--ink);
 
   /* Erreur */
-  --color-error:    #DC2626;
-  --color-error-bg: rgba(220, 38, 38, 0.08);
+  --color-error:    #C42B2B;
+  --color-error-bg: rgba(196, 43, 43, 0.08);
 
   /* Ombre des menus déroulants */
-  --shadow-pop: 0 4px 12px rgba(15, 17, 21, 0.08);
+  --shadow-pop: 0 12px 32px rgba(47, 42, 46, 0.10);
 
   /* Voile derrière le menu en tiroir (mobile) */
-  --scrim: rgba(15, 17, 21, 0.32);
+  --scrim: rgba(47, 42, 46, 0.28);
 
-  /* Typographie : Geist partout (IBM Plex Sans et Mono retirés) */
-  --font:      'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Typographie : Instrument Sans partout, sans italique ni empattements */
+  --font:      'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: var(--font);   /* nom historique : plus de police à chasse fixe */
 
-  /* Intitulés (remplacent les petites majuscules espacées) */
-  --label-size:   12.5px;
-  --label-weight: 500;
-  --label-color:  var(--text-2);
+  /* Intitulés (petites capitales espacées, maquette V3) */
+  --label-size:      11px;
+  --label-weight:    600;
+  --label-color:     var(--text-2);
+  --label-transform: uppercase;
+  --label-tracking:  0.08em;
 
-  /* Titres de page */
+  /* Titres */
   --title-weight:   600;
-  --title-tracking: -0.025em;
+  --title-tracking: -0.035em;
 
   /* Radii */
-  --radius-sm: 4px;
-  --radius:    6px;
-  --radius-lg: 10px;
+  --radius-sm: 6px;
+  --radius:    10px;   /* boutons, champs */
+  --radius-lg: 16px;   /* panneaux */
 }
 
 /* ---- Reset ---- */
@@ -95,10 +114,10 @@ body {
 
 /* ---- Typographie utilitaires ---- */
 .ew-mono { font-family: var(--font-mono); }
-/* Intitulé : minuscules, 12,5 px, graisse 500, gris secondaire (charte noir et blanc). */
+/* Intitulé : 11 px, graisse 600, capitales espacées, gris secondaire (version 3). */
 .ew-label-text {
   font-family: var(--font); font-size: var(--label-size); font-weight: var(--label-weight);
-  color: var(--label-color); text-transform: none; letter-spacing: normal;
+  color: var(--label-color); text-transform: var(--label-transform); letter-spacing: var(--label-tracking);
 }
 .ew-mute { color: var(--mute); }
 .ew-taupe { color: var(--taupe); }

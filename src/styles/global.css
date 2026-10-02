@@ -1,46 +1,54 @@
 /* ================================================================
-   Early Watch — Design System V3 (pages d'administration et espace client)
-   Charte « noir et blanc » (01/10/2026) : blanc, noir #0F1115, gris froids, Geist.
+   Early Watch — Design System (pages d'administration et espace client)
+   Version 3 (02/10/2026) : fond clair chaud, anthracite #2F2A2E, Instrument Sans.
    Les valeurs reprennent celles de design-tokens.css.
    ================================================================ */
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap');
 
 :root {
   /* Surfaces */
-  --ew-bg: #FFFFFF;
-  --ew-surface: #F8F9FB;
-  --ew-surface-2: #F1F3F6;
+  --ew-bg: #F7F3F0;
+  --ew-surface: rgba(255, 255, 255, 0.55);
+  --ew-surface-2: rgba(255, 255, 255, 0.70);
 
   /* Bordures */
-  --ew-border: #E6E8EC;
-  --ew-border-strong: #D5D8DE;
+  --ew-border: rgba(47, 42, 46, 0.08);
+  --ew-border-strong: rgba(47, 42, 46, 0.14);
 
   /* Texte */
-  --ew-text: #0F1115;
-  --ew-text-2: #2A2D33;
-  --ew-text-3: #5B616E;
-  --ew-text-4: #5B616E;   /* même gris que --ew-text-3 : contraste ≥ 4,5:1 sur tous les fonds clairs */
+  --ew-text: #2F2A2E;
+  --ew-text-2: #4A4347;
+  --ew-text-3: #6E676B;
+  --ew-text-4: #6E676B;   /* même gris que --ew-text-3 : contraste ≥ 4,5:1 sur le fond */
 
-  /* Accent primaire — noir */
-  --ew-ink: #0F1115;
+  /* Accent primaire — anthracite */
+  --ew-ink: #2F2A2E;
 
-  /* Accent — noir (noms --ew-kaki-* historiques, conservés pour les pages existantes) */
-  --ew-kaki: #0F1115;
-  --ew-kaki-bg-strong: rgba(15, 17, 21, 0.14);
-  --ew-kaki-bg: rgba(15, 17, 21, 0.10);
-  --ew-kaki-bg-soft: rgba(15, 17, 21, 0.06);
-  --ew-kaki-bg-ghost: rgba(15, 17, 21, 0.04);
-  --ew-kaki-border-hover: rgba(15, 17, 21, 0.5);
+  /* Accent — anthracite (noms --ew-kaki-* historiques, conservés pour les pages existantes) */
+  --ew-kaki: #2F2A2E;
+  --ew-kaki-bg-strong: rgba(47, 42, 46, 0.14);
+  --ew-kaki-bg: rgba(47, 42, 46, 0.07);
+  --ew-kaki-bg-soft: rgba(47, 42, 46, 0.05);
+  --ew-kaki-bg-ghost: rgba(47, 42, 46, 0.03);
+  --ew-kaki-border-hover: rgba(47, 42, 46, 0.5);
 
   /* Typographie */
-  --ew-font: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ew-font: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --ew-font-mono: var(--ew-font);   /* plus de police à chasse fixe */
 
   /* Radii */
-  --ew-radius-sm: 4px;
-  --ew-radius: 6px;
-  --ew-radius-lg: 10px;
-  --ew-radius-pill: 20px;
+  --ew-radius-sm: 6px;
+  --ew-radius: 10px;
+  --ew-radius-lg: 16px;
+  --ew-radius-pill: 999px;
+
+  /* Fond « lever de soleil » (même valeur que --bg-dawn de design-tokens.css) */
+  --ew-bg-dawn:
+    radial-gradient(70% 55% at 50% 115%, #FFC9A3 0%, rgba(255, 201, 163, 0) 70%),
+    radial-gradient(55% 45% at 15% 105%, #F8B8C8 0%, rgba(248, 184, 200, 0) 70%),
+    radial-gradient(55% 45% at 90% 100%, #F4D3B5 0%, rgba(244, 211, 181, 0) 70%),
+    radial-gradient(80% 60% at 50% 0%, #E7E3F2 0%, rgba(231, 227, 242, 0) 75%),
+    #F7F3F0;
 
   /* ── Aliases backward compat — tous résolus vers les tokens V3 ── */
   --ew-ink2: var(--ew-text-2);
@@ -62,7 +70,7 @@
   --border-light: var(--ew-border);
   --border-medium: var(--ew-border-strong);
   --border-strong: var(--ew-border-strong);
-  --color-error: #DC2626;
+  --color-error: #C42B2B;
   --beige: var(--ew-surface);
   --beige2: var(--ew-surface-2);
   --beige3: var(--ew-border);
@@ -86,7 +94,7 @@
   --color-warning: var(--ew-text-2);
   --color-warning-bg: var(--ew-surface-2);
   --color-danger: var(--color-error);
-  --color-danger-bg: rgba(220, 38, 38, 0.06);
+  --color-danger-bg: rgba(196, 43, 43, 0.06);
   --kaki: var(--ew-kaki);
   --kaki-hover: var(--ew-kaki);
   --terra: var(--ew-text-2);
@@ -101,12 +109,13 @@ body {
   font-size: 14px;
   line-height: 1.5;
   color: var(--ew-text);
-  background: var(--ew-bg);
+  background: var(--ew-bg-dawn);
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
 }
 
 /* ---- Typography ---- */
-h1 { font-size: 24px; font-weight: 500; letter-spacing: -0.015em; }
+h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.035em; }
 h2 { font-size: 18px; font-weight: 500; }
 h3 { font-size: 15px; font-weight: 500; }
 .text-secondary { color: var(--ew-text-2); }
@@ -411,7 +420,7 @@ h3 { font-size: 15px; font-weight: 500; }
 }
 .badge-success { background: var(--ew-kaki-bg-soft); color: var(--ew-kaki); }
 .badge-warning { background: var(--ew-surface-2); color: var(--ew-text-2); }
-.badge-danger { background: rgba(220, 38, 38, 0.06); color: #DC2626; }
+.badge-danger { background: var(--color-danger-bg); color: var(--color-error); }
 .badge-neutral { background: var(--ew-surface-2); color: var(--ew-text-3); }
 /* Alias pour badge-tracker-added */
 .badge-tracker-added {

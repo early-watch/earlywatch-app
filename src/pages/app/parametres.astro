@@ -14,7 +14,7 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
     <h1 class="ew-h-title">Paramètres</h1>
   </div>
 
-  <div class="pm-wrap" id="pm-wrap">
+  <div class="pm-wrap ew-glass ew-panel" id="pm-wrap">
     <div class="ew-loading"><div class="ew-spinner"></div></div>
   </div>
 </ClientLayout>
@@ -23,7 +23,7 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
   .pm-wrap { max-width: 720px; }
   :global(.pm-section) { padding: 22px 0 26px; border-top: 0.5px solid var(--line); }
   :global(.pm-section:first-child) { border-top: none; padding-top: 4px; }
-  :global(.pm-h2) { font-family: var(--font); font-size: var(--label-size); font-weight: var(--label-weight); color: var(--label-color); letter-spacing: normal; text-transform: none; margin: 0 0 14px; }
+  :global(.pm-h2) { font-family: var(--font); font-size: var(--label-size); font-weight: var(--label-weight); color: var(--label-color); letter-spacing: var(--label-tracking); text-transform: var(--label-transform); margin: 0 0 14px; }
   :global(.pm-row) { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 6px 20px; padding: 6px 0; font-size: 13.5px; }
   :global(.pm-k) { color: var(--taupe); }
   :global(.pm-v) { color: var(--ink); overflow-wrap: anywhere; }

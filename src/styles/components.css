@@ -9,7 +9,7 @@
 
 /* Frame 3 colonnes : sidebar + main + panel droit (dashboard inbox) */
 .ew-frame {
-  background: var(--bg);
+  background: transparent;
   display: grid;
   grid-template-columns: 220px 1fr 300px;
   min-height: 100vh;
@@ -17,7 +17,7 @@
 
 /* Frame 2 colonnes : sidebar + main (toutes les autres pages) */
 .ew-frame-2col {
-  background: var(--bg);
+  background: transparent;
   display: grid;
   grid-template-columns: 220px 1fr;
   min-height: 100vh;
@@ -57,8 +57,8 @@
   font-size: var(--label-size);
   font-weight: var(--label-weight);
   color: var(--label-color);
-  letter-spacing: normal;
-  text-transform: none;
+  letter-spacing: var(--label-tracking);
+  text-transform: var(--label-transform);
   padding: 36px 22px 10px;
 }
 .ew-section:first-of-type { padding-top: 6px; }
@@ -83,7 +83,7 @@
   color: var(--ink);
 }
 .ew-nav.active {
-  background: var(--bg-hover);
+  background: var(--accent-bg);
   color: var(--ink);
   font-weight: 500;
 }
@@ -166,7 +166,8 @@
   margin-bottom: 22px;
 }
 .ew-h-title {
-  font-size: 22px;
+  font-size: 30px;
+  line-height: 1.15;
   font-weight: var(--title-weight);
   color: var(--ink);
   letter-spacing: var(--title-tracking);
@@ -174,8 +175,8 @@
 }
 .ew-h-date {
   font-family: var(--font);
-  font-size: var(--label-size);
-  font-weight: var(--label-weight);
+  font-size: 13px;
+  font-weight: 400;
   color: var(--label-color);
   letter-spacing: normal;
   text-transform: none;
@@ -187,8 +188,8 @@
 
 .ew-tabs {
   font-family: var(--font);
-  font-size: var(--label-size);
-  font-weight: var(--label-weight);
+  font-size: 13px;
+  font-weight: 400;
   color: var(--label-color);
   letter-spacing: normal;
   text-transform: none;
@@ -306,7 +307,7 @@
 .ew-item-body { min-width: 0; }
 .ew-item-side { padding-top: 2px; }
 
-/* Avatar source — cercle 40px, IBM Plex Mono, sigle 2–4 lettres */
+/* Avatar source — cercle 40px, sigle 2–4 lettres */
 .ew-source-avatar {
   width: 40px;
   height: 40px;
@@ -333,8 +334,8 @@
 /* Métadonnées : source · date */
 .ew-meta {
   font-family: var(--font);
-  font-size: var(--label-size);
-  font-weight: var(--label-weight);
+  font-size: 13px;
+  font-weight: 400;
   color: var(--label-color);
   letter-spacing: normal;
   text-transform: none;
@@ -505,8 +506,8 @@
   font-size: var(--label-size);
   font-weight: var(--label-weight);
   color: var(--label-color);
-  letter-spacing: normal;
-  text-transform: none;
+  letter-spacing: var(--label-tracking);
+  text-transform: var(--label-transform);
   margin-bottom: 16px;
 }
 
@@ -521,8 +522,8 @@
   font-size: var(--label-size);
   font-weight: var(--label-weight);
   color: var(--label-color);
-  letter-spacing: normal;
-  text-transform: none;
+  letter-spacing: var(--label-tracking);
+  text-transform: var(--label-transform);
   margin-bottom: 6px;
 }
 
@@ -689,8 +690,8 @@
 }
 .ew-empty-hint {
   font-family: var(--font);
-  font-size: var(--label-size);
-  font-weight: var(--label-weight);
+  font-size: 13px;
+  font-weight: 400;
   color: var(--label-color);
   letter-spacing: normal;
   text-transform: none;
@@ -759,7 +760,8 @@
    ================================================================ */
 
 .ew-login-page {
-  background: var(--bg);
+  background: transparent;
+  padding: 24px 16px;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -907,8 +909,8 @@
   font-size: var(--label-size);
   font-weight: var(--label-weight);
   color: var(--label-color);
-  letter-spacing: normal;
-  text-transform: none;
+  letter-spacing: var(--label-tracking);
+  text-transform: var(--label-transform);
   text-align: left;
   padding: 8px 12px;
   border-bottom: 0.5px solid var(--line-strong);
@@ -991,18 +993,20 @@
    avec bouton « Menu », menu en tiroir, aucun défilement horizontal.
    ================================================================ */
 
-.ew-client { background: var(--bg); overflow-x: hidden; }
-.ew-client-frame { grid-template-columns: 220px minmax(0, 1fr); }
-/* Fond de la colonne de menu sur toute la hauteur, même quand la page dépasse l'écran
-   (la colonne est collante, hauteur 100vh). */
+/* Fond « lever de soleil » fixe : le contenu défile par-dessus. */
+.ew-client { overflow-x: hidden; }
+.ew-client-frame { grid-template-columns: 220px minmax(0, 1fr); background: transparent; }
+/* ≥ 900 px : le menu est un panneau de verre posé à 20 px des bords. */
 @media (min-width: 900px) {
-  .ew-client-frame {
-    background: linear-gradient(to right,
-      var(--bg-side) 0 219.5px, var(--line-strong) 219.5px 220px, var(--bg) 220px);
+  .ew-client-frame { gap: 0 4px; padding-left: 20px; }
+  .ew-client .ew-side {
+    top: 20px; height: calc(100vh - 40px); margin: 20px 0;
+    border-radius: var(--radius-lg); padding: 22px 0 16px;
   }
-  .ew-client .ew-side { border-right: none; }   /* le filet est porté par le fond du cadre */
 }
-.ew-client .ew-nav.active::before { background: var(--accent); }
+.ew-client .ew-nav.active::before { display: none; }
+.ew-client .ew-nav { border-radius: 9px; padding: 8px 12px; font-size: 14px; }
+.ew-client .ew-main { padding-top: 34px; }
 .ew-client .ew-main { max-width: 100%; }
 .ew-client .ew-main img, .ew-client .ew-main table { max-width: 100%; }
 
@@ -1034,12 +1038,15 @@
     z-index: 30;
     height: 52px;
     padding: 0 16px;
-    background: var(--bg);
-    border-bottom: 0.5px solid var(--line);
+    background: var(--glass);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--glass-border);
   }
   .ew-topbar-logo { padding: 0; }
 
   .ew-client .ew-side {
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
     position: fixed;
     top: 0;
     left: 0;
@@ -1064,7 +1071,7 @@
 
   .ew-client .ew-main { padding: 20px 16px 28px; }
   .ew-client .ew-header { flex-wrap: wrap; gap: 6px 12px; }
-  .ew-client .ew-h-title { font-size: 19px; }
+  .ew-client .ew-h-title { font-size: 24px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1081,46 +1088,57 @@
   .fil-layout { grid-template-columns: minmax(0, 1fr) 380px; gap: 32px; align-items: start; }
 }
 
-.fil-list { border-top: 1px solid var(--line-row); }
+.fil-list { border-radius: var(--radius-lg); overflow: hidden; }
+.fil-list:empty { display: none; }
 
 .fil-row {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) auto;
+  grid-template-columns: 76px minmax(0, 1fr) auto;
   gap: 14px;
   align-items: start;
-  padding: 14px 10px;
+  padding: 15px 18px;
   border-bottom: 1px solid var(--line-row);
   cursor: pointer;
   outline: none;
 }
-.fil-row:hover { background: var(--bg-side); }
+.fil-row:last-child { border-bottom: none; }
+.fil-row:hover { background: rgba(255, 255, 255, 0.4); }
 .fil-row:focus-visible { box-shadow: inset 0 0 0 1.5px var(--accent); }
-.fil-row.is-selected { background: var(--bg-selected); box-shadow: inset 2px 0 0 var(--accent); }
+.fil-row.is-selected { background: var(--bg-selected); }
 
+/* Niveau : jauge de 3 barres (3 px, hauteurs 6 / 9 / 12 px) suivie du mot.
+   Action : 3 barres « lever de soleil ». À lire : 2 barres. Info : 1 barre. */
 .fil-level {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font);
-  font-size: 12px;
-  font-weight: 600;
-  padding: 3px 9px;
-  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--level-text);
   white-space: nowrap;
-  color: var(--level-info-fg);
-  background: var(--level-info-bg);
+  padding-top: 1px;
 }
-.fil-level-action { background: var(--level-action-bg); color: var(--level-action-fg); }
-.fil-level-a_lire { background: var(--level-read-bg); color: var(--level-read-fg); }
+.fil-gauge { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
+.fil-gauge i { display: block; width: 3px; border-radius: 2px; background: var(--level-bar-off); }
+.fil-gauge i:nth-child(1) { height: 6px; }
+.fil-gauge i:nth-child(2) { height: 9px; }
+.fil-gauge i:nth-child(3) { height: 12px; }
+.fil-level-info   .fil-gauge i:nth-child(1),
+.fil-level-a_lire .fil-gauge i:nth-child(-n+2) { background: var(--level-bar-on); }
+.fil-level-action .fil-gauge i { background: var(--dawn); }
 
-.fil-row-title { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--ink); margin: 0; overflow-wrap: anywhere; }
+.fil-row-title { font-size: 14.5px; font-weight: 500; line-height: 1.4; color: var(--ink); margin: 0; overflow-wrap: anywhere; }
 .fil-row-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px; font-size: 12px; color: var(--mute); }
 .fil-row-source { color: var(--taupe); }
 .fil-row-reason { margin-top: 6px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; }
 
 .fil-btn {
   font-family: inherit;
-  font-size: 12px;
+  font-size: 12.5px;
+  font-weight: 500;
   color: var(--ink);
-  background: var(--bg);
+  background: var(--bg-field);
   border: 0.5px solid var(--line-strong);
   border-radius: var(--radius);
   padding: 6px 12px;
@@ -1144,15 +1162,13 @@
     top: 24px;
     max-height: calc(100vh - 48px);
     overflow-y: auto;
-    border: 1px solid var(--line);
     border-radius: var(--radius-lg);
-    background: var(--bg-side);
   }
 }
-.fil-detail-inner { padding: 22px 22px 26px; }
+.fil-detail-inner { padding: 24px 24px 26px; }
 .fil-detail-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.fil-detail-date { font-size: 12px; color: var(--mute); }
-.fil-detail-title { font-size: 19px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.35; color: var(--ink); margin: 0 0 6px; overflow-wrap: anywhere; }
+.fil-detail-date { font-size: 12.5px; color: var(--mute); }
+.fil-detail-title { font-size: 21px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.35; color: var(--ink); margin: 0 0 6px; overflow-wrap: anywhere; }
 .fil-detail-source { font-size: 12.5px; color: var(--taupe); margin-bottom: 18px; }
 .fil-detail-block { margin-bottom: 16px; }
 .fil-detail-block h3 {
@@ -1160,11 +1176,11 @@
   font-size: var(--label-size);
   font-weight: var(--label-weight);
   color: var(--label-color);
-  letter-spacing: normal;
-  text-transform: none;
+  letter-spacing: var(--label-tracking);
+  text-transform: var(--label-transform);
   margin: 0 0 6px;
 }
-.fil-detail-block p { font-size: 13.5px; line-height: 1.6; color: var(--ink-soft); margin: 0; }
+.fil-detail-block p { font-size: 14px; line-height: 1.6; color: var(--ink-soft); margin: 0; }
 .fil-detail-link { display: inline-block; font-size: 13.5px; font-weight: 500; color: var(--accent); margin: 4px 0 20px; }
 .fil-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 16px; border-top: 0.5px solid var(--line); }
 .fil-detail-placeholder { padding: 22px; font-size: 13px; color: var(--mute); }
@@ -1176,7 +1192,7 @@
     position: fixed;
     inset: 0;
     z-index: 60;
-    background: var(--bg);
+    background: var(--bg-dawn);
     overflow-y: auto;
   }
   .fil-detail.is-open .fil-detail-back {
@@ -1220,8 +1236,10 @@
   text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
 }
 /* Compteurs du menu (Fil, Suivis) */
-.ew-client .ew-nav .ew-count { font-family: var(--font); font-size: 12.5px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.ew-client .ew-nav .ew-count { font-family: var(--font); font-size: 13px; font-weight: 500; color: var(--mute); font-variant-numeric: tabular-nums; }
 .ew-client .ew-nav .ew-count[hidden] { display: none; }
+/* Sur l'élément actif (fond anthracite 7 %), le gris passerait sous 4,5:1 : compteur en anthracite. */
+.ew-client .ew-nav.active .ew-count { color: var(--ink); }
 
 /* Fil sans publication à sélectionner : pas de panneau de détail. */
 .fil-layout.is-single { grid-template-columns: minmax(0, 1fr); }
@@ -1238,8 +1256,8 @@
   font-size: var(--label-size);
   font-weight: var(--label-weight);
   color: var(--label-color);
-  letter-spacing: normal;
-  text-transform: none;
+  letter-spacing: var(--label-tracking);
+  text-transform: var(--label-transform);
   margin: 0 0 8px;
 }
 .fil-section-label[hidden] { display: none; }
@@ -1247,3 +1265,90 @@
 .fil-next-count { color: var(--accent); }
 .fil-next-title { font-size: 14px; line-height: 1.5; color: var(--ink-soft); margin: 4px 0 10px; }
 .fil-next-link { font-size: 13px; color: var(--accent); }
+
+/* ================================================================
+   VERSION 3 — fond « lever de soleil » (pages connectées)
+   Calque fixe derrière le contenu : le fond reste en place au défilement, y compris
+   sur iOS (où background-attachment: fixed est ignoré).
+   ================================================================ */
+body { background: var(--bg); }
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--bg-dawn);
+  pointer-events: none;
+}
+
+/* ================================================================
+   VERSION 3 — panneaux en verre sur le fond « lever de soleil »
+   Menu, liste du Fil, détail, menus déroulants, cartes de Paramètres et du
+   Calendrier. Repli opaque (--glass-fallback) si backdrop-filter n'est pas supporté.
+   ================================================================ */
+.ew-side,
+.ew-client .fil-list,
+.ew-client .fil-detail,
+.ew-client .ew-sort-menu,
+.ew-glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .ew-side,
+  .ew-client .fil-list,
+  .ew-client .fil-detail,
+  .ew-client .ew-sort-menu,
+  .ew-client .ew-topbar,
+  .ew-glass { background: var(--glass-fallback); }
+}
+/* Détail plein écran (téléphone) : fond « lever de soleil », pas de verre. */
+@media (max-width: 1099px) {
+  .ew-client .fil-detail.is-open {
+    background: var(--bg-dawn); border: none; box-shadow: none; border-radius: 0;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+}
+/* Tiroir de menu (téléphone) : presque opaque, le Fil ne transparaît pas sous le menu. */
+@media (max-width: 899px) {
+  .ew-client .ew-side { background: var(--bg-drawer); border-left: none; }
+}
+
+/* Panneau de contenu (Calendrier, Paramètres) : le texte gris ne repose jamais
+   directement sur le dégradé, où il passerait sous 4,5:1. */
+.ew-panel { border-radius: var(--radius-lg); padding: 22px 28px 26px; }
+@media (max-width: 899px) { .ew-panel { padding: 18px 16px 20px; } }
+
+/* Boutons pleins : anthracite, texte clair ; secondaires : verre clair. */
+.ew-client .ew-btn { background: var(--bg-field); border-color: var(--line-strong); }
+
+/* Logo : carré anthracite 26 px avec « e », suivi du nom. */
+.ew-logo, .ew-login-logo { line-height: 26px; letter-spacing: -0.01em; white-space: nowrap; }
+.ew-client .ew-logo { padding: 0 18px 28px; }
+.ew-logo::before, .ew-login-logo::before {
+  content: 'e';
+  width: 26px; height: 26px; border-radius: 8px; margin-right: 10px; vertical-align: top;
+  display: inline-grid; place-items: center;
+  background: var(--ink); color: var(--on-accent);
+  font-size: 14px; font-weight: 600; line-height: 1;
+}
+.ew-client .ew-topbar-logo { padding: 0; }
+
+/* Connexion, inscription : formulaire sur un panneau de verre. */
+.ew-login-wrap {
+  width: min(400px, 100%);
+  padding: 32px 28px;
+  border-radius: var(--radius-lg);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .ew-login-wrap { background: var(--glass-fallback); }
+}
+
