@@ -160,6 +160,7 @@ nav .links a:not(.btn):hover{color:var(--ink)}
 .tc .px{margin-top:22px;display:flex;align-items:baseline;gap:8px}
 .tc .px b{font-family:var(--sans);font-weight:600;font-size:clamp(38px,4.4vw,56px);letter-spacing:-.035em;line-height:1;font-variant-numeric:tabular-nums}
 .tc .px span{font-size:13px;color:var(--ink3)}
+.tc .trial{display:inline-block;margin-top:8px;font-size:13px;font-weight:500;color:var(--ink2)}
 .tc ul{list-style:none;margin-top:22px;display:grid;gap:9px;font-size:14.5px;color:var(--ink2)}
 .tc li{display:flex;gap:10px}
 .tc li::before{content:"";flex:none;width:5px;height:5px;margin-top:.66em;border-radius:50%;background:var(--ink)}
@@ -228,7 +229,7 @@ footer .c{font-family:var(--sans);font-size:var(--label-size);font-weight:var(--
     <h1>La veille LCB-FT <em>triée pour votre activité</em>.</h1>
     <p class="sub">Early Watch suit les publications des autorités françaises et européennes, ne vous montre que ce qui concerne votre statut, et renvoie toujours au texte officiel. Pour les établissements financiers comme pour les professions non financières.</p>
     <div class="act">
-      <a class="btn" href={`${base}inscription`}>Créer un compte</a>
+      <a class="btn" href={`${base}inscription`}>Créer un compte · Essai gratuit de 14 jours</a>
       <a class="btn ghost" href="#contact">Demander une démonstration</a>
     </div>
     <p class="note">À partir de 99 € HT par mois · sans engagement de durée</p>
@@ -311,24 +312,26 @@ footer .c{font-family:var(--sans);font-size:var(--label-size);font-weight:var(--
           <span class="tn">Professions non financières</span>
           <h3>Pour un professionnel seul</h3>
           <div class="px"><b>99 €</b><span>HT / mois</span></div>
+          <span class="trial">Essai gratuit de 14 jours</span>
           <ul>
             <li>1 utilisateur</li>
             <li>Publications de votre ordre ou de votre chambre</li>
             <li>Textes français et européens qui vous visent, dont l'AMLR</li>
             <li>Récapitulatif hebdomadaire par e-mail</li>
           </ul>
-          <a class="btn ghost" href={`${base}inscription`}>Créer un compte</a>
+          <a class="btn ghost" href={`${base}inscription?formule=pnf`}>Créer un compte</a>
         </div>
         <div class="tc">
           <span class="tn">Cabinet</span>
           <h3>Pour un cabinet ou une agence</h3>
           <div class="px"><b>199 €</b><span>HT / mois</span></div>
+          <span class="trial">Essai gratuit de 14 jours</span>
           <ul>
             <li>Jusqu'à 5 utilisateurs sur le même espace</li>
             <li>Tout ce que comprend Professions non financières</li>
             <li>Suivi partagé : qui a traité quoi, et quand</li>
           </ul>
-          <a class="btn ghost" href={`${base}inscription`}>Créer un compte</a>
+          <a class="btn ghost" href={`${base}inscription?formule=pnf_cabinet`}>Créer un compte</a>
         </div>
       </div>
     </div>
@@ -343,31 +346,33 @@ footer .c{font-family:var(--sans);font-size:var(--label-size);font-weight:var(--
           <span class="tn">Responsable LCB-FT</span>
           <h3>Pour un responsable conformité</h3>
           <div class="px"><b>199 €</b><span>HT / mois</span></div>
+          <span class="trial">Essai gratuit de 14 jours</span>
           <ul>
             <li>1 utilisateur</li>
             <li>Veille filtrée sur votre statut réglementaire</li>
             <li>Tri par gravité et par thème</li>
             <li>Récapitulatif hebdomadaire par e-mail</li>
           </ul>
-          <a class="btn" href={`${base}inscription`}>Créer un compte</a>
+          <a class="btn" href={`${base}inscription?formule=solo`}>Créer un compte</a>
         </div>
         <div class="tc">
           <span class="tn">Équipe</span>
           <h3>Pour une équipe conformité</h3>
           <div class="px"><b>590 €</b><span>HT / mois</span></div>
+          <span class="trial">Essai gratuit de 14 jours</span>
           <ul>
             <li>Jusqu'à 10 utilisateurs sur le même espace</li>
             <li>Tout ce que comprend Responsable LCB-FT</li>
             <li>Démonstration sur votre périmètre</li>
           </ul>
           <div class="tacts">
-            <a class="btn" href={`${base}inscription`}>Créer un compte</a>
+            <a class="btn" href={`${base}inscription?formule=equipe`}>Créer un compte</a>
             <a class="btn ghost" href="#contact">Demander une démonstration</a>
           </div>
         </div>
       </div>
     </div>
-    <p class="tfoot">Paiement par carte, facture disponible dans votre espace. Vous pouvez résilier à tout moment depuis votre compte.</p>
+    <p class="tfoot">Essai gratuit de 14 jours. Carte demandée, aucun prélèvement avant la fin de l'essai, résiliable à tout moment. Facture disponible dans votre espace.</p>
   </div>
 </section>
 
