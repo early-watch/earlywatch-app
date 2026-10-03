@@ -272,7 +272,7 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
       <section class="pm-section">
         <h2 class="pm-h2">Profil</h2>
         ${row('Activité', esc(profileLabel))}
-        ${s.ressort ? row(esc(profile?.ressort_label || 'Ressort'), esc(capitalize(s.ressort))) : ''}
+        ${s.ressort ? row(esc(profile?.ressort_label || 'Ressort'), esc(profile?.ressorts?.find((r: any) => r.id === s.ressort)?.label || capitalize(s.ressort))) : ''}
         <div class="pm-hint">Votre profil détermine les sources suivies. Pour le modifier, écrivez-nous : <a href="mailto:maria@early.consulting">maria@early.consulting</a>.</div>
       </section>
 

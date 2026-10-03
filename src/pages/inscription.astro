@@ -1,0 +1,206 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro';
+// EB-MVP-002 — inscription en libre-service. La liste des profils (et le libellé du
+// ressort par profession) vient de l'API : GET /api/v1/auth/signup-profiles.
+// Ressort : liste déroulante des ressorts existants, fournie par la même API
+// (`ressorts: [{id, label}]` ; le serveur refuse tout autre ressort). Affichée seulement
+// si le profil a des ressorts ; « Autre / non listé » n'envoie aucun ressort.
+---
+
+<AuthLayout title="Early Watch — Créer un compte">
+  <h1 style="font-size:18px;font-weight:500;color:var(--ink);margin:0 0 8px">Créer un compte</h1>
+  <p style="font-size:13px;color:var(--mute);line-height:1.6;margin-bottom:6px">
+    Créez votre compte en quelques instants. Vous confirmerez ensuite votre adresse e-mail.
+  </p>
+  <p style="font-size:12px;color:var(--mute);line-height:1.6;margin-bottom:20px">
+    À partir de 99&nbsp;€&nbsp;HT par mois, sans engagement de durée. La formule se choisit après la confirmation de l’adresse.
+  </p>
+  <p id="formule-note" style="display:none;font-size:12px;color:var(--ink);line-height:1.6;margin:-12px 0 20px"></p>
+  <form id="signup-form" novalidate>
+    <div style="display:flex;gap:12px">
+      <div class="ew-field" style="flex:1">
+        <label class="ew-label" for="first_name">Prénom</label>
+        <input class="ew-input" id="first_name" autocomplete="given-name" maxlength="100" required>
+      </div>
+      <div class="ew-field" style="flex:1">
+        <label class="ew-label" for="last_name">Nom</label>
+        <input class="ew-input" id="last_name" autocomplete="family-name" maxlength="100" required>
+      </div>
+    </div>
+    <div class="ew-field">
+      <label class="ew-label" for="email">Adresse e-mail professionnelle</label>
+      <input class="ew-input" type="email" id="email" autocomplete="email" required>
+    </div>
+    <div class="ew-field">
+      <label class="ew-label" for="password">Mot de passe</label>
+      <input class="ew-input" type="password" id="password" autocomplete="new-password" minlength="12" required>
+      <div style="font-size:11px;color:var(--mute);margin-top:4px">12 caractères minimum.</div>
+    </div>
+    <div class="ew-field">
+      <label class="ew-label" for="organisation">Organisation</label>
+      <input class="ew-input" id="organisation" autocomplete="organization" maxlength="255" required>
+    </div>
+    <div class="ew-field">
+      <label class="ew-label" for="profile">Votre activité</label>
+      <select class="ew-input" id="profile" required>
+        <option value="">Chargement…</option>
+      </select>
+    </div>
+    <div class="ew-field" id="ressort-field" style="display:none">
+      <label class="ew-label" for="ressort" id="ressort-label">Ressort</label>
+      <select class="ew-input" id="ressort"></select>
+      <div style="font-size:11px;color:var(--mute);margin-top:4px">Facultatif. Les publications locales suivies dépendent de ce choix.</div>
+    </div>
+    <label style="display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--ink);line-height:1.5;margin:6px 0 16px">
+      <input type="checkbox" id="terms" required style="margin-top:2px">
+      <span>J'accepte les <a href={`${import.meta.env.BASE_URL}cgv`} target="_blank" rel="noopener" style="color:var(--taupe)">conditions générales</a>.</span>
+    </label>
+    <label style="display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--ink);line-height:1.5;margin:-8px 0 16px">
+      <input type="checkbox" id="pro" required style="margin-top:2px">
+      <span>Je déclare agir à titre professionnel.</span>
+    </label>
+    <div class="ew-login-error" id="err"></div>
+    <button type="submit" class="ew-login-btn" id="btn" disabled>Créer mon compte</button>
+  </form>
+
+  <style>
+    #btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    #btn:disabled:hover { background: transparent; }
+  </style>
+
+  <div style="margin-top:20px;text-align:center;font-size:12px;color:var(--mute)">
+    Déjà un compte ?
+    <a href={`${import.meta.env.BASE_URL}login`} style="color:var(--taupe);text-decoration:none">Se connecter</a>
+  </div>
+
+  <script>
+    import { API } from '../scripts/api';
+    import { PLAN_LABELS } from '../scripts/plans';
+
+    const BASE = import.meta.env.BASE_URL || '/earlywatch-app/';
+    const FAMILY_LABELS: Record<string, string> = {
+      financier: 'Secteur financier',
+      non_financier: 'Professions non financières',
+    };
+    type Ressort = { id: string; label: string };
+    type SignupProfile = { code: string; label: string; family: string; ressort_label?: string | null; ressorts?: Ressort[] };
+    // Formule pré-choisie depuis la page d'accueil (?formule=pnf|pnf_cabinet|solo|equipe) :
+    // affichée ici et gardée dans le navigateur pour la page de choix de la formule, après
+    // confirmation de l'adresse. Valeur inconnue : ignorée.
+    const formule = new URLSearchParams(location.search).get('formule') || '';
+    if (Object.prototype.hasOwnProperty.call(PLAN_LABELS, formule)) {
+      const note = document.getElementById('formule-note')!;
+      note.textContent = `Formule choisie : ${PLAN_LABELS[formule as keyof typeof PLAN_LABELS]}. Vous pourrez la changer avant le paiement.`;
+      note.style.display = 'block';
+      try { localStorage.setItem('ew_formule', formule); } catch { /* navigation privée */ }
+    }
+    let profiles: SignupProfile[] = [];
+
+    const select = document.getElementById('profile') as HTMLSelectElement;
+    const ressortField = document.getElementById('ressort-field')!;
+    const ressortLabel = document.getElementById('ressort-label')!;
+    const ressortSelect = document.getElementById('ressort') as HTMLSelectElement;
+    const err = document.getElementById('err')!;
+    const btn = document.getElementById('btn') as HTMLButtonElement;
+    const pro = document.getElementById('pro') as HTMLInputElement;
+
+    // Service réservé aux professionnels (CGV, art. 1) : sans la déclaration, le bouton reste inactif.
+    const syncButton = () => { btn.disabled = !pro.checked; };
+    pro.addEventListener('change', syncButton);
+    syncButton();
+
+    function showError(text: string) {
+      err.textContent = text;
+      err.classList.add('visible');
+    }
+
+    function esc(s: string) {
+      return s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+    }
+
+    async function loadProfiles() {
+      try {
+        const r = await fetch(`${API}/api/v1/auth/signup-profiles`);
+        if (!r.ok) throw 0;
+        profiles = await r.json();
+        const groups = new Map<string, SignupProfile[]>();
+        for (const p of profiles) {
+          if (!groups.has(p.family)) groups.set(p.family, []);
+          groups.get(p.family)!.push(p);
+        }
+        let html = '<option value="">— Choisir —</option>';
+        for (const [family, list] of groups) {
+          html += `<optgroup label="${esc(FAMILY_LABELS[family] || family)}">`
+            + list.map(p => `<option value="${esc(p.code)}">${esc(p.label)}</option>`).join('')
+            + '</optgroup>';
+        }
+        select.innerHTML = html;
+      } catch {
+        select.innerHTML = '<option value="">Liste indisponible</option>';
+        showError('Impossible de charger la liste des activités. Réessayez dans un instant.');
+      }
+    }
+
+    select.addEventListener('change', () => {
+      const p = profiles.find(x => x.code === select.value);
+      const list = (p && p.ressort_label && Array.isArray(p.ressorts) && p.ressorts) || [];
+      if (p && list.length) {
+        ressortLabel.textContent = p.ressort_label!;
+        ressortSelect.innerHTML = '<option value="">— Choisir —</option>'
+          + list.map(r => `<option value="${esc(r.id)}">${esc(r.label)}</option>`).join('')
+          + '<option value="">Autre / non listé</option>';
+        ressortField.style.display = 'block';
+      } else {
+        ressortField.style.display = 'none';
+        ressortSelect.innerHTML = '';
+      }
+    });
+
+    document.getElementById('signup-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      err.classList.remove('visible');
+      const val = (id: string) => (document.getElementById(id) as HTMLInputElement).value.trim();
+      const password = (document.getElementById('password') as HTMLInputElement).value;
+      const terms = (document.getElementById('terms') as HTMLInputElement).checked;
+      const email = val('email');
+
+      if (!val('first_name') || !val('last_name') || !email || !val('organisation') || !select.value) {
+        return showError('Merci de renseigner tous les champs.');
+      }
+      if (password.length < 12) return showError('Le mot de passe doit contenir au moins 12 caractères.');
+      if (!terms) return showError('Vous devez accepter les conditions générales pour créer un compte.');
+      if (!pro.checked) return showError('Le service est réservé aux professionnels.');
+
+      btn.disabled = true;
+      btn.textContent = 'Création…';
+      try {
+        const body: Record<string, unknown> = {
+          email, password,
+          first_name: val('first_name'), last_name: val('last_name'),
+          organisation: val('organisation'), profile: select.value, accept_terms: true,
+          // Déclaration « Je déclare agir à titre professionnel » (CGV, art. 1) : date conservée
+          // côté serveur (tenants.professional_use_declared_at).
+          professional_use: pro.checked,
+        };
+        if (ressortField.style.display !== 'none' && ressortSelect.value) body.ressort = ressortSelect.value;
+        const r = await fetch(`${API}/api/v1/auth/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (r.status === 429) throw new Error('Trop de tentatives. Réessayez dans une heure.');
+        if (!r.ok) {
+          const d = await r.json().catch(() => ({}));
+          throw new Error(typeof d.detail === 'string' ? d.detail : 'Vérifiez les informations saisies.');
+        }
+        window.location.href = BASE + 'verifier-email?email=' + encodeURIComponent(email);
+      } catch (ex: any) {
+        showError(ex.message || 'Erreur de connexion au serveur.');
+        btn.textContent = 'Créer mon compte';
+        syncButton();
+      }
+    });
+
+    loadProfiles();
+  </script>
+</AuthLayout>

@@ -1,0 +1,73 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro';
+// EB-MVP-002 — compte connecté sans abonnement actif (API : 402). Contenu minimal :
+// le paiement arrive au lot 3.
+---
+
+<AuthLayout title="Early Watch — Choisissez votre formule">
+  <p style="font-size:14px;color:var(--ink);line-height:1.6;margin-bottom:8px">Choisissez votre formule</p>
+  <p style="font-size:13px;color:var(--mute);line-height:1.6;margin-bottom:20px">
+    Votre compte est créé. L'accès à la veille s'ouvre dès que votre abonnement est actif.
+  </p>
+
+  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+    <div class="plan" data-plan="pnf">
+      <div><strong>Professions non financières</strong><span>99 € / mois</span></div>
+    </div>
+    <div class="plan" data-plan="pnf_cabinet">
+      <div><strong>Cabinet</strong><span>199 € / mois</span></div>
+    </div>
+    <div class="plan" data-plan="solo">
+      <div><strong>Responsable LCB-FT</strong><span>199 € / mois</span></div>
+    </div>
+    <div class="plan" data-plan="equipe">
+      <div><strong>Équipe</strong><span>590 € / mois</span></div>
+    </div>
+  </div>
+
+  <p style="font-size:12px;color:var(--mute);line-height:1.6;margin-bottom:20px">
+    Le paiement en ligne sera disponible très prochainement. Pour activer votre accès dès maintenant,
+    écrivez-nous : <a href="mailto:maria@early.consulting" style="color:var(--taupe)">maria@early.consulting</a>.
+  </p>
+
+  <div style="text-align:center;font-size:12px">
+    <a href="#" id="logout" style="color:var(--taupe);text-decoration:none">Se déconnecter</a>
+  </div>
+
+  <style>
+    .plan { border: 1px solid var(--line, #E4E1D8); border-radius: 6px; padding: 12px 14px; }
+    .plan div { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink); }
+    .plan span { color: var(--mute); }
+    .plan.current { border-color: var(--taupe); }
+  </style>
+
+  <script>
+    import { API, getToken, getUser, logout } from '../scripts/api';
+    import { isPaidPlan } from '../scripts/plans';
+
+    const BASE = import.meta.env.BASE_URL || '/earlywatch-app/';
+    document.getElementById('logout')?.addEventListener('click', (e) => { e.preventDefault(); logout(); });
+
+    const token = getToken();
+    if (!token) {
+      window.location.href = BASE + 'login';
+    } else {
+      // Formule de l'abonnement, sinon celle choisie sur la page d'accueil avant l'inscription.
+      let wanted: string | null = null;
+      try { wanted = localStorage.getItem('ew_formule'); } catch { /* navigation privée */ }
+      const current = getUser()?.tenant_plan;
+      const plan = isPaidPlan(current) ? current : (isPaidPlan(wanted) ? wanted : null);
+      if (plan) document.querySelector(`.plan[data-plan="${plan}"]`)?.classList.add('current');
+      // Abonnement activé entre-temps (ex. par le superadmin) : on repart vers le tableau de bord.
+      fetch(`${API}/api/v1/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => (r.ok ? r.json() : null))
+        .then(u => {
+          if (u && (u.subscription_status === 'active' || u.role === 'superadmin')) {
+            sessionStorage.setItem('ew_user', JSON.stringify(u));
+            window.location.href = BASE + (u.role === 'superadmin' ? 'superadmin' : 'app/fil');
+          }
+        })
+        .catch(() => {});
+    }
+  </script>
+</AuthLayout>
