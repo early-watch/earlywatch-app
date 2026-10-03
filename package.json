@@ -7,9 +7,11 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/check-legal-pages.mjs",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "check:legal": "node scripts/check-legal-pages.mjs",
+    "test:legal": "node --test scripts/check-legal-pages.test.mjs"
   },
   "dependencies": {
     "astro": "^6.1.5"
