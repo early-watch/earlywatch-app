@@ -43,6 +43,7 @@ import AuthLayout from '../layouts/AuthLayout.astro';
 
   <script>
     import { API, getToken, getUser, logout } from '../scripts/api';
+    import { isPaidPlan } from '../scripts/plans';
 
     const BASE = import.meta.env.BASE_URL || '/earlywatch-app/';
     document.getElementById('logout')?.addEventListener('click', (e) => { e.preventDefault(); logout(); });
@@ -51,7 +52,11 @@ import AuthLayout from '../layouts/AuthLayout.astro';
     if (!token) {
       window.location.href = BASE + 'login';
     } else {
-      const plan = getUser()?.tenant_plan;
+      // Formule de l'abonnement, sinon celle choisie sur la page d'accueil avant l'inscription.
+      let wanted: string | null = null;
+      try { wanted = localStorage.getItem('ew_formule'); } catch { /* navigation privée */ }
+      const current = getUser()?.tenant_plan;
+      const plan = isPaidPlan(current) ? current : (isPaidPlan(wanted) ? wanted : null);
       if (plan) document.querySelector(`.plan[data-plan="${plan}"]`)?.classList.add('current');
       // Abonnement activé entre-temps (ex. par le superadmin) : on repart vers le tableau de bord.
       fetch(`${API}/api/v1/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
