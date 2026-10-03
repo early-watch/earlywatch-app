@@ -38,7 +38,6 @@ const base = import.meta.env.BASE_URL;
   import { API, api, getToken, toast } from '../../scripts/api';
   import { levelOf, byLevelThenDate, renderRow, renderDetail, esc, undoToast } from '../../scripts/fil.js';
   import { nextDeadline, relativeLabel, isExactDate, normalizeProfileCode } from '../../scripts/calendrier-dates.js';
-  import { calendrier } from '../../data/calendrier';
 
   const WIDE = window.matchMedia('(min-width: 1100px)');
   const RECENT_DAYS = 30;
@@ -176,10 +175,18 @@ const base = import.meta.env.BASE_URL;
     } catch { return null; }
   }
 
+  // Calendrier servi par l'API (GET /app/calendar) ; indisponible → pas d'encart.
+  async function calendarEntries(): Promise<any[]> {
+    try {
+      const data = await api('/api/v1/app/calendar');
+      return Array.isArray(data?.entries) ? data.entries : [];
+    } catch { return []; }
+  }
+
   async function renderNext(): Promise<void> {
     const box = document.getElementById('fil-next')!;
-    const profile = await clientProfile();
-    const next = nextDeadline(calendrier, new Date(), profile);
+    const [profile, entries] = await Promise.all([clientProfile(), calendarEntries()]);
+    const next = nextDeadline(entries, new Date(), profile);
     if (!next) { box.hidden = true; return; }
     document.getElementById('fil-next-date')!.textContent = next.entry.date;
     const rel = relativeLabel(next.status, next.days, isExactDate(next.entry.date));
