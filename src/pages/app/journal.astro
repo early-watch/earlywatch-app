@@ -85,6 +85,8 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
   .jr-panel :global(.jr-link) { color: var(--ink); white-space: nowrap; text-underline-offset: 2px; }
   .jr-panel :global(.jr-none) { color: var(--text-2); }
   .jr-panel :global(.jr-empty) { padding: 22px 18px; font-size: 13px; color: var(--text-2); }
+  .jr-panel :global(.jr-noaccess) { color: var(--ink); }
+  .jr-panel :global(.jr-noaccess a) { color: var(--ink); font-weight: 500; text-underline-offset: 2px; margin-left: 4px; white-space: nowrap; }
 
   /* Téléphone : une carte par traitement */
   @media (max-width: 760px) {
@@ -155,12 +157,20 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
     return { from, to };
   }
 
+  // Compte sans accès au contenu (le serveur répond 402) : message clair au lieu de
+  // l'erreur brute, avec un lien vers l'abonnement (section « Abonnement » des
+  // Paramètres, présente pour tous les rôles).
+  const NO_ACCESS_MESSAGE = 'Le journal est disponible avec un abonnement actif.';
+  const SUBSCRIPTION_URL = `${import.meta.env.BASE_URL || '/earlywatch-app/'}app/parametres`;
+  class NoAccessError extends Error {}
+
   // Appel direct (pas api()) : l'export CSV doit rester binaire — res.text() retirerait
   // le BOM UTF-8 dont Excel a besoin pour les accents.
   async function request(p: { from: string; to: string }, format: 'json' | 'csv'): Promise<Response> {
     const qs = new URLSearchParams({ from: p.from, to: p.to, format });
     const res = await fetch(`${API}/api/v1/app/journal?${qs}`, { headers: { Authorization: `Bearer ${getToken()}` } });
     if (res.status === 401) { logout(); throw new Error('Session expirée'); }
+    if (res.status === 402) throw new NoAccessError(NO_ACCESS_MESSAGE);
     if (!res.ok) {
       const body = await res.json().catch(() => null);
       const d = body?.detail;
@@ -210,7 +220,9 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
           </table>`
         : '<div class="jr-empty">Aucun traitement sur cette période.</div>';
     } catch (err) {
-      panel.innerHTML = `<div class="jr-empty">${esc((err as Error).message)}</div>`;
+      panel.innerHTML = err instanceof NoAccessError
+        ? `<div class="jr-empty jr-noaccess">${esc(NO_ACCESS_MESSAGE)} <a href="${esc(SUBSCRIPTION_URL)}">Voir l’abonnement</a></div>`
+        : `<div class="jr-empty">${esc((err as Error).message)}</div>`;
     }
   }
 
@@ -229,7 +241,7 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (err) {
-      toast((err as Error).message, 'error');
+      toast(err instanceof NoAccessError ? NO_ACCESS_MESSAGE : (err as Error).message, 'error');
     } finally {
       exportBtn.disabled = false;
     }
