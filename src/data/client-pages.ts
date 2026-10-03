@@ -16,6 +16,7 @@ export const CLIENT_PAGES: ClientPage[] = [
   { key: 'fil',              path: 'app/fil',              label: 'Fil',                    menu: true },
   { key: 'calendrier',       path: 'app/calendrier',       label: 'Calendrier',             menu: true },
   { key: 'suivis',           path: 'app/suivis',           label: 'Suivis',                 menu: true },
+  { key: 'journal',          path: 'app/journal',          label: 'Journal',                menu: true },
   { key: 'parametres',       path: 'app/parametres',       label: 'Paramètres',             menu: true },
   // Hors MVP — masquées
   { key: 'tracker',          path: 'app/tracker',          label: 'Registre réglementaire', menu: false },

@@ -1,0 +1,254 @@
+---
+// Journal : historique des traitements du compte (qui a traité quoi, quand), à
+// présenter lors d'un contrôle. Lecture seule, ouvert à tout membre du compte.
+//
+// Source : GET /api/v1/app/journal?from=YYYY-MM-DD&to=YYYY-MM-DD&format=json|csv
+// (earlybrief-platform #305 / #306). Bornes incluses, en jours calendaires de Paris,
+// 366 jours au plus. Période par défaut : les 30 derniers jours, aujourd'hui compris.
+// L'export CSV porte sur la période affichée.
+import ClientLayout from '../../layouts/ClientLayout.astro';
+---
+
+<ClientLayout title="Journal" activePage="journal">
+  <div class="ew-header jr-header">
+    <h1 class="ew-h-title">Journal</h1>
+    <p class="jr-help">Historique de qui a traité quoi, à présenter lors d'un contrôle.</p>
+  </div>
+
+  <form class="jr-bar ew-glass" id="jr-form" novalidate>
+    <label class="jr-field">
+      <span class="jr-label">Du</span>
+      <input class="ew-input jr-date" type="date" id="jr-from" required>
+    </label>
+    <label class="jr-field">
+      <span class="jr-label">Au</span>
+      <input class="ew-input jr-date" type="date" id="jr-to" required>
+    </label>
+    <div class="jr-actions">
+      <button type="submit" class="ew-btn" id="jr-show">Afficher</button>
+      <button type="button" class="ew-btn jr-primary" id="jr-export">Exporter (CSV)</button>
+    </div>
+  </form>
+
+  <p class="jr-count" id="jr-count" aria-live="polite"></p>
+
+  <div class="jr-panel ew-glass" id="jr-panel">
+    <div class="ew-loading"><div class="ew-spinner"></div></div>
+  </div>
+</ClientLayout>
+
+<style>
+  .jr-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .jr-help { margin: 0; font-size: 13.5px; color: var(--text-2); line-height: 1.5; }
+
+  .jr-bar {
+    display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 16px;
+    padding: 14px 18px; border-radius: var(--radius-lg); margin-bottom: 14px;
+  }
+  .jr-field { display: flex; flex-direction: column; gap: 5px; }
+  .jr-label {
+    font-size: var(--label-size); font-weight: var(--label-weight); color: var(--label-color);
+    letter-spacing: var(--label-tracking); text-transform: var(--label-transform);
+  }
+  .jr-date { width: 170px; }
+  .jr-actions { display: flex; gap: 8px; margin-left: auto; }
+  .jr-actions .ew-btn { padding: 8px 14px; font-size: 12.5px; }
+  /* Bouton plein (anthracite), comme le bouton principal des Paramètres. */
+  .jr-actions .jr-primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 500; }
+  .jr-actions .jr-primary:hover { opacity: 0.88; }
+  .jr-actions .jr-primary:disabled { opacity: 0.55; cursor: progress; }
+
+  .jr-count { font-size: 12.5px; color: var(--text-2); margin: 0 0 10px; min-height: 1em; }
+
+  .jr-panel { border-radius: var(--radius-lg); overflow-x: auto; }
+
+  /* Tableau (ordinateur) */
+  .jr-panel :global(table) { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .jr-panel :global(th) {
+    text-align: left; padding: 12px 16px 10px; white-space: nowrap;
+    font-size: var(--label-size); font-weight: var(--label-weight); color: var(--label-color);
+    letter-spacing: var(--label-tracking); text-transform: var(--label-transform);
+    border-bottom: 1px solid var(--line);
+  }
+  .jr-panel :global(td) { padding: 12px 16px; vertical-align: top; color: var(--text); border-top: 1px solid var(--line-row); }
+  .jr-panel :global(tbody tr:first-child td) { border-top: none; }
+  .jr-panel :global(.jr-when) { white-space: nowrap; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .jr-panel :global(.jr-time) { display: block; color: var(--text-2); font-size: 12px; }
+  .jr-panel :global(.jr-who) { color: var(--ink); }
+  .jr-panel :global(.jr-mail) { display: block; color: var(--text-2); font-size: 12px; white-space: nowrap; }
+  .jr-panel :global(.jr-status) { white-space: nowrap; }
+  .jr-panel :global(.jr-arrow) { color: var(--text-2); margin: 0 4px; }
+  .jr-panel :global(.jr-new) { color: var(--ink); font-weight: 500; }
+  .jr-panel :global(.jr-title) { color: var(--ink); line-height: 1.45; }
+  .jr-panel :global(.jr-gone) { color: var(--text-2); }
+  .jr-panel :global(.jr-src) { display: block; color: var(--text-2); font-size: 12px; margin-top: 2px; }
+  .jr-panel :global(.jr-link) { color: var(--ink); white-space: nowrap; text-underline-offset: 2px; }
+  .jr-panel :global(.jr-none) { color: var(--text-2); }
+  .jr-panel :global(.jr-empty) { padding: 22px 18px; font-size: 13px; color: var(--text-2); }
+  .jr-panel :global(.jr-noaccess) { color: var(--ink); }
+  .jr-panel :global(.jr-noaccess a) { color: var(--ink); font-weight: 500; text-underline-offset: 2px; margin-left: 4px; white-space: nowrap; }
+
+  /* Téléphone : une carte par traitement */
+  @media (max-width: 760px) {
+    .jr-bar { padding: 14px; }
+    .jr-field { flex: 1 1 130px; }
+    .jr-date { width: 100%; }
+    .jr-actions { margin-left: 0; width: 100%; }
+    .jr-actions .ew-btn { flex: 1; }
+    .jr-panel :global(thead) { display: none; }
+    .jr-panel :global(table), .jr-panel :global(tbody), .jr-panel :global(tr), .jr-panel :global(td) { display: block; }
+    .jr-panel :global(tr) { padding: 14px 16px; border-top: 1px solid var(--line-row); }
+    .jr-panel :global(tbody tr:first-child) { border-top: none; }
+    .jr-panel :global(td) { padding: 0; border: none; }
+    .jr-panel :global(td + td) { margin-top: 6px; }
+    .jr-panel :global(.jr-time) { display: inline; margin-left: 6px; }
+    .jr-panel :global(.jr-mail) { display: inline; margin-left: 6px; white-space: normal; overflow-wrap: anywhere; }
+  }
+</style>
+
+<script>
+  import { API, getToken, logout, toast } from '../../scripts/api';
+  import { esc } from '../../scripts/fil.js';
+
+  const PARIS = 'Europe/Paris';
+  const MAX_DAYS = 366;
+  const DEFAULT_DAYS = 30;
+
+  type JournalEvent = {
+    changed_at: string | null; author_name: string | null; author_email: string | null;
+    old_status_label: string | null; new_status_label: string | null;
+    article_title: string | null; source: string | null; official_url: string | null;
+  };
+
+  const form = document.getElementById('jr-form') as HTMLFormElement;
+  const fromEl = document.getElementById('jr-from') as HTMLInputElement;
+  const toEl = document.getElementById('jr-to') as HTMLInputElement;
+  const exportBtn = document.getElementById('jr-export') as HTMLButtonElement;
+  const panel = document.getElementById('jr-panel')!;
+  const countEl = document.getElementById('jr-count')!;
+
+  // Jour calendaire de Paris (YYYY-MM-DD), comme les bornes du serveur.
+  function parisDay(d: Date): string {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: PARIS, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+  }
+  function addDays(day: string, n: number): string {
+    const d = new Date(`${day}T12:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+  function daysBetween(a: string, b: string): number {
+    return Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86400000);
+  }
+  function frDay(day: string): string {
+    return new Date(`${day}T12:00:00Z`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+  }
+
+  // Période par défaut : 30 derniers jours, aujourd'hui compris.
+  const today = parisDay(new Date());
+  toEl.value = today;
+  fromEl.value = addDays(today, -(DEFAULT_DAYS - 1));
+  toEl.max = today;
+
+  function period(): { from: string; to: string } | null {
+    const from = fromEl.value, to = toEl.value;
+    if (!from || !to) { toast('Choisissez une date de début et une date de fin.', 'error'); return null; }
+    if (to < from) { toast('La date de fin précède la date de début.', 'error'); return null; }
+    if (daysBetween(from, to) + 1 > MAX_DAYS) { toast(`Période limitée à ${MAX_DAYS} jours.`, 'error'); return null; }
+    return { from, to };
+  }
+
+  // Compte sans accès au contenu (le serveur répond 402) : message clair au lieu de
+  // l'erreur brute, avec un lien vers l'abonnement (section « Abonnement » des
+  // Paramètres, présente pour tous les rôles).
+  const NO_ACCESS_MESSAGE = 'Le journal est disponible avec un abonnement actif.';
+  const SUBSCRIPTION_URL = `${import.meta.env.BASE_URL || '/earlywatch-app/'}app/parametres`;
+  class NoAccessError extends Error {}
+
+  // Appel direct (pas api()) : l'export CSV doit rester binaire — res.text() retirerait
+  // le BOM UTF-8 dont Excel a besoin pour les accents.
+  async function request(p: { from: string; to: string }, format: 'json' | 'csv'): Promise<Response> {
+    const qs = new URLSearchParams({ from: p.from, to: p.to, format });
+    const res = await fetch(`${API}/api/v1/app/journal?${qs}`, { headers: { Authorization: `Bearer ${getToken()}` } });
+    if (res.status === 401) { logout(); throw new Error('Session expirée'); }
+    if (res.status === 402) throw new NoAccessError(NO_ACCESS_MESSAGE);
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      const d = body?.detail;
+      throw new Error(typeof d === 'string' ? d : d?.message || 'Le journal est indisponible pour le moment.');
+    }
+    return res;
+  }
+
+  function safeUrl(u: string | null): string | null {
+    if (!u) return null;
+    try { const url = new URL(u); return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : null; }
+    catch { return null; }
+  }
+
+  function row(e: JournalEvent): string {
+    const at = e.changed_at ? new Date(e.changed_at) : null;
+    const day = at ? at.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: PARIS }) : '—';
+    const time = at ? at.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: PARIS }) : '';
+    const url = safeUrl(e.official_url);
+    const title = e.article_title
+      ? `<span class="jr-title">${esc(e.article_title)}</span>`
+      : '<span class="jr-gone">Publication supprimée depuis</span>';
+    return `<tr>
+      <td class="jr-when">${esc(day)}<span class="jr-time">${esc(time)}</span></td>
+      <td><span class="jr-who">${esc(e.author_name || '—')}</span>${e.author_email ? `<span class="jr-mail">${esc(e.author_email)}</span>` : ''}</td>
+      <td class="jr-status">${esc(e.old_status_label || '—')}<span class="jr-arrow" aria-label="devient">→</span><span class="jr-new">${esc(e.new_status_label || '—')}</span></td>
+      <td>${title}${e.source ? `<span class="jr-src">${esc(e.source)}</span>` : ''}</td>
+      <td>${url ? `<a class="jr-link" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Texte officiel ↗</a>` : '<span class="jr-none">—</span>'}</td>
+    </tr>`;
+  }
+
+  async function load(): Promise<void> {
+    const p = period();
+    if (!p) return;
+    panel.innerHTML = '<div class="ew-loading"><div class="ew-spinner"></div></div>';
+    countEl.textContent = '';
+    try {
+      const data = await (await request(p, 'json')).json();
+      // Le serveur renvoie l'ordre chronologique ; à l'écran, le plus récent en premier.
+      const events: JournalEvent[] = (data.events || []).slice().reverse();
+      const n = events.length;
+      countEl.textContent = `${n} traitement${n > 1 ? 's' : ''} du ${frDay(p.from)} au ${frDay(p.to)}`;
+      panel.innerHTML = n
+        ? `<table>
+            <thead><tr><th scope="col">Date et heure</th><th scope="col">Auteur</th><th scope="col">Statut</th><th scope="col">Publication</th><th scope="col">Lien officiel</th></tr></thead>
+            <tbody>${events.map(row).join('')}</tbody>
+          </table>`
+        : '<div class="jr-empty">Aucun traitement sur cette période.</div>';
+    } catch (err) {
+      panel.innerHTML = err instanceof NoAccessError
+        ? `<div class="jr-empty jr-noaccess">${esc(NO_ACCESS_MESSAGE)} <a href="${esc(SUBSCRIPTION_URL)}">Voir l’abonnement</a></div>`
+        : `<div class="jr-empty">${esc((err as Error).message)}</div>`;
+    }
+  }
+
+  async function exportCsv(): Promise<void> {
+    const p = period();
+    if (!p) return;
+    exportBtn.disabled = true;
+    try {
+      const blob = await (await request(p, 'csv')).blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `journal-traitements_${p.from}_${p.to}.csv`;
+      document.body.append(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      toast(err instanceof NoAccessError ? NO_ACCESS_MESSAGE : (err as Error).message, 'error');
+    } finally {
+      exportBtn.disabled = false;
+    }
+  }
+
+  form.addEventListener('submit', (e) => { e.preventDefault(); load(); });
+  exportBtn.addEventListener('click', exportCsv);
+
+  load();
+</script>
