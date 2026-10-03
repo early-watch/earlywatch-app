@@ -43,6 +43,11 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
   :global(.pm-btn:disabled) { opacity: 0.5; cursor: default; }
   :global(.pm-choice) { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; margin: 0; font-size: 13.5px; font-weight: 400; color: var(--ink); cursor: pointer; }
   :global(.pm-choice input) { flex: 0 0 auto; width: auto; margin-top: 3px; accent-color: var(--accent); }
+  :global(.pm-followed) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 28px; }
+  :global(.pm-group) { border: none; padding: 0; margin: 0; min-width: 0; }
+  :global(.pm-group legend) { font-size: 12.5px; color: var(--mute); padding: 0; margin: 0 0 4px; }
+  :global(.pm-check) { padding: 5px 0; }
+  @media (max-width: 640px) { :global(.pm-followed) { grid-template-columns: minmax(0, 1fr); gap: 12px; } }
   :global(.pm-choice > span) { flex: 1 1 auto; min-width: 0; }
   :global(.pm-choice small) { display: block; color: var(--mute); font-size: 12px; margin-top: 2px; }
   :global(.pm-users) { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -145,6 +150,30 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
   // ── Utilisateurs (src/scripts/equipe.js) ───────────────────────────────────
   const team: any = { users: [], used: null, slug: null, limit: null, plan: null, confirmId: null, formOpen: false, upgradeHref: '' };
   const usersUrl = (id = '') => `/api/v1/tenants/${encodeURIComponent(team.slug)}/users${id ? `/${encodeURIComponent(id)}` : ''}`;
+
+  // Consultant : choix des profils suivis (clients conseillés). Liste des profils de
+  // l'inscription, sans « consultant » ; regroupés par famille quand elle est connue.
+  function followedHtml(profiles: any[], current: unknown): string {
+    const selected = new Set(Array.isArray(current) ? current.map((v) => String(v)) : []);
+    const choices = profiles.filter((p) => p && p.code && p.code !== 'consultant');
+    if (!choices.length) return '';
+    const groups: [string, any[]][] = [
+      ['Secteur financier', choices.filter((p) => p.family === 'financier')],
+      ['Professions non financières', choices.filter((p) => p.family !== 'financier')],
+    ];
+    const box = (p: any) => `
+      <label class="pm-choice pm-check"><input type="checkbox" name="pm-followed" value="${esc(p.code)}" ${selected.has(p.code) ? 'checked' : ''} ${isAdmin ? '' : 'disabled'}>
+        <span>${esc(p.label)}</span></label>`;
+    return `
+      <section class="pm-section">
+        <h2 class="pm-h2">Profils suivis</h2>
+        <form id="pm-followed-form" class="pm-followed">
+          ${groups.filter(([, list]) => list.length).map(([title, list]) => `
+            <fieldset class="pm-group"><legend>${title}</legend>${list.map(box).join('')}</fieldset>`).join('')}
+        </form>
+        <div class="pm-hint">Les niveaux du Fil seront calculés pour ces profils.</div>
+      </section>`;
+  }
 
   function renderUsers(): void {
     const sec = document.getElementById('pm-users-section');
@@ -275,6 +304,7 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
         ${s.ressort ? row(esc(profile?.ressort_label || 'Ressort'), esc(capitalize(s.ressort))) : ''}
         <div class="pm-hint">Votre profil détermine les sources suivies. Pour le modifier, écrivez-nous : <a href="mailto:maria@early.consulting">maria@early.consulting</a>.</div>
       </section>
+      ${String(s.entity_type || '').toLowerCase() === 'consultant' ? followedHtml(profiles as any[], s.followed_profiles) : ''}
 
       <section class="pm-section">
         <h2 class="pm-h2">E-mails</h2>
@@ -309,6 +339,14 @@ import ClientLayout from '../../layouts/ClientLayout.astro';
       const name = (document.getElementById('pm-name') as HTMLInputElement).value.trim();
       if (name.length < 2) { toast('Nom trop court', 'error'); return; }
       try { await api('/api/v1/settings', { method: 'PUT', body: { name } }); toast('Nom enregistré'); }
+      catch (err: any) { toast(err.message, 'error'); }
+    });
+
+    // Consultant : profils suivis (PUT /settings followed_profiles), enregistrés à chaque case.
+    document.getElementById('pm-followed-form')?.addEventListener('change', async () => {
+      const form = document.getElementById('pm-followed-form') as HTMLFormElement;
+      const followed = [...form.querySelectorAll<HTMLInputElement>('input[name="pm-followed"]:checked')].map((i) => i.value);
+      try { await api('/api/v1/settings', { method: 'PUT', body: { followed_profiles: followed } }); toast('Profils suivis enregistrés'); }
       catch (err: any) { toast(err.message, 'error'); }
     });
 
