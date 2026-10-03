@@ -1235,6 +1235,14 @@
   flex-shrink: 0; font: inherit; color: inherit; background: none; border: none; padding: 0;
   text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
 }
+/* Bandeau d'impayé (EB-MVP-003) : en tête du contenu, au-dessus du titre de page. */
+.ew-billing-banner {
+  margin: 0 0 18px; padding: 10px 14px;
+  border: 0.5px solid var(--color-error); border-radius: var(--radius);
+  font-size: 13px; line-height: 1.55; color: var(--ink); background: var(--bg);
+}
+.ew-billing-banner[hidden] { display: none; }
+.ew-billing-banner a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
 /* Compteurs du menu (Fil, Suivis) */
 .ew-client .ew-nav .ew-count { font-family: var(--font); font-size: 13px; font-weight: 500; color: var(--mute); font-variant-numeric: tabular-nums; }
 .ew-client .ew-nav .ew-count[hidden] { display: none; }

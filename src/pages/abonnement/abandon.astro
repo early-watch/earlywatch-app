@@ -1,0 +1,16 @@
+---
+import AuthLayout from '../../layouts/AuthLayout.astro';
+// EB-MVP-003 — retour de Stripe Checkout sans paiement (bouton « retour » de Stripe).
+const base = import.meta.env.BASE_URL;
+---
+
+<AuthLayout title="Early Watch — Paiement abandonné">
+  <p style="font-size:14px;color:var(--ink);line-height:1.6;margin-bottom:8px">Paiement abandonné</p>
+  <p style="font-size:13px;color:var(--mute);line-height:1.6;margin-bottom:20px">
+    Aucun montant n'a été débité. Vous pouvez reprendre votre souscription quand vous le souhaitez.
+  </p>
+  <a href={base + 'choisir-formule'} class="ew-login-btn" style="display:block;text-align:center;text-decoration:none">Revenir aux formules</a>
+  <p style="font-size:12px;color:var(--mute);line-height:1.6;margin-top:16px;text-align:center">
+    Une question avant de souscrire ? <a href="mailto:maria@early.consulting" style="color:var(--taupe)">maria@early.consulting</a>
+  </p>
+</AuthLayout>

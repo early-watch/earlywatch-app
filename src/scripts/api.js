@@ -21,12 +21,36 @@ export function getUser() {
   const u = sessionStorage.getItem('ew_user');
   return u ? JSON.parse(u) : null;
 }
+// EB-MVP-002 — un compte sans abonnement actif n'accède pas au contenu : l'API répond
+// 402 et l'interface envoie vers « Choisissez votre formule ». Le superadmin n'est
+// jamais concerné. Statut lu dans ew_user (posé à la connexion).
+// EB-MVP-003 — 'past_due' (impayé) n'est pas bloqué ici : le serveur garde l'accès
+// pendant le délai de grâce (7 jours, article 5 des CG) puis répond 402.
+export function hasInactiveSubscription(user = getUser()) {
+  return !!user && user.role !== 'superadmin'
+    && !!user.subscription_status && !['active', 'past_due'].includes(user.subscription_status);
+}
+export function redirectToPlans() {
+  window.location.href = BASE + 'choisir-formule';
+}
+
 export function requireAuth() {
   if (!getToken()) {
     window.location.href = BASE + 'login';
     return false;
   }
+  if (hasInactiveSubscription()) {
+    redirectToPlans();
+    return false;
+  }
   return true;
+}
+
+// ---- Abonnement (EB-MVP-003, Stripe) ----
+export function formatEuros(cents) {
+  return (cents / 100).toLocaleString('fr-FR', {
+    style: 'currency', currency: 'EUR', minimumFractionDigits: cents % 100 ? 2 : 0,
+  });
 }
 
 // ---- Client view auth ----
@@ -38,6 +62,10 @@ export function requireClientAuth() {
   const user = getUser();
   if (!user || !['admin', 'reader', 'editor', 'superadmin'].includes(user.role)) {
     window.location.href = BASE + 'login';
+    return false;
+  }
+  if (hasInactiveSubscription(user)) {
+    redirectToPlans();
     return false;
   }
   return true;
@@ -85,6 +113,11 @@ export async function api(path, opts = {}) {
   if (res.status === 401) {
     logout();
     throw new Error('Session expirée');
+  }
+  if (res.status === 402) {
+    // EB-MVP-002 — abonnement inactif : contenu refusé côté serveur.
+    redirectToPlans();
+    throw new Error('Abonnement inactif');
   }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
