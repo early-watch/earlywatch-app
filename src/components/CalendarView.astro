@@ -2,28 +2,17 @@
 // Calendrier réglementaire — contenu partagé par /calendrier (back-office) et
 // /app/calendrier (espace client).
 //
+// Données : GET /api/v1/app/calendar (EB-MVP-004). Le calendrier n'est plus dans le
+// code public du site : seul un compte autorisé le reçoit. Pendant l'essai gratuit,
+// le serveur ne renvoie que les prochaines échéances du profil (`truncated: true`) :
+// bandeau « Calendrier complet avec l'abonnement ». Superadmin : toujours complet.
+//
 // Statut calculé À LA DATE DU JOUR dans le navigateur (src/scripts/calendrier-dates.js) :
 // une échéance passée passe en « Échue » (section dédiée), jamais « À venir ».
-// Le statut de la source (colonne `statut`, figé au 07/08/2026) n'est plus affiché.
 // Filtre par profil selon le champ `perimetre` des données ; liste des profils de
 // l'API (GET /auth/signup-profiles, référentiel app/core/profiles.py), professions
 // non financières comprises ; profil du client présélectionné.
-import { calendrier, type EntreeCalendrier } from '../data/calendrier';
-
-const aVenir: EntreeCalendrier[] = calendrier.filter((e) => e.registre === 'a_venir');
-const enVigueur: EntreeCalendrier[] = calendrier.filter((e) => e.registre === 'en_vigueur');
-
-// L'ancre structurante : application de l'AMLR — concerne TOUS.
-const estAncre = (e: EntreeCalendrier): boolean => e.date === '10 juillet 2027';
-
-// Étiquette de périmètre (champ `perimetre` des données).
-const PROFIL_COURT: Record<string, string> = { casp: 'CASP', agent_sportif: 'Agents sportifs' };
-const perimetreLabel = (e: EntreeCalendrier): string => {
-  if (Array.isArray(e.perimetre)) return e.perimetre.map((c) => PROFIL_COURT[c] || c).join(', ');
-  return { tous: 'Tous profils', financier: 'Secteur financier', etat: 'État / superviseur' }[e.perimetre] || e.perimetre;
-};
-const perimetreAttr = (e: EntreeCalendrier): string =>
-  Array.isArray(e.perimetre) ? JSON.stringify(e.perimetre) : e.perimetre;
+const base = import.meta.env.BASE_URL;
 ---
   <div class="cal-wrap">
     <div class="ew-header" style="margin-bottom:4px">
@@ -34,7 +23,17 @@ const perimetreAttr = (e: EntreeCalendrier): string =>
       Échéances LCB-FT vérifiées — AMLR / AMLA · MiCA-CASP · transpositions FR
     </div>
 
-    <div class="cal-filters">
+    <div class="cal-truncated" id="cal-truncated" hidden>
+      <div>
+        <div class="cal-truncated-title">Calendrier complet avec l'abonnement</div>
+        <div class="cal-truncated-text" id="cal-truncated-text">Pendant l'essai gratuit, les prochaines échéances de votre profil sont affichées.</div>
+      </div>
+      <a class="cal-truncated-link" href={`${base}app/parametres`}>Voir l'abonnement</a>
+    </div>
+
+    <div class="cal-state" id="cal-state"><div class="ew-loading"><div class="ew-spinner"></div></div></div>
+
+    <div class="cal-filters" id="cal-filters">
       <label class="cal-filter-label" for="cal-profile">Profil</label>
       <select id="cal-profile" class="cal-select">
         <option value="">Tous les profils</option>
@@ -45,33 +44,9 @@ const perimetreAttr = (e: EntreeCalendrier): string =>
     </div>
 
     <!-- ===================== À VENIR (deadline board) ===================== -->
-    <section class="cal-section" data-section="a_venir">
+    <section class="cal-section" data-section="a_venir" hidden>
       <h2 class="cal-section-label">À venir</h2>
-      <div class="cal-list" id="cal-list-a-venir">
-        {aVenir.map((e) => (
-          <article
-            class:list={['cal-card', { ancre: estAncre(e) }]}
-            data-perimetre={perimetreAttr(e)}
-            data-date={e.date}
-            data-registre={e.registre}
-          >
-            <div class="cal-when">
-              <div class="cal-date ew-mono">{e.date}</div>
-              <div class="cal-rel" data-rel></div>
-            </div>
-            <div class="cal-body">
-              <div class="cal-tags">
-                {estAncre(e) && <span class="cal-pill cal-pill-ancre">Concerne tous</span>}
-                <span class="cal-type ew-mono">{perimetreLabel(e)}</span>
-              </div>
-              <div class="cal-oblig">{e.obligation}</div>
-              <div class="cal-acte ew-mono">{e.acte}</div>
-              {e.note && <div class="cal-note">{e.note}</div>}
-              <a class="cal-src" href={e.source_url} target="_blank" rel="noopener">Source officielle</a>
-            </div>
-          </article>
-        ))}
-      </div>
+      <div class="cal-list" id="cal-list-a-venir"></div>
       <div class="cal-empty" data-empty="a_venir" hidden>Aucune échéance à venir pour ce profil.</div>
     </section>
 
@@ -82,39 +57,17 @@ const perimetreAttr = (e: EntreeCalendrier): string =>
     </section>
 
     <!-- ===================== EN VIGUEUR (contexte) ===================== -->
-    <section class="cal-section" data-section="en_vigueur">
+    <section class="cal-section" data-section="en_vigueur" hidden>
       <h2 class="cal-section-label">En vigueur</h2>
       <div class="cal-section-hint">Ce qui s'applique déjà — contexte, pas des échéances.</div>
-      <div class="cal-list">
-        {enVigueur.map((e) => (
-          <article
-            class="cal-card"
-            data-perimetre={perimetreAttr(e)}
-            data-date={e.date}
-            data-registre={e.registre}
-          >
-            <div class="cal-when">
-              <div class="cal-date ew-mono">{e.date}</div>
-            </div>
-            <div class="cal-body">
-              <div class="cal-tags">
-                <span class="cal-type ew-mono">{perimetreLabel(e)}</span>
-              </div>
-              <div class="cal-oblig">{e.obligation}</div>
-              <div class="cal-acte ew-mono">{e.acte}</div>
-              {e.note && <div class="cal-note">{e.note}</div>}
-              <a class="cal-src" href={e.source_url} target="_blank" rel="noopener">Source officielle</a>
-            </div>
-          </article>
-        ))}
-      </div>
+      <div class="cal-list" id="cal-list-en-vigueur"></div>
       <div class="cal-empty" data-empty="en_vigueur" hidden>Aucune entrée en vigueur pour ce profil.</div>
     </section>
     </div>
   </div>
 
-<style>
-  .cal-wrap { max-width: 1000px; margin: 0 auto; }
+<style is:global>
+  .cal-wrap { max-width: 1000px; width: 100%; margin: 0 auto; }
 
   .cal-page-sub { font-size: 13px; color: var(--mute); margin-bottom: 24px; }
   .cal-panel { margin-top: 18px; }
@@ -127,6 +80,7 @@ const perimetreAttr = (e: EntreeCalendrier): string =>
     border: 0.5px solid var(--line-strong); border-radius: var(--radius);
     padding: 7px 10px; min-width: 0; max-width: 100%; flex: 0 1 340px;
   }
+  .cal-filters[hidden] { display: none; }
   .cal-today { font-size: 11px; color: var(--mute); margin-left: auto; }
 
   /* ---- Sections ---- */
@@ -168,6 +122,27 @@ const perimetreAttr = (e: EntreeCalendrier): string =>
 
   .cal-empty { font-size: 13px; color: var(--mute); padding: 20px 0; }
 
+  /* ---- Chargement, erreur, accès ---- */
+  .cal-state { font-size: 13px; color: var(--mute); padding: 8px 0 24px; }
+  .cal-state:empty { display: none; }
+  .cal-state a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+
+  /* ---- Essai gratuit : calendrier tronqué ---- */
+  .cal-truncated {
+    display: flex; gap: 12px 20px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+    border: 0.5px solid var(--accent); border-radius: var(--radius);
+    padding: 14px 16px; margin-bottom: 28px;
+  }
+  .cal-truncated[hidden] { display: none; }
+  .cal-truncated-title { font-size: 14px; font-weight: 500; color: var(--ink); }
+  .cal-truncated-text { font-size: 12.5px; color: var(--taupe); margin-top: 3px; line-height: 1.5; }
+  .cal-truncated-link {
+    font-size: 13px; font-weight: 500; white-space: nowrap; text-decoration: none;
+    color: var(--on-accent); background: var(--accent); border-radius: var(--radius);
+    padding: 8px 14px;
+  }
+  .cal-truncated-link:hover { opacity: 0.9; }
+
   @media (max-width: 640px) {
     .cal-card { grid-template-columns: minmax(0, 1fr); gap: 6px; }
     .cal-when { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
@@ -177,33 +152,92 @@ const perimetreAttr = (e: EntreeCalendrier): string =>
 </style>
 
 <script>
-  import { API, getToken } from '../scripts/api';
+  import { API, getToken, logout } from '../scripts/api';
   import { statusOf, daysUntil, relativeLabel, isExactDate, concerns, normalizeProfileCode } from '../scripts/calendrier-dates.js';
 
+  type Entry = {
+    date: string; obligation: string; perimetre: string | string[]; acte: string;
+    registre: 'a_venir' | 'en_vigueur'; source_url?: string; note?: string | null;
+  };
+  type Calendar = { entries: Entry[]; truncated: boolean; total_upcoming: number | null; limit: number | null };
   type Profile = { code: string | null; family: string | null };
-  const cards = Array.from(document.querySelectorAll<HTMLElement>('.cal-card'));
+
+  const BASE = import.meta.env.BASE_URL || '/earlywatch-app/';
+  const SUBSCRIPTION_URL = `${BASE}app/parametres`;
+  const NO_ACCESS_MESSAGE = 'Le calendrier est disponible avec un abonnement actif.';
+
   const select = document.getElementById('cal-profile') as HTMLSelectElement;
+  const stateEl = document.getElementById('cal-state')!;
+  const filtersEl = document.getElementById('cal-filters')!;
+  const listAVenir = document.getElementById('cal-list-a-venir')!;
+  const listEnVigueur = document.getElementById('cal-list-en-vigueur')!;
+  const echuesList = document.getElementById('cal-list-echues')!;
+  let cards: HTMLElement[] = [];
+  let truncated = false;
+  let loaded = false;
   let profiles: { code: string; label: string; family: string }[] = [];
+
+  function esc(s: unknown): string {
+    return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+  }
+
+  function safeUrl(u: string | undefined): string | null {
+    if (!u) return null;
+    try { const url = new URL(u); return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : null; }
+    catch { return null; }
+  }
+
+  // ── Rendu d'une entrée ────────────────────────────────────────────────────
+  // L'ancre structurante : application de l'AMLR — concerne TOUS.
+  const estAncre = (e: Entry): boolean => e.date === '10 juillet 2027';
+  const PROFIL_COURT: Record<string, string> = { casp: 'CASP', agent_sportif: 'Agents sportifs' };
+  const perimetreLabel = (e: Entry): string => {
+    if (Array.isArray(e.perimetre)) return e.perimetre.map((c) => PROFIL_COURT[c] || c).join(', ');
+    return ({ tous: 'Tous profils', financier: 'Secteur financier', etat: 'État / superviseur' } as Record<string, string>)[e.perimetre] || e.perimetre;
+  };
+  const perimetreAttr = (e: Entry): string => (Array.isArray(e.perimetre) ? JSON.stringify(e.perimetre) : e.perimetre);
+
+  function card(e: Entry): string {
+    const ancre = e.registre === 'a_venir' && estAncre(e);
+    const src = safeUrl(e.source_url);
+    return `<article class="cal-card${ancre ? ' ancre' : ''}" data-perimetre="${esc(perimetreAttr(e))}" data-date="${esc(e.date)}" data-registre="${esc(e.registre)}">
+      <div class="cal-when">
+        <div class="cal-date ew-mono">${esc(e.date)}</div>
+        ${e.registre === 'a_venir' ? '<div class="cal-rel" data-rel></div>' : ''}
+      </div>
+      <div class="cal-body">
+        <div class="cal-tags">
+          ${ancre ? '<span class="cal-pill cal-pill-ancre">Concerne tous</span>' : ''}
+          <span class="cal-type ew-mono">${esc(perimetreLabel(e))}</span>
+        </div>
+        <div class="cal-oblig">${esc(e.obligation)}</div>
+        <div class="cal-acte ew-mono">${esc(e.acte)}</div>
+        ${e.note ? `<div class="cal-note">${esc(e.note)}</div>` : ''}
+        ${src ? `<a class="cal-src" href="${esc(src)}" target="_blank" rel="noopener">Source officielle</a>` : ''}
+      </div>
+    </article>`;
+  }
 
   // ── Statut du jour ────────────────────────────────────────────────────────
   const now = new Date();
   const todayEl = document.getElementById('cal-today');
   if (todayEl) todayEl.textContent = 'Au ' + now.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  const echuesList = document.getElementById('cal-list-echues')!;
   // Pas d'étiquette de statut : la section le dit déjà. Sous la date, « dans N jours »
   // pour un jour précis, « aujourd'hui », ou « en cours » pour une période entamée.
-  cards.forEach((card) => {
-    const entry = { date: card.dataset.date, registre: card.dataset.registre };
-    const st = statusOf(entry, now);
-    if (!st) return;
-    const rel = card.querySelector<HTMLElement>('[data-rel]');
-    if (rel) rel.textContent = relativeLabel(st, daysUntil(entry, now), isExactDate(entry.date)) || '';
-    if (st === 'echue') {
-      card.classList.add('is-echue');
-      echuesList.appendChild(card);   // quitte « À venir »
-    }
-  });
+  function placeByStatus(): void {
+    cards.forEach((c) => {
+      const entry = { date: c.dataset.date, registre: c.dataset.registre };
+      const st = statusOf(entry, now);
+      if (!st) return;
+      const rel = c.querySelector<HTMLElement>('[data-rel]');
+      if (rel) rel.textContent = relativeLabel(st, daysUntil(entry, now), isExactDate(entry.date)) || '';
+      if (st === 'echue') {
+        c.classList.add('is-echue');
+        echuesList.appendChild(c);   // quitte « À venir »
+      }
+    });
+  }
 
   // ── Filtre par profil ─────────────────────────────────────────────────────
   function current(): Profile | null {
@@ -217,22 +251,21 @@ const perimetreAttr = (e: EntreeCalendrier): string =>
   const familyOf = (code: string) => profiles.find((p) => p.code === code)?.family || null;
 
   function apply(): void {
-    const profile = current();
-    cards.forEach((card) => {
-      const show = concerns({ perimetre: card.dataset.perimetre }, profile, familyOf);
-      card.style.display = show ? '' : 'none';
+    if (!loaded) return;
+    // Essai : le serveur a déjà choisi les échéances du profil ; pas de filtre.
+    const profile = truncated ? null : current();
+    cards.forEach((c) => {
+      const show = concerns({ perimetre: c.dataset.perimetre }, profile, familyOf);
+      c.style.display = show ? '' : 'none';
     });
     document.querySelectorAll<HTMLElement>('.cal-section').forEach((section) => {
       const all = Array.from(section.querySelectorAll<HTMLElement>('.cal-card'));
       const visible = all.some((c) => c.style.display !== 'none');
       const empty = section.querySelector<HTMLElement>('.cal-empty');
       if (section.dataset.section === 'echues') section.hidden = !visible;
-      else if (empty) empty.hidden = visible;
+      else if (truncated && section.dataset.section === 'en_vigueur') section.hidden = true;
+      else { section.hidden = false; if (empty) empty.hidden = visible; }
     });
-  }
-
-  function esc(s: string): string {
-    return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
   }
 
   async function loadProfiles(): Promise<void> {
@@ -243,11 +276,11 @@ const perimetreAttr = (e: EntreeCalendrier): string =>
       profiles = Array.isArray(list) ? list : [];
       const groups: Record<string, string> = { financier: 'Secteur financier', non_financier: 'Professions non financières' };
       for (const [family, label] of Object.entries(groups)) {
-        const list = profiles.filter((p) => p.family === family);
-        if (!list.length) continue;
+        const inFamily = profiles.filter((p) => p.family === family);
+        if (!inFamily.length) continue;
         const og = document.createElement('optgroup');
         og.label = label;
-        og.innerHTML = list.map((p) => `<option value="${esc(p.code)}">${esc(p.label)}</option>`).join('');
+        og.innerHTML = inFamily.map((p) => `<option value="${esc(p.code)}">${esc(p.label)}</option>`).join('');
         select.appendChild(og);
       }
     } catch { /* liste indisponible : filtre par famille seulement */ }
@@ -266,7 +299,53 @@ const perimetreAttr = (e: EntreeCalendrier): string =>
     } catch { /* pas de présélection */ }
   }
 
+  // ── Chargement ────────────────────────────────────────────────────────────
+  class NoAccessError extends Error {}
+
+  async function fetchCalendar(): Promise<Calendar> {
+    const res = await fetch(`${API}/api/v1/app/calendar`, { headers: { Authorization: `Bearer ${getToken()}` } });
+    if (res.status === 401) { logout(); throw new Error('Session expirée'); }
+    if (res.status === 402) throw new NoAccessError(NO_ACCESS_MESSAGE);
+    if (!res.ok) throw new Error('Le calendrier est indisponible pour le moment.');
+    return res.json();
+  }
+
+  function showTruncated(data: Calendar): void {
+    const box = document.getElementById('cal-truncated')!;
+    box.hidden = !data.truncated;
+    if (!data.truncated) return;
+    const shown = data.entries.length;
+    const total = data.total_upcoming ?? shown;
+    document.getElementById('cal-truncated-text')!.textContent = total > shown
+      ? `Pendant l'essai gratuit, ${shown} des ${total} prochaines échéances de votre profil sont affichées.`
+      : "Pendant l'essai gratuit, les prochaines échéances de votre profil sont affichées.";
+  }
+
+  async function load(): Promise<void> {
+    let data: Calendar;
+    try {
+      data = await fetchCalendar();
+    } catch (err) {
+      filtersEl.hidden = true;
+      stateEl.innerHTML = err instanceof NoAccessError
+        ? `${esc(NO_ACCESS_MESSAGE)} <a href="${esc(SUBSCRIPTION_URL)}">Voir l’abonnement</a>`
+        : esc((err as Error).message);
+      return;
+    }
+    stateEl.innerHTML = '';
+    truncated = !!data.truncated;
+    filtersEl.hidden = truncated;
+    showTruncated(data);
+    const entries = Array.isArray(data.entries) ? data.entries : [];
+    listAVenir.innerHTML = entries.filter((e) => e.registre === 'a_venir').map(card).join('');
+    listEnVigueur.innerHTML = entries.filter((e) => e.registre === 'en_vigueur').map(card).join('');
+    cards = Array.from(document.querySelectorAll<HTMLElement>('.cal-card'));
+    loaded = true;
+    placeByStatus();
+    apply();
+  }
+
   select.addEventListener('change', apply);
-  apply();
+  load();
   loadProfiles().then(preselect).then(apply);
 </script>

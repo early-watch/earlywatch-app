@@ -1,7 +1,8 @@
 // node --test scripts/calendrier-dates.test.mjs
+// Les données du calendrier sont servies par l'API (earlybrief-platform,
+// config/calendrier.json) : leur validité est testée côté serveur (tests/test_calendar_api.py).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { parsePeriod, statusOf, concerns, normalizeProfileCode, daysUntil } from '../src/scripts/calendrier-dates.js';
 
 const iso = (d) => d && d.toISOString().slice(0, 10);
@@ -17,13 +18,6 @@ test('lecture des libellés de date du calendrier', () => {
   assert.deepEqual(p('2028'), ['2028-01-01', '2028-12-31', false]);
   assert.deepEqual(p('Depuis le 1er juillet 2026'), ['2026-07-01', null, true]);
   assert.equal(parsePeriod('au plus tard bientôt'), null);
-});
-
-test('tous les libellés présents dans les données sont lisibles', () => {
-  const src = readFileSync(new URL('../src/data/calendrier.ts', import.meta.url), 'utf8');
-  const labels = [...src.matchAll(/^\s*date: '([^']*)'/gm)].map((m) => m[1]);
-  assert.ok(labels.length >= 10);
-  for (const l of labels) assert.ok(parsePeriod(l), `libellé illisible : ${l}`);
 });
 
 test('une échéance passée n’est jamais « À venir »', () => {
@@ -81,17 +75,6 @@ test('filtre par profil selon le périmètre, professions non financières compr
   assert.equal(concerns(sport, { code: null, family: 'non_financier' }), true);
   assert.equal(concerns(fin, { code: null, family: 'non_financier' }), false);
   assert.equal(concerns(tous, { code: null, family: 'non_financier' }), true);
-});
-
-test('chaque entrée des données a un périmètre valide', () => {
-  const src = readFileSync(new URL('../src/data/calendrier.ts', import.meta.url), 'utf8');
-  const dates = [...src.matchAll(/^\s*date: '([^']*)'/gm)].length;
-  const pers = [...src.matchAll(/^\s*perimetre: (.+),$/gm)].map((m) => m[1]);
-  assert.equal(pers.length, dates, 'une ligne perimetre par entrée');
-  for (const p of pers) {
-    assert.ok(/^'(tous|financier|etat)'$/.test(p) || /^\['[a-z_]+'(, '[a-z_]+')*\]$/.test(p), `périmètre invalide : ${p}`);
-  }
-  assert.ok(!src.includes('type_etablissement:'), 'plus de type_etablissement');
 });
 
 test('valeurs historiques du profil', () => {

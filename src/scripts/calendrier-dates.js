@@ -1,6 +1,6 @@
 // Calendrier réglementaire — lecture des libellés de date et statut du jour.
 //
-// Les libellés de src/data/calendrier.ts restent tels quels (EB-CAL-001 : aucune
+// Les libellés du calendrier (API GET /app/calendar) restent tels quels (EB-CAL-001 : aucune
 // date ajoutée). Ce module en déduit une PÉRIODE [début, fin] pour calculer le
 // statut à la date du jour, dans le navigateur (le site est statique : un statut
 // calculé au build serait figé au jour du déploiement).
