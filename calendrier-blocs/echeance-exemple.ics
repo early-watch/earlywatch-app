@@ -1,0 +1,16 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Early Watch//Calendrier LCB-FT//FR
+CALSCALE:GREGORIAN
+BEGIN:VEVENT
+UID:20270101-collecte-de-donnees-pour-la-selection-de@earlywatch
+DTSTAMP:20261004T100000Z
+DTSTART;VALUE=DATE:20270101
+DTEND;VALUE=DATE:20270102
+SUMMARY:Collecte de données pour la sélection définitive
+DESCRIPTION:Date estimée : janvier–mars 2027.\nEntités susceptibles de 
+ sélection.\nRèglement (UE) 2024/1620\nhttps://www.amla.europa.eu/
+URL:https://www.amla.europa.eu/
+TRANSP:TRANSPARENT
+END:VEVENT
+END:VCALENDAR
