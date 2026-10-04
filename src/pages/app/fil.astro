@@ -19,8 +19,9 @@ const base = import.meta.env.BASE_URL;
 
   <section class="fil-next" id="fil-next" hidden>
     <div class="fil-next-label">Prochaine échéance</div>
-    <div class="fil-next-when"><span id="fil-next-date"></span><span class="fil-next-count" id="fil-next-count"></span></div>
+    <div class="fil-next-when"><span id="fil-next-date"></span><span class="fil-next-count" id="fil-next-count"></span><span class="fil-next-est" id="fil-next-est" hidden> · date estimée</span></div>
     <div class="fil-next-title" id="fil-next-title"></div>
+    <a class="fil-next-acte ew-mono" id="fil-next-acte" target="_blank" rel="noopener" hidden></a>
     <a class="fil-next-link" href={`${base}app/calendrier`}>Voir le calendrier →</a>
   </section>
 
@@ -37,7 +38,7 @@ const base = import.meta.env.BASE_URL;
 <script>
   import { API, api, getToken, toast } from '../../scripts/api';
   import { levelOf, byLevelThenDate, renderRow, renderDetail, esc, undoToast } from '../../scripts/fil.js';
-  import { nextDeadline, relativeLabel, isExactDate, normalizeProfileCode } from '../../scripts/calendrier-dates.js';
+  import { nextDeadline, relativeLabel, isExactDate, isEstimated, normalizeProfileCode } from '../../scripts/calendrier-dates.js';
 
   const WIDE = window.matchMedia('(min-width: 1100px)');
   const RECENT_DAYS = 30;
@@ -191,7 +192,14 @@ const base = import.meta.env.BASE_URL;
     document.getElementById('fil-next-date')!.textContent = next.entry.date;
     const rel = relativeLabel(next.status, next.days, isExactDate(next.entry.date));
     document.getElementById('fil-next-count')!.textContent = rel ? ` · ${rel}` : '';
+    document.getElementById('fil-next-est')!.hidden = !isEstimated(next.entry.date);
     document.getElementById('fil-next-title')!.textContent = next.entry.obligation;
+    // Nom du texte = lien officiel (comme dans le calendrier).
+    const acte = document.getElementById('fil-next-acte') as HTMLAnchorElement;
+    let href: string | null = null;
+    try { const u = new URL(next.entry.source_url || ''); href = /^https?:$/.test(u.protocol) ? u.href : null; } catch { /* pas de lien */ }
+    acte.textContent = next.entry.acte || '';
+    if (href && next.entry.acte) { acte.href = href; acte.hidden = false; } else acte.hidden = true;
     box.hidden = false;
   }
 

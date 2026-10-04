@@ -1264,6 +1264,10 @@
 .fil-next-when { font-size: 14px; font-weight: 500; color: var(--ink); }
 .fil-next-count { color: var(--accent); }
 .fil-next-title { font-size: 14px; line-height: 1.5; color: var(--ink-soft); margin: 4px 0 10px; }
+.fil-next-est { font-size: 12px; font-weight: 400; color: var(--mute); }
+.fil-next-est[hidden], .fil-next-acte[hidden] { display: none; }
+.fil-next-acte { display: block; width: fit-content; font-size: 11.5px; color: var(--taupe); text-decoration: underline; text-underline-offset: 2px; margin: -4px 0 10px; overflow-wrap: anywhere; }
+.fil-next-acte:hover { color: var(--ink); }
 .fil-next-link { font-size: 13px; color: var(--accent); }
 
 /* ================================================================
