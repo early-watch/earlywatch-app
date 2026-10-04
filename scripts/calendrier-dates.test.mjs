@@ -3,7 +3,7 @@
 // config/calendrier.json) : leur validité est testée côté serveur (tests/test_calendar_api.py).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parsePeriod, statusOf, concerns, normalizeProfileCode, daysUntil } from '../src/scripts/calendrier-dates.js';
+import { parsePeriod, statusOf, concerns, normalizeProfileCode, daysUntil, isEstimated, horizonOf, icsFor, icsFilename, shortDescription } from '../src/scripts/calendrier-dates.js';
 
 const iso = (d) => d && d.toISOString().slice(0, 10);
 const at = (s) => new Date(`${s}T12:00:00`);
@@ -103,4 +103,54 @@ test('prochaine échéance et compte à rebours', async () => {
   assert.equal(relativeLabel('a_venir', 40, false), null);       // période (« fin 2027 ») : pas de compte au jour
   assert.equal(relativeLabel('aujourdhui', 0, true), "aujourd'hui");
   assert.equal(isExactDate('fin 2027'), false);
+});
+
+test('dates estimées : périodes, années, fins de mois — pas un jour précis ni « Depuis le »', () => {
+  for (const l of ['fin 2027', '2028', 'janvier–mars 2027', 'fin septembre 2026']) assert.equal(isEstimated(l), true, l);
+  for (const l of ['10 juillet 2027', '1er juillet 2025', 'Depuis le 1er juillet 2026', 'bientôt']) assert.equal(isEstimated(l), false, l);
+});
+
+test('blocs « Dans les 3 mois » / « Dans l’année » / « Plus tard » selon la date la plus tôt', () => {
+  const now = at('2026-10-04');
+  const h = (date) => horizonOf({ date, registre: 'a_venir' }, now);
+  assert.equal(h('fin septembre 2026'), 'trois_mois');   // période entamée
+  assert.equal(h('15 décembre 2026'), 'trois_mois');
+  assert.equal(h('4 janvier 2027'), 'trois_mois');       // pile 3 mois
+  assert.equal(h('janvier–mars 2027'), 'trois_mois');    // commence le 1er janvier
+  assert.equal(h('10 juillet 2027'), 'annee');
+  assert.equal(h('fin 2027'), 'annee');                  // commence le 1er octobre 2027 (≤ 12 mois)
+  assert.equal(h('2028'), 'plus_tard');
+  assert.equal(h('illisible'), 'plus_tard');
+  assert.equal(horizonOf({ date: 'fin 2027' }, at('2026-09-01')), 'plus_tard');
+});
+
+test('profil du compte : même normalisation que le serveur', () => {
+  assert.equal(normalizeProfileCode('PSP / EME'), 'etablissement_paiement');
+  assert.equal(normalizeProfileCode('  Établissement   de crédit '), 'etablissement_credit');
+  assert.equal(normalizeProfileCode('casp'), 'casp');
+  assert.equal(normalizeProfileCode(''), null);
+});
+
+test('.ics : journée entière, premier jour d’une date estimée, texte échappé', () => {
+  const now = at('2026-10-04');
+  const ics = icsFor({ date: 'janvier–mars 2027', obligation: 'Normes; RTS, AMLA', note: 'Courte note.',
+    acte: 'Règlement (UE) 2024/1620', source_url: 'https://eur-lex.europa.eu/eli/reg/2024/1620/oj' }, now);
+  const unfolded = ics.replace(/\r\n /g, '');
+  assert.match(unfolded, /\r\nDTSTART;VALUE=DATE:20270101\r\nDTEND;VALUE=DATE:20270102\r\n/);
+  assert.match(unfolded, /\r\nSUMMARY:Normes\\; RTS\\, AMLA\r\n/);
+  assert.match(unfolded, /DESCRIPTION:Date estimée : janvier–mars 2027\.\\nCourte note\.\\nRèglement \(UE\) 2024\/1620\\nhttps:\/\/eur-lex/);
+  assert.match(unfolded, /\r\nURL:https:\/\/eur-lex\.europa\.eu\/eli\/reg\/2024\/1620\/oj\r\n/);
+  assert.ok(ics.startsWith('BEGIN:VCALENDAR\r\n') && ics.endsWith('END:VCALENDAR\r\n'));
+  for (const line of ics.split('\r\n')) assert.ok(new TextEncoder().encode(line).length <= 75, line);
+  const exact = icsFor({ date: '10 juillet 2027', obligation: 'AMLR' }, now).replace(/\r\n /g, '');
+  assert.match(exact, /DTSTART;VALUE=DATE:20270710/);
+  assert.doesNotMatch(exact, /Date estimée/);
+  assert.equal(icsFor({ date: 'bientôt', obligation: 'x' }, now), null);
+  assert.equal(icsFilename({ date: '10 juillet 2027' }), 'echeance-2027-07-10.ics');
+});
+
+test('description courte coupée sur un mot', () => {
+  const s = shortDescription('mot '.repeat(80));
+  assert.ok(s.length <= 201 && s.endsWith('…') && !s.includes('mo…'));
+  assert.equal(shortDescription('court'), 'court');
 });

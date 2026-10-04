@@ -125,11 +125,16 @@ export function concerns(entry, profile, familyOf = () => null) {
   return true;
 }
 
-// Valeurs historiques de settings.entity_type (cf. LEGACY_ALIASES, app/core/profiles.py).
-const LEGACY = { banque: 'etablissement_credit', psp: 'etablissement_paiement', 'psp/eme': 'etablissement_paiement', ep: 'etablissement_paiement', eme: 'etablissement_monnaie_electronique', psan: 'casp', 'psan/casp': 'casp' };
+// Valeurs historiques de settings.entity_type : même table et même mise en forme de la
+// clé que le serveur (LEGACY_ALIASES et _key, app/core/profiles.py).
+const LEGACY = {
+  banque: 'etablissement_credit', 'etablissement de credit': 'etablissement_credit', 'établissement de crédit': 'etablissement_credit',
+  psp: 'etablissement_paiement', 'psp/eme': 'etablissement_paiement', ep: 'etablissement_paiement',
+  eme: 'etablissement_monnaie_electronique', psan: 'casp', 'psan/casp': 'casp',
+};
 
 export function normalizeProfileCode(value) {
-  const k = String(value || '').trim().toLowerCase();
+  const k = String(value || '').trim().toLowerCase().replace(/ \/ /g, '/').split(/\s+/).filter(Boolean).join(' ');
   return LEGACY[k] || k || null;
 }
 
@@ -162,4 +167,100 @@ export function relativeLabel(status, days, exact) {
 export function isExactDate(label) {
   const p = parsePeriod(label);
   return !!(p && !p.open && +p.start === +p.end);
+}
+
+// ── Regroupement par horizon, dates estimées ───────────────────────────────
+
+/** Date imprécise (« fin 2027 », « 2028 », « janvier–mars 2027 », « fin septembre 2026 ») :
+ *  tout libellé lisible qui ne désigne pas un jour précis ni « Depuis le … ». */
+export function isEstimated(label) {
+  const p = parsePeriod(label);
+  return !!(p && !p.open && +p.start !== +p.end);
+}
+
+export const HORIZONS = [
+  { key: 'trois_mois', label: 'Dans les 3 mois' },
+  { key: 'annee', label: "Dans l'année" },
+  { key: 'plus_tard', label: 'Plus tard' },
+];
+
+const addMonths = (d, n) => day(d.getUTCFullYear(), d.getUTCMonth() + n, d.getUTCDate());
+
+/**
+ * Bloc d'une échéance à venir, selon sa date la PLUS TÔT (début de la période) :
+ * ≤ 3 mois → 'trois_mois' (période déjà entamée comprise), ≤ 12 mois → 'annee',
+ * sinon 'plus_tard'. Libellé illisible → 'plus_tard'.
+ */
+export function horizonOf(entry, now = new Date()) {
+  const p = parsePeriod(entry.date);
+  if (!p) return 'plus_tard';
+  const t = todayUTC(now);
+  if (p.start <= addMonths(t, 3)) return 'trois_mois';
+  if (p.start <= addMonths(t, 12)) return 'annee';
+  return 'plus_tard';
+}
+
+// ── Ajout à l'agenda (.ics, généré dans le navigateur) ─────────────────────
+
+const pad = (n) => String(n).padStart(2, '0');
+const ymd = (d) => `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}`;
+// RFC 5545 : échappement des textes, lignes pliées à 75 octets.
+const icsText = (s) => String(s ?? '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+function fold(line) {
+  const out = [];
+  let cur = '';
+  let bytes = 0;
+  for (const ch of line) {
+    const b = new TextEncoder().encode(ch).length;
+    if (bytes + b > 75) { out.push(cur); cur = ' '; bytes = 1; }
+    cur += ch; bytes += b;
+  }
+  out.push(cur);
+  return out.join('\r\n');
+}
+
+/** Description courte : la note limitée à ~200 caractères, coupée sur un mot. */
+export function shortDescription(text, max = 200) {
+  const s = String(text || '').replace(/\s+/g, ' ').trim();
+  if (s.length <= max) return s;
+  const cut = s.slice(0, max);
+  return cut.slice(0, Math.max(cut.lastIndexOf(' '), max - 20)).replace(/[\s,;:.]+$/, '') + '…';
+}
+
+/**
+ * Fichier .ics d'une échéance : événement « journée entière » au jour de l'échéance ;
+ * date estimée → premier jour de la période (mention dans la description).
+ * Libellé illisible → null (pas de bouton).
+ */
+export function icsFor(entry, now = new Date()) {
+  const p = parsePeriod(entry.date);
+  if (!p) return null;
+  const start = p.start;
+  const end = day(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate() + 1);
+  const desc = [
+    isEstimated(entry.date) ? `Date estimée : ${entry.date}.` : '',
+    shortDescription(entry.note),
+    entry.acte || '',
+    entry.source_url || '',
+  ].filter(Boolean).join('\n');
+  const uid = `${ymd(start)}-${String(entry.obligation || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40)}@earlywatch`;
+  const stamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+  const lines = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Early Watch//Calendrier LCB-FT//FR', 'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `UID:${uid}`, `DTSTAMP:${stamp}`,
+    `DTSTART;VALUE=DATE:${ymd(start)}`, `DTEND;VALUE=DATE:${ymd(end)}`,
+    `SUMMARY:${icsText(entry.obligation)}`,
+    `DESCRIPTION:${icsText(desc)}`,
+    ...(entry.source_url ? [`URL:${icsText(entry.source_url)}`] : []),
+    'TRANSP:TRANSPARENT',
+    'END:VEVENT', 'END:VCALENDAR',
+  ];
+  return lines.map(fold).join('\r\n') + '\r\n';
+}
+
+/** Nom de fichier lisible : « echeance-2027-07-10.ics ». */
+export function icsFilename(entry) {
+  const p = parsePeriod(entry.date);
+  return p ? `echeance-${p.start.toISOString().slice(0, 10)}.ics` : 'echeance.ics';
 }
